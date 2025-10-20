@@ -9,17 +9,22 @@
             <li><a href="${pageContext.request.contextPath}/index.jsp" class="${page == 'home' ? 'active' : ''}">Home</a></li>
             <li><a href="#about" class="${page == 'about' ? 'active' : ''}">About</a></li>
             <li><a href="#services" class="${page == 'services' ? 'active' : ''}">Services</a></li>
-            <li>
-                <c:choose>
-                <c:when test="${not empty sessionScope.user}">
-                <a href="${pageContext.request.contextPath}/pages/dashboards/${sessionScope.user.usertype}dash/${sessionScope.user.usertype}dashmain.jsp">Dashboard</a>
-            <li><a href="${pageContext.request.contextPath}/LogoutServlet">Logout</a></li>
-            </c:when>
-            <c:otherwise>
-                <a href="${pageContext.request.contextPath}/pages/shared/login.jsp">Log in</a>
-            </c:otherwise>
+
+            <!-- User greeting / login-logout -->
+            <c:choose>
+                <c:when test="${not empty sessionScope.currentUser}">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/pages/dashboards/${sessionScope.currentUser.role}dash/${sessionScope.currentUser.role}dashmain.jsp">
+                            Hi, ${sessionScope.currentUser.firstName}
+                        </a>
+                    </li>
+                    <li><a href="${pageContext.request.contextPath}/logout">Logout</a></li>
+                </c:when>
+                <c:otherwise>
+                    <li><a href="${pageContext.request.contextPath}/login.jsp">Log in</a></li>
+                    <li><a href="${pageContext.request.contextPath}/preliminarySignup.jsp">Sign Up</a></li>
+                </c:otherwise>
             </c:choose>
-            </li>
         </ul>
     </nav>
 

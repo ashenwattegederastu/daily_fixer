@@ -1,115 +1,152 @@
 package com.dailyfixer.dao;
 
 import com.dailyfixer.model.User;
-import com.dailyfixer.model.UserDriver;
+import com.dailyfixer.util.DBConnection;
+
 import java.sql.*;
 
 public class UserDAO {
 
-    private String jdbcURL = "jdbc:mysql://localhost:3306/dailyfixer";
-    private String jdbcUsername = "root";
-    private String jdbcPassword = "admin";
-
-    private Connection getConnection() throws SQLException {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // load driver
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
-    }
-
-    // 🔹 Validate login
-    public User validateUser(String username, String password) {
-        User user = null;
-        String sql = "SELECT * FROM users WHERE username=? AND password=?";
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                user = new User();
-                user.setId(rs.getInt("id"));
-                user.setUsername(rs.getString("username"));
-                user.setFname(rs.getString("fname"));
-                user.setLname(rs.getString("lname"));
-                user.setEmail(rs.getString("email"));
-                user.setPhone(rs.getString("phone"));
-                user.setUsertype(rs.getString("usertype"));
-                user.setProfilepic(rs.getString("profilepic"));
+    public boolean isUsernameTaken(String username) throws Exception {
+        String sql = "SELECT user_id FROM users WHERE username = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return user;
     }
 
-    // 🔹 Register general user (hardcode usertype = 'user')
-    public boolean registerUser(User user) {
-        boolean success = false;
-        String sql = "INSERT INTO users (username, password, fname, lname, phone, email, usertype, profilepic) " +
-                "VALUES (?, ?, ?, ?, ?, ?, 'user', ?)";
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getPassword());  // plain text for now
-            stmt.setString(3, user.getFname());
-            stmt.setString(4, user.getLname());
-            stmt.setString(5, user.getPhone());
-            stmt.setString(6, user.getEmail());
-            stmt.setString(7, user.getProfilepic());
-
-            int rows = stmt.executeUpdate();
-            success = rows > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return success;
-    }
-
-    // 🔹 Register driver (kept as is)
-    public boolean registerDriver(User user, UserDriver driver) {
-        boolean success = false;
-        String sqlUser = "INSERT INTO users (username, password, fname, lname, phone, email, usertype, profilepic) VALUES (?, ?, ?, ?, ?, ?, 'driver', ?)";
-        String sqlDriver = "INSERT INTO user_driver (user_id, real_pic, service_area, license_pic) VALUES (?, ?, ?, ?)";
-
-        try (Connection conn = getConnection()) {
-            conn.setAutoCommit(false);
-
-            // Insert into users
-            PreparedStatement stmtUser = conn.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS);
-            stmtUser.setString(1, user.getUsername());
-            stmtUser.setString(2, user.getPassword());
-            stmtUser.setString(3, user.getFname());
-            stmtUser.setString(4, user.getLname());
-            stmtUser.setString(5, user.getPhone());
-            stmtUser.setString(6, user.getEmail());
-            stmtUser.setString(7, user.getProfilepic());
-            stmtUser.executeUpdate();
-
-            ResultSet rs = stmtUser.getGeneratedKeys();
-            if (rs.next()) {
-                int userId = rs.getInt(1);
-                driver.setUser(user);
-                driver.getUser().setId(userId);
-
-                // Insert into driver table
-                PreparedStatement stmtDriver = conn.prepareStatement(sqlDriver);
-                stmtDriver.setInt(1, userId);
-                stmtDriver.setString(2, driver.getRealPic());
-                stmtDriver.setString(3, driver.getServiceArea());
-                stmtDriver.setString(4, driver.getLicensePic());
-                stmtDriver.executeUpdate();
+    public boolean isEmailTaken(String email) throws Exception {
+        String sql = "SELECT user_id FROM users WHERE email = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
+        }
+    }
 
-            conn.commit();
-            success = true;
-        } catch (SQLException e) {
+    /**
+     * Saves a user and returns the generated user_id.
+     * Returns -1 on failure.
+     */
+    public int saveUser(User user) {
+        String sql = "INSERT INTO users (first_name, last_name, username, email, password, phone_number, city, role) VALUES (?,?,?,?,?,?,?,?)";
+        int userId = -1;
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, user.getFirstName());
+            ps.setString(2, user.getLastName());
+            ps.setString(3, user.getUsername());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPassword());
+            ps.setString(6, user.getPhoneNumber());
+            ps.setString(7, user.getCity());
+            ps.setString(8, user.getRole());
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        userId = rs.getInt(1);
+                        user.setUserId(userId); // also set on the object
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            userId = -1;
+        }
+
+        return userId;
+    }
+
+    public boolean updateUserInfo(int userId, String firstName, String lastName, String phoneNumber, String city) {
+        String sql = "UPDATE users SET first_name=?, last_name=?, phone_number=?, city=? WHERE user_id=?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, firstName);
+            ps.setString(2, lastName);
+            ps.setString(3, phoneNumber);
+            ps.setString(4, city);
+            ps.setInt(5, userId);
+
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updatePassword(int userId, String newHashedPassword) {
+        String sql = "UPDATE users SET password = ? WHERE user_id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, newHashedPassword);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public User getUserById(int userId) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("user_id"));
+                    u.setFirstName(rs.getString("first_name"));
+                    u.setLastName(rs.getString("last_name"));
+                    u.setUsername(rs.getString("username"));
+                    u.setEmail(rs.getString("email"));
+                    u.setPassword(rs.getString("password"));
+                    u.setPhoneNumber(rs.getString("phone_number"));
+                    u.setCity(rs.getString("city"));
+                    u.setRole(rs.getString("role"));
+                    return u;
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return success;
+        return null;
+    }
+
+
+
+    public User findByUsernameAndPassword(String username, String hashedPassword) throws Exception {
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ? AND status = 'active'";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, hashedPassword);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("user_id"));
+                    u.setFirstName(rs.getString("first_name"));
+                    u.setLastName(rs.getString("last_name"));
+                    u.setUsername(rs.getString("username"));
+                    u.setEmail(rs.getString("email"));
+                    u.setPhoneNumber(rs.getString("phone_number"));
+                    u.setCity(rs.getString("city"));
+                    u.setRole(rs.getString("role"));
+                    return u;
+                }
+            }
+        }
+        return null;
     }
 }

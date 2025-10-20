@@ -2,13 +2,28 @@
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ page import="com.dailyfixer.model.User" %>
 
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ page import="com.dailyfixer.model.User" %>
+
 <%
-    User user = (User) session.getAttribute("user");
-    if (user == null || !"driver".equals(user.getUsertype())) {
+//    User user = (User) session.getAttribute("user");
+    User user = (User) session.getAttribute("currentUser");
+
+    if (user == null || !"driver".equals(user.getRole())) {
         response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
         return;
     }
 %>
+
+
+<%--<%--%>
+<%--    User user = (User) session.getAttribute("user");--%>
+<%--    if (user == null || !"driver".equals(user.getUsertype())) {--%>
+<%--        response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");--%>
+<%--        return;--%>
+<%--    }--%>
+<%--%>--%>
 
 <html>
 <head>
@@ -35,7 +50,8 @@
         <div class="store-name">Driver</div>
         <ul>
             <li><a href="#" class="active">Dashboard</a></li>
-            <li><a href="#">Vehicle Management</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/vehicleManagement.jsp">Vehicle Management</a></li>
+
             <li><a href="#">Delivery Requests</a></li>
             <%--      <li><a href="#">Set Rates</a></li>--%>
             <li><a href="#">Profile</a></li>

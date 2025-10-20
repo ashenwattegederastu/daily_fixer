@@ -6,8 +6,6 @@
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body>
-<a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/driversignup.jsp">SignUP</a>
-<a href="${pageContext.request.contextPath}/pages/dashboards/userdash/usersignup.jsp">UserSignUP</a>
 <div class="login-wrapper">
   <div class="login-card">
     <h2>Login to DailyFixer</h2>

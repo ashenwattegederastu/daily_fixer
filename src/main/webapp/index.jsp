@@ -14,10 +14,20 @@
 </head>
 <body>
 <section class="hero">
-    <div class="search-box">
-        <label for="search" class="sr-only">Search for an issue</label>
-        <input type="text" id="search" placeholder="Search for an issue">
-        <button><img src="assets/images/pictures/search.png" alt="Search"></button>
+    <div class="hero-content">
+        <!-- Welcome Text -->
+        <c:if test="${not empty sessionScope.currentUser}">
+            <h1 class="welcome-text">
+                Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}!
+            </h1>
+        </c:if>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <label for="search" class="sr-only">Search for an issue</label>
+            <input type="text" id="search" placeholder="Search for an issue">
+            <button><img src="assets/images/pictures/search.png" alt="Search"></button>
+        </div>
     </div>
 </section>
 

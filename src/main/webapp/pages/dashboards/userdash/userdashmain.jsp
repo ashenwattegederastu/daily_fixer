@@ -3,12 +3,18 @@
 <%@ page import="com.dailyfixer.model.User" %>
 
 <%
-    User user = (User) session.getAttribute("user");
-    if (user == null || !"user".equals(user.getUsertype())) {
+    User user = (User) session.getAttribute("currentUser"); // ✅ Matches servlet
+    if (user == null || user.getRole() == null ||
+            !"user".equalsIgnoreCase(user.getRole().trim())) {
+
         response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
         return;
     }
 %>
+
+
+
+
 
 <html>
 <head>
@@ -38,7 +44,7 @@
             <li><a href="#">User Management</a></li>
             <li><a href="#">Reports/Flags</a></li>
             <%--      <li><a href="#">Set Rates</a></li>--%>
-            <li><a href="#">Profile</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/myProfile.jsp">Profile</a></li>
         </ul>
     </nav>
 </header>
