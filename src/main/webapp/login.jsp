@@ -4,46 +4,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - DailyFixer</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css"> <!-- Update path -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/login.css">
 </head>
 <body>
 
-<div class="login-wrapper">
+<div class="login-container">
     <div class="login-card">
-        <h2>Login</h2>
+        <!-- Added logo/branding section -->
+        <div class="login-header">
+            <h1 class="login-title">DailyFixer</h1>
+            <p class="login-subtitle">Welcome back</p>
+        </div>
 
-        <%-- Success message --%>
+        <!-- Improved message styling with better visual hierarchy -->
         <% String success = (String) session.getAttribute("successMsg");
             if (success != null) { %>
-        <div style="color: green; text-align:center; margin-bottom:10px;"><%= success %></div>
+        <div class="alert alert-success"><%= success %></div>
         <% session.removeAttribute("successMsg"); } %>
 
-        <%-- Error message --%>
         <% String loginError = (String) request.getAttribute("loginError");
             if (loginError != null) { %>
-        <div style="color: red; text-align:center; margin-bottom:10px;"><%= loginError %></div>
+        <div class="alert alert-error"><%= loginError %></div>
         <% } %>
 
-        <form method="post" action="login">
-            <div class="input-field">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        <form method="post" action="login" class="login-form">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-input"
+                        placeholder="Enter your username"
+                        required>
             </div>
 
-            <div class="input-field">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="Enter your password"
+                        required>
             </div>
 
-            <button type="submit" class="login-btn">Login</button>
+            <!-- Improved button styling -->
+            <button type="submit" class="login-btn">Sign In</button>
         </form>
 
-        <p class="note">
-            Don’t have an account? <a href="registerUser.jsp">Register here</a><br>
-            Forgot Password?<br>
-            Go Back Home <a href="index.jsp">Home</a>
-        </p>
+        <!-- Better organized footer links with improved styling -->
+        <div class="login-footer">
+            <p class="footer-text">
+                Don't have an account?
+                <a href="${pageContext.request.contextPath}/preliminarySignup.jsp" class="footer-link">Create one</a>
+            </p>
+            <p class="footer-text">
+                <a href="#" class="footer-link">Forgot your password?</a>
+            </p>
+            <p class="footer-text">
+                <a href="${pageContext.request.contextPath}/index.jsp" class="footer-link-secondary">← Back to Home</a>
+            </p>
+        </div>
     </div>
 </div>
 

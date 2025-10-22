@@ -10,7 +10,7 @@
     }
 
     String role = user.getRole().trim().toLowerCase();
-    if (!("admin".equals(role) || "store".equals(role))) {
+    if (!("admin".equals(role) || "technician".equals(role))) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
@@ -18,7 +18,7 @@
 
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>Technician Dashboard</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/deliverdashmain.css">
 </head>
 <body>
@@ -38,12 +38,13 @@
 
     <!-- Subnav -->
     <nav class="subnav">
-        <div class="store-name">Store Dashboard</div>
+        <div class="store-name">Technician Dashboard</div>
         <ul>
             <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/storedashmain.jsp" class="active">Dashboard</a></li>
-            <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/orders.jsp">Orders</a></li>
-            <li><a href="${pageContext.request.contextPath}/ListProductsServlet">Catalogue</a></li>
-<%--            <li><a href="#">Orders</a></li>--%>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/orders.jsp">Bookings</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/serviceListings.jsp">Service Listing</a></li>
+            <li><a href="${pageContext.request.contextPath}/ListProductsServlet">Verification</a></li>
+            <%--            <li><a href="#">Orders</a></li>--%>
             <%--      <li><a href="#">Set Rates</a></li>--%>
             <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
         </ul>

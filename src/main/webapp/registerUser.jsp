@@ -6,28 +6,20 @@
     <title>Register - DailyFixer</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <style>
-        /* Adjust hero to account for fixed header and avoid top/bottom cutoff */
+        /* Removed background image, using gradient instead */
         .register-hero {
             position: relative;
-            background: url('assets/images/pictures/living room.jpg') no-repeat center center;
-            background-size: cover;
-            /* subtract approximate header+subnav height (adjust if your header is taller) */
+            background: linear-gradient(to bottom, #ffffff, #c8d9ff);
             min-height: calc(100vh - 140px);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;          /* safe space top/bottom */
+            padding: 40px 20px;
             box-sizing: border-box;
-            overflow: auto;              /* allow scrolling on small screens */
+            overflow: auto;
         }
 
-        .register-hero::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.32);
-            pointer-events: none;
-        }
+        /* Removed overlay pseudo-element */
 
         /* Floating registration card */
         .register-card {
@@ -35,63 +27,133 @@
             background: #fff;
             padding: 36px 28px;
             border-radius: 12px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+            box-shadow: 0 8px 24px rgba(124, 140, 255, 0.15);
             max-width: 520px;
             width: 100%;
             z-index: 2;
-            margin: 20px; /* keeps distance on very small screens */
+            margin: 20px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .register-card h2 {
             text-align: center;
             font-size: 28px;
-            margin-bottom: 18px;
-            color: #222;
+            margin-bottom: 24px;
+            color: #1b2647;
+            font-weight: 600;
         }
 
         .input-field {
             display: flex;
             flex-direction: column;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .input-field label {
             font-weight: 600;
-            margin-bottom: 6px;
-            color: #444;
+            margin-bottom: 8px;
+            color: #6b77cf;
+            font-size: 14px;
         }
 
+        /* Updated input styling to match theme */
         .input-field input, .input-field select {
             padding: 12px 14px;
             border-radius: 8px;
-            border: 1px solid #ccc;
+            border: 1.5px solid #e0e8ff;
             font-size: 15px;
             outline: none;
-            transition: 0.15s ease-in-out;
+            transition: all 0.2s ease-in-out;
+            background: #f8faff;
+            color: #333;
         }
 
         .input-field input:focus, .input-field select:focus {
-            border-color: #3f51ff;
-            box-shadow: 0 6px 18px rgba(63,81,255,0.12);
+            border-color: #7c8cff;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.1);
         }
 
+        /* Updated button to use theme color */
         .login-btn {
-            background: #0077cc;
+            background: #7c8cff;
             color: #fff;
             border: none;
             padding: 14px;
             font-size: 16px;
+            font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s ease-in-out, transform 0.08s;
+            transition: all 0.2s ease-in-out;
+            margin-top: 8px;
         }
-        .login-btn:hover { background: #005fa3; transform: translateY(-1px); }
+        .login-btn:hover {
+            background: #6b7de8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(124, 140, 255, 0.3);
+        }
 
-        .note { text-align: center; margin-top: 12px; font-size: 14px; color: #666; }
+        .note {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #666;
+        }
 
-        /* Inline error messages */
-        .error { color: #b00020; font-size: 0.9rem; margin-top: 6px; }
+        .note a {
+            color: #7c8cff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .note a:hover {
+            color: #6b7de8;
+        }
+
+        /* Updated error message styling */
+        .error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Server error alert */
+        .server-error {
+            background: #ffe0e0;
+            border: 1px solid #e74c3c;
+            color: #c0392b;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* Responsive tweaks */
         @media screen and (max-width: 900px) {
@@ -102,17 +164,19 @@
         @media screen and (max-width: 420px) {
             .register-card { padding: 20px 14px; margin: 12px; }
             .register-hero { min-height: calc(100vh - 100px); padding: 24px 12px; }
+            .register-card h2 { font-size: 24px; }
         }
     </style>
 </head>
 <body>
 <div class="register-hero">
     <div class="register-card">
-        <h2>Register (User)</h2>
+        <h2>Create User Account</h2>
 
         <% String serverError = (String) request.getAttribute("errorMsg"); %>
         <% if (serverError != null) { %>
-        <div class="error"><%= serverError %></div>
+        <!-- Updated error message styling -->
+        <div class="server-error"><%= serverError %></div>
         <% } %>
 
         <form id="registerForm" method="post" action="registerUser">
@@ -172,7 +236,7 @@
             <button type="submit" class="login-btn">Register</button>
         </form>
 
-        <p class="note">Already have an account? <a href="login.jsp">Login</a></p>
+        <p class="note">Already have an account? <a href="login.jsp">Login here</a></p>
     </div>
 </div>
 

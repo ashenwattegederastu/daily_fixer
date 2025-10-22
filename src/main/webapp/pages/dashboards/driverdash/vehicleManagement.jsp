@@ -58,16 +58,16 @@
         <div class="logo">Daily Fixer</div>
         <ul class="nav-links">
             <li><a href="${pageContext.request.contextPath}">Home</a></li>
-            <li><a href="${pageContext.request.contextPath}/LogoutServlet">Log Out</a></li>
+            <li><a href="${pageContext.request.contextPath}/logout">Log Out</a></li>
         </ul>
     </nav>
     <nav class="subnav">
         <div class="store-name">Driver</div>
         <ul>
             <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/driverdashmain.jsp">Dashboard</a></li>
-            <li><a href="#" class="active">Vehicle Management</a></li>
-            <li><a href="#">Delivery Requests</a></li>
-            <li><a href="#">Profile</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/vehicleManagement.jsp" class="active">Vehicle Management</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/deliveryrequests.jsp">Delivery Requests</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/myProfile.jsp">Profile</a></li>
         </ul>
     </nav>
 </header>

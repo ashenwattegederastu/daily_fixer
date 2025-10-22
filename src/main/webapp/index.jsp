@@ -9,25 +9,68 @@
 <head>
     <meta charset="UTF-8">
     <title>Daily Fixer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        .welcome-text {
+            font-family: 'Roboto Condensed', sans-serif;
+            text-transform: none;
+            letter-spacing: 0.5px;
+            font-size: 13rem;
+            color: white;
+            text-align: center;
+            margin-top: 40px;
+        }
+        /* Hide scrollbar but keep scroll functionality */
+        body {
+            overflow: auto;
+        }
+
+        /* For Chrome, Edge, and Safari */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* For Firefox */
+        body {
+            scrollbar-width: none;
+        }
+
+        /* For Internet Explorer and older Edge */
+        body {
+            -ms-overflow-style: none;
+        }
+
+    </style>
 </head>
 <body>
 <section class="hero">
     <div class="hero-content">
-        <!-- Welcome Text -->
-        <c:if test="${not empty sessionScope.currentUser}">
-            <h1 class="welcome-text">
-                Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}!
-            </h1>
-        </c:if>
+        <!-- Welcome / Join Text -->
+        <c:choose>
+            <c:when test="${not empty sessionScope.currentUser}">
+                <h1 class="welcome-text">
+                    Welcome, ${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}!
+                </h1>
+            </c:when>
+            <c:otherwise>
+                <h1 class="welcome-text">
+                    Join a community that helps you fix, learn, and restore what matters.
+                </h1>
+            </c:otherwise>
+        </c:choose>
 
-        <!-- Search Box -->
-        <div class="search-box">
-            <label for="search" class="sr-only">Search for an issue</label>
-            <input type="text" id="search" placeholder="Search for an issue">
-            <button><img src="assets/images/pictures/search.png" alt="Search"></button>
-        </div>
+        <!-- Search Box (only if logged in) -->
+        <c:if test="${not empty sessionScope.currentUser}">
+            <div class="search-box">
+                <label for="search" class="sr-only">Search for an issue</label>
+                <input type="text" id="search" placeholder="Search for an issue">
+                <button><img src="assets/images/pictures/search.png" alt="Search"></button>
+            </div>
+        </c:if>
     </div>
 </section>
 

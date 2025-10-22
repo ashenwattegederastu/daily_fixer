@@ -30,10 +30,10 @@
 
     <!-- Subnav -->
     <div class="sub-nav">
-        <a href="${pageContext.request.contextPath}/pages/DiagnosticTool/diagnostic.jsp" class="${page == 'diagnostic' ? 'active' : ''}">Diagnose Now</a>
-        <a href="${pageContext.request.contextPath}/pages/findtechnician/findtechmain.jsp" class="${page == 'findtech' ? 'active' : ''}">Find a Technician</a>
-        <a href="${pageContext.request.contextPath}/pages/guide_view/guidehome.jsp" class="${page == 'guides' ? 'active' : ''}">View Repair Guides</a>
-        <a href="${pageContext.request.contextPath}/pages/store/store.jsp" class="${page == 'store' ? 'active' : ''}">Stores</a>
+        <a href="${pageContext.request.contextPath}/diagnostic.jsp" class="${page == 'diagnostic' ? 'active' : ''}">Diagnose Now</a>
+        <a href="${pageContext.request.contextPath}/findtech.jsp" class="${page == 'findtech' ? 'active' : ''}">Find a Technician</a>
+        <a href="${pageContext.request.contextPath}/viewguides.jsp" class="${page == 'guides' ? 'active' : ''}">View Repair Guides</a>
+        <a href="${pageContext.request.contextPath}/store.jsp" class="${page == 'store' ? 'active' : ''}">Stores</a>
     </div>
 
     <!-- Include CSS -->

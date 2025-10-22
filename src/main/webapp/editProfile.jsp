@@ -8,6 +8,24 @@
         response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
         return;
     }
+
+    // Define role-specific redirect paths (easily modifiable)
+    String basePath = request.getContextPath();  // <-- base path for all links
+    String profilePath;
+
+    switch (user.getRole().toLowerCase()) {
+        case "driver":
+            profilePath = "/pages/dashboards/driverdash/myProfile.jsp";
+            break;
+        case "admin":
+            profilePath = basePath + "/pages/dashboards/admindash/adminProfile.jsp";
+            break;
+        default:
+            profilePath = basePath + "/pages/dashboards/userdash/myProfile.jsp";
+            break;
+    }
+
+
 %>
 
 <!DOCTYPE html>
@@ -44,7 +62,7 @@
 
             <div class="profile-buttons">
                 <button type="submit" class="btn edit">Save Changes</button>
-                <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/myProfile.jsp" class="btn reset">Cancel</a>
+                <a href="<%= request.getContextPath() + profilePath %>" class="btn reset">Cancel</a>
             </div>
         </form>
     </div>

@@ -88,14 +88,15 @@ html {
     align-items: center;
 }
 
-.hero .welcome-text {
-    color: white;
-    font-size: 2rem;
-    font-weight: 700;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
-    margin-bottom: 20px; /* spacing between welcome text and search box */
-    text-align: center;
-}
+/*.hero .welcome-text {*/
+/*    font-family: 'Roboto Condensed', sans-serif;*/
+/*    text-transform: none;*/
+/*    letter-spacing: 0.5px;*/
+/*    font-size: 7rem;*/
+/*    color: #1e1e1e;*/
+/*    text-align: center;*/
+/*    margin-top: 40px;*/
+/*}*/
 
 /* Search box already exists, just make sure z-index is correct */
 .hero .search-box {

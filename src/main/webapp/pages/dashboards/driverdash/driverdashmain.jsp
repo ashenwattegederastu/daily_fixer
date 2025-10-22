@@ -27,7 +27,7 @@
 
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>Driver Dashboard</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/deliverdashmain.css">
 </head>
 <body>
@@ -41,7 +41,7 @@
             <%--      <li><a href="../../../index.jsp">Home</a></li>--%>
             <%--      <li><a href="#">Log in</a></li>--%>
             <li><a href="${pageContext.request.contextPath}">Home</a></li>
-            <li><a href="${pageContext.request.contextPath}/LogoutServlet">Log Out</a></li>
+            <li><a href="${pageContext.request.contextPath}/logout">Log Out</a></li>
         </ul>
     </nav>
 
@@ -52,9 +52,9 @@
             <li><a href="#" class="active">Dashboard</a></li>
             <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/vehicleManagement.jsp">Vehicle Management</a></li>
 
-            <li><a href="#">Delivery Requests</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/deliveryrequests.jsp">Delivery Requests</a></li>
             <%--      <li><a href="#">Set Rates</a></li>--%>
-            <li><a href="#">Profile</a></li>
+            <li><a href="${pageContext.request.contextPath}/pages/dashboards/driverdash/myProfile.jsp">Profile</a></li>
         </ul>
     </nav>
 </header>

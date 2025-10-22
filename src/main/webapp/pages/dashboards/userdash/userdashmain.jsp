@@ -18,7 +18,7 @@
 
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>User Dashboard</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/deliverdashmain.css">
 </head>
 <body>
@@ -41,8 +41,8 @@
         <div class="store-name">Administrator</div>
         <ul>
             <li><a href="#" class="active">Dashboard</a></li>
-            <li><a href="#">User Management</a></li>
-            <li><a href="#">Reports/Flags</a></li>
+            <li><a href="#">My Purchases</a></li>
+            <li><a href="#">My Bookings</a></li>
             <%--      <li><a href="#">Set Rates</a></li>--%>
             <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/myProfile.jsp">Profile</a></li>
         </ul>
