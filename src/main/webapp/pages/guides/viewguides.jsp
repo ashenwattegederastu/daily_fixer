@@ -1,10 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List" %>
-<%@ page import="com.dailyfixer.model.Guide" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<%
-  List<Guide> guides = (List<Guide>) request.getAttribute("guides");
-%>
+<c:set var="guides" value="${requestScope.guides}" />
 
 <html>
 <head>
@@ -111,20 +108,23 @@
 <div class="container">
   <h2>All Repair Guides</h2>
 
-  <% if (guides != null && !guides.isEmpty()) { %>
+  <c:choose>
+    <c:when test="${guides != null && !guides.isEmpty()}">
   <div class="guide-container">
-    <% for (Guide g : guides) { %>
+    <c:forEach var="g" items="${guides}">
     <div class="guide-card">
-      <img src="${pageContext.request.contextPath}/ImageServlet?id=<%= g.getGuideId() %>" alt="<%= g.getTitle() %>">
-      <a href="${pageContext.request.contextPath}/ViewGuideServlet?id=<%= g.getGuideId() %>" class="title-link"><%= g.getTitle() %></a>
+      <img src="${pageContext.request.contextPath}/ImageServlet?id=${g.guideId}" alt="<c:out value='${g.title}'/>">
+      <a href="${pageContext.request.contextPath}/ViewGuideServlet?id=${g.guideId}" class="title-link"><c:out value="${g.title}"/></a>
     </div>
-    <% } %>
+    </c:forEach>
   </div>
-  <% } else { %>
+    </c:when>
+    <c:otherwise>
   <div class="no-guides">
     <p>No guides available yet. Check back later!</p>
   </div>
-  <% } %>
+    </c:otherwise>
+  </c:choose>
 </div>
 
 </body>

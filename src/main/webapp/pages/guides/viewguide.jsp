@@ -1,14 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="com.dailyfixer.model.Guide,com.dailyfixer.model.GuideStep" %>
-<%@ page import="java.util.List" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
-<%
-    Guide guide = (Guide) request.getAttribute("guide");
-%>
+<c:set var="guide" value="${requestScope.guide}" />
 
 <html>
 <head>
-    <title><%= guide.getTitle() %> - DailyFixer</title>
+    <title><c:out value="${guide.title}"/> - DailyFixer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -161,48 +159,48 @@
 
 <div class="guide-container">
     <!-- Main Image -->
-    <% if (guide.getMainImage() != null) { %>
-    <img src="${pageContext.request.contextPath}/ImageServlet?id=<%= guide.getGuideId() %>" class="main-image" alt="<%= guide.getTitle() %>">
-    <% } %>
+    <c:if test="${guide.mainImage != null}">
+    <img src="${pageContext.request.contextPath}/ImageServlet?id=${guide.guideId}" class="main-image" alt="<c:out value='${guide.title}'/>">
+    </c:if>
 
     <!-- Title -->
-    <div class="guide-title"><%= guide.getTitle() %></div>
+    <div class="guide-title"><c:out value="${guide.title}"/></div>
 
     <!-- Requirements -->
     <div class="section-title">Requirements</div>
-    <% if (guide.getRequirements() != null && !guide.getRequirements().isEmpty()) { %>
+    <c:choose>
+        <c:when test="${guide.requirements != null && !guide.requirements.isEmpty()}">
     <ul class="requirements-list">
-        <% for (String r : guide.getRequirements()) { %>
-        <li><%= r %></li>
-        <% } %>
+        <c:forEach var="r" items="${guide.requirements}">
+        <li><c:out value="${r}"/></li>
+        </c:forEach>
     </ul>
-    <% } else { %>
+        </c:when>
+        <c:otherwise>
     <p>No requirements specified.</p>
-    <% } %>
+        </c:otherwise>
+    </c:choose>
 
     <!-- Steps -->
     <div class="section-title">Steps</div>
-    <% 
-    List<GuideStep> steps = guide.getSteps();
-    if (steps != null && !steps.isEmpty()) {
-        int stepNum = 1;
-        for (GuideStep s : steps) { 
-    %>
+    <c:choose>
+        <c:when test="${guide.steps != null && !guide.steps.isEmpty()}">
+            <c:forEach var="s" items="${guide.steps}" varStatus="status">
     <div class="step">
-        <div class="step-header">Step <%= stepNum %>: <%= s.getStepTitle() %></div>
+        <div class="step-header">Step ${status.index + 1}: <c:out value="${s.stepTitle}"/></div>
         <div class="step-content">
-            <% if (s.getStepImage() != null) { %>
-            <img src="${pageContext.request.contextPath}/StepImageServlet?id=<%= s.getStepId() %>" class="step-image" alt="Step <%= stepNum %>">
-            <% } %>
-            <div class="step-description"><%= s.getStepDescription() %></div>
+            <c:if test="${s.stepImage != null}">
+            <img src="${pageContext.request.contextPath}/StepImageServlet?id=${s.stepId}" class="step-image" alt="Step ${status.index + 1}">
+            </c:if>
+            <div class="step-description"><c:out value="${s.stepDescription}"/></div>
         </div>
     </div>
-    <%     
-            stepNum++;
-        }
-    } else { %>
+            </c:forEach>
+        </c:when>
+        <c:otherwise>
     <p>No steps added yet.</p>
-    <% } %>
+        </c:otherwise>
+    </c:choose>
 
     <a href="${pageContext.request.contextPath}/ViewGuidesServlet" class="back-btn">← Back to All Guides</a>
 </div>
