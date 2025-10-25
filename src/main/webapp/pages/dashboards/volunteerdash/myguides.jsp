@@ -140,11 +140,11 @@
     <a href="addGuide.jsp" class="add-guide-btn">+ Add New Guide</a>
 
     <c:choose>
-      <c:when test="${myGuides != null && !myGuides.isEmpty()}">
+      <c:when test="${not empty myGuides}">
     <div class="guide-container">
       <c:forEach var="g" items="${myGuides}">
       <div class="guide-card">
-        <img src="${pageContext.request.contextPath}/ImageServlet?id=${g.guideId}" alt="<c:out value='${g.title}'/>">
+        <img src="${pageContext.request.contextPath}/ImageServlet?id=${g.guideId}" alt="${g.title}">
         <a href="${pageContext.request.contextPath}/ViewGuideServlet?id=${g.guideId}" class="title-link"><c:out value="${g.title}"/></a>
         <div class="btn-group">
           <a href="${pageContext.request.contextPath}/EditGuideServlet?id=${g.guideId}" class="guide-btn edit">Edit</a>

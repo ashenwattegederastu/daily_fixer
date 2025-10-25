@@ -159,8 +159,8 @@
 
 <div class="guide-container">
     <!-- Main Image -->
-    <c:if test="${guide.mainImage != null}">
-    <img src="${pageContext.request.contextPath}/ImageServlet?id=${guide.guideId}" class="main-image" alt="<c:out value='${guide.title}'/>">
+    <c:if test="${not empty guide.mainImage}">
+    <img src="${pageContext.request.contextPath}/ImageServlet?id=${guide.guideId}" class="main-image" alt="${guide.title}">
     </c:if>
 
     <!-- Title -->
@@ -169,7 +169,7 @@
     <!-- Requirements -->
     <div class="section-title">Requirements</div>
     <c:choose>
-        <c:when test="${guide.requirements != null && !guide.requirements.isEmpty()}">
+        <c:when test="${not empty guide.requirements}">
     <ul class="requirements-list">
         <c:forEach var="r" items="${guide.requirements}">
         <li><c:out value="${r}"/></li>
@@ -184,12 +184,12 @@
     <!-- Steps -->
     <div class="section-title">Steps</div>
     <c:choose>
-        <c:when test="${guide.steps != null && !guide.steps.isEmpty()}">
+        <c:when test="${not empty guide.steps}">
             <c:forEach var="s" items="${guide.steps}" varStatus="status">
     <div class="step">
         <div class="step-header">Step ${status.index + 1}: <c:out value="${s.stepTitle}"/></div>
         <div class="step-content">
-            <c:if test="${s.stepImage != null}">
+            <c:if test="${not empty s.stepImage}">
             <img src="${pageContext.request.contextPath}/StepImageServlet?id=${s.stepId}" class="step-image" alt="Step ${status.index + 1}">
             </c:if>
             <div class="step-description"><c:out value="${s.stepDescription}"/></div>
