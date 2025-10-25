@@ -141,12 +141,12 @@ public class GuideDAO {
                     try (ResultSet rs = ps.executeQuery()) {
                         List<GuideStep> steps = new ArrayList<>();
                         while (rs.next()) {
-                            GuideStep step = new GuideStep(
-                                    rs.getInt("step_id"),
-                                    rs.getString("step_title"),
-                                    rs.getString("step_description"),
-                                    rs.getBytes("step_image")
-                            );
+                            GuideStep step = new GuideStep();
+                            step.setStepId(rs.getInt("step_id"));
+                            step.setGuideId(guideId);
+                            step.setStepTitle(rs.getString("step_title"));
+                            step.setStepDescription(rs.getString("step_description"));
+                            step.setStepImage(rs.getBytes("step_image"));
                             steps.add(step);
                         }
                         guide.setSteps(steps);
@@ -158,5 +158,101 @@ public class GuideDAO {
             e.printStackTrace();
         }
         return guide;
+    }
+
+    // Update Guide + Requirements + Steps
+    public void updateGuide(Guide guide, List<String> requirements, List<GuideStep> steps) {
+        String guideSQL = "UPDATE guides SET title = ?, main_image = ? WHERE guide_id = ?";
+        String deleteReqSQL = "DELETE FROM guide_requirements WHERE guide_id = ?";
+        String deleteStepSQL = "DELETE FROM guide_steps WHERE guide_id = ?";
+        String reqSQL = "INSERT INTO guide_requirements (guide_id, requirement) VALUES (?, ?)";
+        String stepSQL = "INSERT INTO guide_steps (guide_id, step_title, step_description, step_image) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Update guide
+            try (PreparedStatement ps = conn.prepareStatement(guideSQL)) {
+                ps.setString(1, guide.getTitle());
+                ps.setBytes(2, guide.getMainImage());
+                ps.setInt(3, guide.getGuideId());
+                ps.executeUpdate();
+            }
+
+            // Delete old requirements and steps
+            try (PreparedStatement ps = conn.prepareStatement(deleteReqSQL)) {
+                ps.setInt(1, guide.getGuideId());
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = conn.prepareStatement(deleteStepSQL)) {
+                ps.setInt(1, guide.getGuideId());
+                ps.executeUpdate();
+            }
+
+            // Insert new requirements
+            if (requirements != null && !requirements.isEmpty()) {
+                try (PreparedStatement ps = conn.prepareStatement(reqSQL)) {
+                    for (String req : requirements) {
+                        ps.setInt(1, guide.getGuideId());
+                        ps.setString(2, req);
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                }
+            }
+
+            // Insert new steps
+            if (steps != null && !steps.isEmpty()) {
+                try (PreparedStatement ps = conn.prepareStatement(stepSQL)) {
+                    for (GuideStep step : steps) {
+                        ps.setInt(1, guide.getGuideId());
+                        ps.setString(2, step.getStepTitle());
+                        ps.setString(3, step.getStepDescription());
+                        ps.setBytes(4, step.getStepImage());
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                }
+            }
+
+            conn.commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Delete Guide (cascade deletes requirements and steps)
+    public void deleteGuide(int guideId) {
+        String deleteReqSQL = "DELETE FROM guide_requirements WHERE guide_id = ?";
+        String deleteStepSQL = "DELETE FROM guide_steps WHERE guide_id = ?";
+        String deleteGuideSQL = "DELETE FROM guides WHERE guide_id = ?";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Delete requirements
+            try (PreparedStatement ps = conn.prepareStatement(deleteReqSQL)) {
+                ps.setInt(1, guideId);
+                ps.executeUpdate();
+            }
+
+            // Delete steps
+            try (PreparedStatement ps = conn.prepareStatement(deleteStepSQL)) {
+                ps.setInt(1, guideId);
+                ps.executeUpdate();
+            }
+
+            // Delete guide
+            try (PreparedStatement ps = conn.prepareStatement(deleteGuideSQL)) {
+                ps.setInt(1, guideId);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
