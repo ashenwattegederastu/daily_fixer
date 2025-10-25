@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*,com.dailyfixer.dao.GuideDAO,com.dailyfixer.model.Guide" %>
 <%@ page import="com.dailyfixer.model.User" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <%
   User currentUser = (User) session.getAttribute("currentUser");
@@ -12,6 +13,7 @@
   int userId = currentUser.getUserId();
   GuideDAO dao = new GuideDAO();
   List<Guide> myGuides = dao.getGuidesByVolunteer(userId);
+  request.setAttribute("myGuides", myGuides);
 %>
 
 <html>
@@ -115,9 +117,6 @@
   <div class="navbar">
     <div class="logo">DailyFixer</div>
     <ul class="nav-links">
-<%--      <li><a href="#">Home</a></li>--%>
-<%--      <li><a href="#">Guides</a></li>--%>
-<%--      <li><a href="#">Profile</a></li>--%>
       <li><a href="${pageContext.request.contextPath}">Home</a></li>
       <li><a href="${pageContext.request.contextPath}/logout">Log Out</a></li>
     </ul>
@@ -131,7 +130,6 @@
       <li><a href="#">My Guides</a></li>
       <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myProfile.jsp">Profile</a></li>
 
-    <%--      <li><a href="#">Add Guide</a></li>--%>
     </ul>
   </div>
 </header>
@@ -141,22 +139,25 @@
     <h2>My Guides</h2>
     <a href="addGuide.jsp" class="add-guide-btn">+ Add New Guide</a>
 
-    <% if (myGuides != null && !myGuides.isEmpty()) { %>
+    <c:choose>
+      <c:when test="${myGuides != null && !myGuides.isEmpty()}">
     <div class="guide-container">
-      <% for (Guide g : myGuides) { %>
+      <c:forEach var="g" items="${myGuides}">
       <div class="guide-card">
-        <img src="${pageContext.request.contextPath}/ImageServlet?id=<%= g.getGuideId() %>" alt="Guide Image">
-        <a href="${pageContext.request.contextPath}/ViewGuideServlet?id=<%= g.getGuideId() %>" class="title-link"><%= g.getTitle() %></a>
+        <img src="${pageContext.request.contextPath}/ImageServlet?id=${g.guideId}" alt="<c:out value='${g.title}'/>">
+        <a href="${pageContext.request.contextPath}/ViewGuideServlet?id=${g.guideId}" class="title-link"><c:out value="${g.title}"/></a>
         <div class="btn-group">
-          <a href="${pageContext.request.contextPath}/EditGuideServlet?id=<%= g.getGuideId() %>" class="guide-btn edit">Edit</a>
-          <a href="${pageContext.request.contextPath}/DeleteGuideServlet?id=<%= g.getGuideId() %>" class="guide-btn delete" onclick="return confirm('Are you sure you want to delete this guide?');">Delete</a>
+          <a href="${pageContext.request.contextPath}/EditGuideServlet?id=${g.guideId}" class="guide-btn edit">Edit</a>
+          <a href="${pageContext.request.contextPath}/DeleteGuideServlet?id=${g.guideId}" class="guide-btn delete" onclick="return confirm('Are you sure you want to delete this guide?');">Delete</a>
         </div>
       </div>
-      <% } %>
+      </c:forEach>
     </div>
-    <% } else { %>
-    <p>You haven’t added any guides yet.</p>
-    <% } %>
+      </c:when>
+      <c:otherwise>
+    <p>You haven't added any guides yet.</p>
+      </c:otherwise>
+    </c:choose>
   </main>
 </div>
 
