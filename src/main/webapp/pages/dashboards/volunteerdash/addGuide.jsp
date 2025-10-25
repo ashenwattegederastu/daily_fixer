@@ -99,6 +99,67 @@
       color: #003366;
     }
 
+    .wizard-step {
+      display: none;
+    }
+
+    .wizard-step.active {
+      display: block;
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #ddd;
+      z-index: 0;
+    }
+
+    .progress-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ddd;
+      color: #666;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .progress-step.active .progress-step-circle {
+      background: #7c8cff;
+      color: white;
+    }
+
+    .progress-step.completed .progress-step-circle {
+      background: #4caf50;
+      color: white;
+    }
+
+    .progress-step-label {
+      font-size: 12px;
+      color: #666;
+    }
+
     label {
       display: block;
       margin-top: 15px;
@@ -116,14 +177,18 @@
 
     textarea {
       resize: vertical;
-      min-height: 60px;
+      min-height: 80px;
     }
 
-    .submit-btn {
+    .btn-group {
       margin-top: 25px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+    }
+
+    .btn {
       padding: 12px 25px;
-      background: #7c8cff;
-      color: white;
       border: none;
       border-radius: 10px;
       font-weight: bold;
@@ -131,8 +196,31 @@
       transition: 0.2s;
     }
 
-    .submit-btn:hover {
+    .btn-primary {
+      background: #7c8cff;
+      color: white;
+    }
+
+    .btn-primary:hover {
       background: #6b7aff;
+    }
+
+    .btn-secondary {
+      background: #ddd;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #ccc;
+    }
+
+    .btn-success {
+      background: #4caf50;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #45a049;
     }
 
     .add-btn {
@@ -150,6 +238,27 @@
     .add-btn:hover {
       background: #6b7aff;
     }
+
+    .requirement-item, .step-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .step-container {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    .image-preview {
+      max-width: 200px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -158,9 +267,6 @@
   <div class="navbar">
     <div class="logo">DailyFixer</div>
     <ul class="nav-links">
-<%--      <li><a href="#">Home</a></li>--%>
-<%--      <li><a href="#">Guides</a></li>--%>
-<%--      <li><a href="#">Profile</a></li>--%>
       <li><a href="${pageContext.request.contextPath}">Home</a></li>
       <li><a href="${pageContext.request.contextPath}/logout">Log Out</a></li>
     </ul>
@@ -168,12 +274,9 @@
   <div class="subnav">
     <div class="store-name">Volunteer Dashboard</div>
     <ul>
-<%--      <li><a href="#">My Guides</a></li>--%>
-<%--      <li><a href="#">Add Guide</a></li>--%>
-  <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/volunteerdashmain.jsp" >Dashboard</a></li>
-
-  <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp" class="active">My Guides</a></li>
-  <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
+      <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/volunteerdashmain.jsp">Dashboard</a></li>
+      <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp" class="active">My Guides</a></li>
+      <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
     </ul>
   </div>
 </header>
@@ -181,61 +284,186 @@
 <div class="container">
   <div class="form-container">
     <h2>Add New Guide</h2>
-    <form action="${pageContext.request.contextPath}/AddGuideServlet" method="post" enctype="multipart/form-data">
-
-      <h3>Step 1: Basic Info</h3>
-      <label>Title:</label>
-      <input type="text" name="title" required>
-
-      <label>Main Image:</label>
-      <input type="file" name="mainImage" accept="image/*" required>
-
-      <h3>Step 2: Requirements</h3>
-      <div id="reqDiv">
-        <input type="text" name="requirements" placeholder="Requirement">
+    
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-step active" id="progress-1">
+        <div class="progress-step-circle">1</div>
+        <div class="progress-step-label">Basic Info</div>
       </div>
-      <button type="button" onclick="addReq()" class="add-btn">+ Add Another Requirement</button>
+      <div class="progress-step" id="progress-2">
+        <div class="progress-step-circle">2</div>
+        <div class="progress-step-label">Requirements</div>
+      </div>
+      <div class="progress-step" id="progress-3">
+        <div class="progress-step-circle">3</div>
+        <div class="progress-step-label">Steps</div>
+      </div>
+    </div>
 
-      <h3>Step 3: Steps</h3>
-      <div id="stepsDiv">
-        <div>
-          <label>Step Title:</label>
-          <input type="text" name="stepTitle" placeholder="Step title">
+    <form id="guideForm" action="${pageContext.request.contextPath}/AddGuideServlet" method="post" enctype="multipart/form-data">
 
-          <label>Step Description:</label>
-          <textarea name="stepDescription" placeholder="Step description"></textarea>
+      <!-- Step 1: Basic Info -->
+      <div class="wizard-step active" id="step-1">
+        <h3>Step 1: Basic Information</h3>
+        <label>Guide Title: *</label>
+        <input type="text" id="title" name="title" required>
 
-          <label>Step Image:</label>
-          <input type="file" name="stepImage" accept="image/*">
+        <label>Title Image: *</label>
+        <input type="file" id="mainImage" name="mainImage" accept="image/*" required onchange="previewImage(this, 'mainImagePreview')">
+        <img id="mainImagePreview" class="image-preview" style="display:none;">
+
+        <div class="btn-group">
+          <a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp" class="btn btn-secondary">Cancel</a>
+          <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next →</button>
         </div>
       </div>
-      <button type="button" onclick="addStep()" class="add-btn">+ Add Another Step</button><br>
 
-      <button type="submit" class="submit-btn">Submit Guide</button><br>
-      <a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp" class="add-btn" style="background:#555; margin-right:10px;">← Back to My Guides</a>
+      <!-- Step 2: Requirements -->
+      <div class="wizard-step" id="step-2">
+        <h3>Step 2: Requirements</h3>
+        <p>Add the tools or materials needed for this guide.</p>
+        <div id="reqDiv">
+          <div class="requirement-item">
+            <input type="text" name="requirements" placeholder="Enter a requirement (e.g., Screwdriver, Wrench)">
+          </div>
+        </div>
+        <button type="button" onclick="addReq()" class="add-btn">+ Add Another Requirement</button>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="prevStep(1)">← Back</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(3)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Steps -->
+      <div class="wizard-step" id="step-3">
+        <h3>Step 3: Add Guide Steps</h3>
+        <p>Add at least one step to your guide. You can add more steps as needed.</p>
+        <div id="stepsDiv">
+          <div class="step-container">
+            <h4>Step 1</h4>
+            <label>Step Title: *</label>
+            <input type="text" name="stepTitle" placeholder="e.g., Remove the back cover" required>
+
+            <label>Step Description: *</label>
+            <textarea name="stepDescription" placeholder="Describe what to do in this step..." required></textarea>
+
+            <label>Step Image:</label>
+            <input type="file" name="stepImage" accept="image/*" onchange="previewStepImage(this)">
+            <img class="step-image-preview image-preview" style="display:none;">
+          </div>
+        </div>
+        <button type="button" onclick="addStep()" class="add-btn">+ Add Another Step</button>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="prevStep(2)">← Back</button>
+          <button type="submit" class="btn btn-success">Finish Guide</button>
+        </div>
+      </div>
 
     </form>
   </div>
 </div>
 
 <script>
+  let currentStep = 1;
+  let stepCount = 1;
+
+  function nextStep(step) {
+    // Validate current step
+    if (currentStep === 1) {
+      const title = document.getElementById('title').value;
+      const mainImage = document.getElementById('mainImage').files.length;
+      if (!title || !mainImage) {
+        alert('Please fill in the title and upload an image.');
+        return;
+      }
+    } else if (currentStep === 3) {
+      // Validate at least one step
+      const stepTitles = document.getElementsByName('stepTitle');
+      const stepDescriptions = document.getElementsByName('stepDescription');
+      if (stepTitles.length === 0 || !stepTitles[0].value || !stepDescriptions[0].value) {
+        alert('Please add at least one step with a title and description.');
+        return;
+      }
+    }
+
+    // Hide current step
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('progress-' + currentStep).classList.remove('active');
+    document.getElementById('progress-' + currentStep).classList.add('completed');
+
+    // Show next step
+    currentStep = step;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('progress-' + currentStep).classList.add('active');
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+  }
+
+  function prevStep(step) {
+    // Hide current step
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('progress-' + currentStep).classList.remove('active');
+
+    // Show previous step
+    currentStep = step;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('progress-' + currentStep).classList.remove('completed');
+    document.getElementById('progress-' + currentStep).classList.add('active');
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+  }
+
   function addReq() {
     const div = document.createElement("div");
-    div.innerHTML = '<input type="text" name="requirements" placeholder="Requirement"><br>';
+    div.className = "requirement-item";
+    div.innerHTML = '<input type="text" name="requirements" placeholder="Enter a requirement">';
     document.getElementById("reqDiv").appendChild(div);
   }
 
   function addStep() {
+    stepCount++;
     const div = document.createElement("div");
+    div.className = "step-container";
     div.innerHTML = `
-      <label>Step Title:</label>
-      <input type="text" name="stepTitle" placeholder="Step title">
-      <label>Step Description:</label>
-      <textarea name="stepDescription" placeholder="Step description"></textarea>
+      <h4>Step ${stepCount}</h4>
+      <label>Step Title: *</label>
+      <input type="text" name="stepTitle" placeholder="e.g., Remove the back cover" required>
+      <label>Step Description: *</label>
+      <textarea name="stepDescription" placeholder="Describe what to do in this step..." required></textarea>
       <label>Step Image:</label>
-      <input type="file" name="stepImage" accept="image/*">
-      <br><br>`;
+      <input type="file" name="stepImage" accept="image/*" onchange="previewStepImage(this)">
+      <img class="step-image-preview image-preview" style="display:none;">
+    `;
     document.getElementById("stepsDiv").appendChild(div);
+  }
+
+  function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function previewStepImage(input) {
+    const preview = input.nextElementSibling;
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
   }
 </script>
 
