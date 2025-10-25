@@ -1,5 +1,6 @@
 package com.dailyfixer.guidewrite;
 
+import com.dailyfixer.util.DBConnection;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,13 +15,13 @@ public class StepImageServlet extends HttpServlet {
 
         int stepId = Integer.parseInt(stepIdStr);
 
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/dailyfixer","root","")) {
-            String sql = "SELECT image FROM guide_steps WHERE step_id = ?";
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT step_image FROM guide_steps WHERE step_id = ?";
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, stepId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        byte[] img = rs.getBytes("image");
+                        byte[] img = rs.getBytes("step_image");
                         if (img != null) {
                             response.setContentType("image/jpeg");
                             response.getOutputStream().write(img);
@@ -28,7 +29,7 @@ public class StepImageServlet extends HttpServlet {
                     }
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
