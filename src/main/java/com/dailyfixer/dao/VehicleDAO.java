@@ -129,7 +129,7 @@ public class VehicleDAO {
         v.setModel(rs.getString("model"));
         v.setPlateNumber(rs.getString("plate_number"));
         v.setPicture(rs.getBytes("picture"));
-
+//Added max Weight and Volume
         v.setMaxWeight(rs.getDouble("max_weight"));
         v.setMaxVolume((long) rs.getDouble("max_volume"));
 
