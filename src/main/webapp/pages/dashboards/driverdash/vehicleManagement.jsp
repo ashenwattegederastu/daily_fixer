@@ -361,10 +361,10 @@ body {
             <p><strong>Model:</strong> <%= vehicle.getModel() %></p>
             <p><strong>Plate:</strong> <%= vehicle.getPlateNumber() %></p>
 
-            <!--New fields for Max Weight , Volume -->
+            <!--New fields for Max Weight max Volume -->
             <p><strong>Max Weight:</strong> <%=vehicle.getMaxWeight()%>kg</p>
             <p><strong>Max Volume:</strong> <%=vehicle.getMaxVolume()%>cm³</p>
-            <!--New fields for Max Weight , Volume -->
+            <!--New fields for Max Weight max Volume -->
 
             <p><strong>Fare 1st KM:</strong> <%= vehicle.getFareFirstKm() %></p>
             <p><strong>Fare Next KMs:</strong> <%= vehicle.getFareNextKm() %></p>
