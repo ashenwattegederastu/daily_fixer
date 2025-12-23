@@ -8,6 +8,10 @@ public class Vehicle {
     private String model;
     private String plateNumber;
     private byte[] picture;
+
+    private double maxWeight;
+    private long maxVolume;
+
     private double fareFirstKm;
     private double fareNextKm;
 
@@ -32,6 +36,15 @@ public class Vehicle {
 
     public byte[] getPicture() { return picture; }
     public void setPicture(byte[] picture) { this.picture = picture; }
+
+    //Added Getters and setters for 2 fields
+    public double getMaxWeight() { return maxWeight; }
+    public void setMaxWeight(double maxWeight){this.maxWeight = maxWeight;}
+
+    public long getMaxVolume(){return maxVolume;}
+    public void setMaxVolume(long maxVolume){this.maxVolume = maxVolume;}
+    //Added Getters and setters for 2 fields
+
 
     public double getFareFirstKm() { return fareFirstKm; }
     public void setFareFirstKm(double fareFirstKm) { this.fareFirstKm = fareFirstKm; }

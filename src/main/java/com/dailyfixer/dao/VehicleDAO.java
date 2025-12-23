@@ -33,7 +33,7 @@ public class VehicleDAO {
 
     // Update a vehicle
     public boolean updateVehicle(Vehicle v) {
-        String sql = "UPDATE vehicles SET vehicle_type=?, brand=?, model=?, plate_number=?, picture=?, fare_first_km=?, fare_next_km=? WHERE id=?";
+        String sql = "UPDATE vehicles SET vehicle_type=?, brand=?, model=?, plate_number=?, picture=?, max_weight=?, max_volume=?, fare_first_km=?, fare_next_km=? WHERE id=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -42,9 +42,11 @@ public class VehicleDAO {
             stmt.setString(3, v.getModel());
             stmt.setString(4, v.getPlateNumber());
             stmt.setBytes(5, v.getPicture());
-            stmt.setDouble(6, v.getFareFirstKm());
-            stmt.setDouble(7, v.getFareNextKm());
-            stmt.setInt(8, v.getId());
+            stmt.setDouble(6, v.getMaxWeight());
+            stmt.setDouble(7, v.getMaxVolume());
+            stmt.setDouble(8, v.getFareFirstKm());
+            stmt.setDouble(9, v.getFareNextKm());
+            stmt.setInt(10, v.getId());
 
             return stmt.executeUpdate() > 0;
 
@@ -92,7 +94,7 @@ public class VehicleDAO {
 
     // Add a new vehicle
     public boolean addVehicle(Vehicle v) {
-        String sql = "INSERT INTO vehicles(driver_id, vehicle_type, brand, model, plate_number, picture, fare_first_km, fare_next_km) VALUES(?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO vehicles(driver_id, vehicle_type, brand, model, plate_number, picture, max_weight_kg, max_volume_cm3, fare_first_km, fare_next_km) VALUES(?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -102,8 +104,12 @@ public class VehicleDAO {
             stmt.setString(4, v.getModel());
             stmt.setString(5, v.getPlateNumber());
             stmt.setBytes(6, v.getPicture());
-            stmt.setDouble(7, v.getFareFirstKm());
-            stmt.setDouble(8, v.getFareNextKm());
+
+            stmt.setDouble(7, v.getMaxWeight());
+            stmt.setDouble(8, v.getMaxVolume());
+
+            stmt.setDouble(9, v.getFareFirstKm());
+            stmt.setDouble(10, v.getFareNextKm());
 
             return stmt.executeUpdate() > 0;
 
@@ -123,6 +129,10 @@ public class VehicleDAO {
         v.setModel(rs.getString("model"));
         v.setPlateNumber(rs.getString("plate_number"));
         v.setPicture(rs.getBytes("picture"));
+
+        v.setMaxWeight(rs.getDouble("max_weight"));
+        v.setMaxVolume((long) rs.getDouble("max_volume"));
+
         v.setFareFirstKm(rs.getDouble("fare_first_km"));
         v.setFareNextKm(rs.getDouble("fare_next_km"));
         return v;
