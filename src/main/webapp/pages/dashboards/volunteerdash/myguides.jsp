@@ -5,7 +5,7 @@
 <%
   User currentUser = (User) session.getAttribute("currentUser");
   if (currentUser == null || !"volunteer".equalsIgnoreCase(currentUser.getRole())) {
-    response.sendRedirect(request.getContextPath() + "/login.jsp");
+    response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
     return;
   }
 
@@ -14,132 +14,240 @@
   List<Guide> myGuides = dao.getGuidesByVolunteer(userId);
 %>
 
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>My Guides - DailyFixer</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/deliverdashmain.css">
-  <style>
-    .dashboard {
-      padding: 20px;
-      animation: fadeIn 0.5s ease-in-out;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Guides | Daily Fixer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    .dashboard h2 {
-      margin-bottom: 20px;
-      font-family: 'Arial', sans-serif;
-      color: #003366;
-    }
+<style>
+:root {
+    --panel-color: #dcdaff;
+    --accent: #8b95ff;
+    --text-dark: #000000;
+    --text-secondary: #333333;
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.12);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.18);
+    --shadow-lg: 0 12px 36px rgba(0,0,0,0.22);
+}
 
-    .guide-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-    }
+/* Reset */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    color: var(--text-dark);
+    display: flex;
+    min-height: 100vh;
+}
 
-    .guide-card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
+/* Top Navbar */
+.topbar {
+    position: fixed;
+    top:0; left:0; right:0;
+    height:76px;
+    background-color: var(--panel-color);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    z-index: 200;
+    box-shadow: var(--shadow-md);
+}
+.topbar .logo { font-size: 1.5em; font-weight: 700; color: var(--accent); }
+.topbar .panel-name { font-weight: 600; flex:1; text-align:center; color: var(--text-dark); }
+.topbar .logout-btn {
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--accent), #7ba3d4);
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+}
+.topbar .logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    opacity: 0.9;
+}
 
-    .guide-card:hover {
-      transform: translateY(-5px);
-    }
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background-color: var(--panel-color);
+    height: 100vh;
+    position: fixed;
+    top:0;
+    left:0;
+    padding-top: 96px;
+    box-shadow: var(--shadow-md);
+    overflow-y: auto;
+    z-index: 100;
+}
+.sidebar h3 { padding: 0 20px 12px; font-size: 0.85em; color: var(--text-dark); text-transform: uppercase; }
+.sidebar ul { list-style:none; }
+.sidebar a {
+    display:block;
+    padding:12px 20px;
+    text-decoration:none;
+    color: var(--text-dark);
+    font-weight:500;
+    border-left:3px solid transparent;
+    border-radius:0 8px 8px 0;
+    margin-bottom:4px;
+    transition: all 0.2s;
+}
+.sidebar a:hover, .sidebar a.active {
+    background-color: #f0f0ff;
+    border-left-color: var(--accent);
+}
 
-    .guide-card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
+/* Main Content */
+.container {
+    flex:1;
+    margin-left:240px;
+    margin-top:83px;
+    padding:30px;
+}
+.container h2 {
+    font-size:1.6em;
+    margin-bottom:20px;
+    color: #000000;
+}
 
-    .guide-card a.title-link {
-      display: block;
-      font-weight: bold;
-      color: #003366;
-      text-decoration: none;
-      font-size: 18px;
-      margin-bottom: 5px;
-    }
+/* Guide Cards */
+.guide-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
 
-    .guide-card a.title-link:hover {
-      text-decoration: underline;
-    }
+.guide-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s ease;
+}
 
-    .btn-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
+.guide-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
 
-    .guide-btn {
-      padding: 8px 15px;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      text-decoration: none;
-      transition: 0.2s;
-    }
+.guide-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
 
-    .guide-btn.edit { background: #ffa500; }
-    .guide-btn.edit:hover { background: #e59400; }
+.guide-card .title-link {
+    display: block;
+    font-weight: 600;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+}
 
-    .guide-btn.delete { background: #ff4c4c; }
-    .guide-btn.delete:hover { background: #e04343; }
+.guide-card .title-link:hover {
+    color: var(--accent);
+}
 
-    .add-guide-btn {
-      display: inline-block;
-      margin-bottom: 20px;
-      padding: 10px 20px;
-      background: #7c8cff;
-      color: white;
-      font-weight: bold;
-      border-radius: 10px;
-      text-decoration: none;
-      transition: 0.2s;
-    }
+.btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
 
-    .add-guide-btn:hover {
-      background: #6b7aff;
-    }
-  </style>
+.guide-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 0.9em;
+}
+
+.guide-btn.edit { 
+    background: var(--accent);
+}
+.guide-btn.edit:hover { 
+    background: #7a85e6;
+    transform: translateY(-1px);
+}
+
+.guide-btn.delete { 
+    background: #ff4c4c;
+}
+.guide-btn.delete:hover { 
+    background: #e04343;
+    transform: translateY(-1px);
+}
+
+.add-guide-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 12px 24px;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+.add-guide-btn:hover {
+    background: #7a85e6;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-size: 1.1em;
+}
+</style>
 </head>
 <body>
 
-<header>
-  <div class="navbar">
-    <div class="logo">DailyFixer</div>
-    <ul class="nav-links">
-<%--      <li><a href="#">Home</a></li>--%>
-<%--      <li><a href="#">Guides</a></li>--%>
-<%--      <li><a href="#">Profile</a></li>--%>
-      <li><a href="${pageContext.request.contextPath}">Home</a></li>
-      <li><a href="${pageContext.request.contextPath}/logout">Log Out</a></li>
-    </ul>
-  </div>
-
-  <div class="subnav">
-    <div class="store-name">Volunteer Dashboard</div>
-    <ul>
-      <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/volunteerdashmain.jsp" class="active">Dashboard</a></li>
-
-      <li><a href="#">My Guides</a></li>
-      <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myProfile.jsp">Profile</a></li>
-
-    <%--      <li><a href="#">Add Guide</a></li>--%>
-    </ul>
-  </div>
+<header class="topbar">
+    <div class="logo">Daily Fixer</div>
+    <div class="panel-name">Volunteer Panel</div>
+    <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
 </header>
 
-<div class="container">
-  <main class="dashboard">
+<aside class="sidebar">
+    <h3>Navigation</h3>
+    <ul>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/volunteerdashmain.jsp">Dashboard</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp" class="active">My Guides</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/guideComments.jsp">Guide Comments</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/notifications.jsp">Notifications</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/addGuide.jsp">Add Guide</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myProfile.jsp">My Profile</a></li>
+    </ul>
+</aside>
+
+<main class="container">
     <h2>My Guides</h2>
-    <a href="addGuide.jsp" class="add-guide-btn">+ Add New Guide</a>
+    <a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/addGuide.jsp" class="add-guide-btn">+ Add New Guide</a>
 
     <% if (myGuides != null && !myGuides.isEmpty()) { %>
     <div class="guide-container">
@@ -155,10 +263,12 @@
       <% } %>
     </div>
     <% } else { %>
-    <p>You haven’t added any guides yet.</p>
+    <div class="empty-state">
+        <p>You haven't added any guides yet.</p>
+        <p>Click "Add New Guide" to get started!</p>
+    </div>
     <% } %>
-  </main>
-</div>
+</main>
 
 </body>
 </html>

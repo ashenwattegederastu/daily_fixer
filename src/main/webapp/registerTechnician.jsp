@@ -276,6 +276,7 @@
         return true;
     }
 </script>
+<script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 
 </body>
 </html>

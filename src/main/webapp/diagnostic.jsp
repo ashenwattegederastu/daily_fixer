@@ -1,75 +1,355 @@
-<html>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page session="true" %>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Fixer</title>
-    <!-- Link to external stylesheet -->
-    <link rel="stylesheet" href="assets/css/diag.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daily Fixer - Diagnose Now</title>
+    <style>
+        /* === MAIN CONTENT === */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            padding-top: 100px; /* account for fixed navbar */
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+
+        .search-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .issue-title {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .search-box {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+            gap: 0.5rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 1.5px solid rgba(139, 125, 216, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-purple);
+        }
+
+        .search-box button {
+            padding: 0.8rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .search-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .search-box img {
+            width: 20px;
+            height: 20px;
+            filter: invert(1);
+        }
+
+        /* === DIAGNOSTIC FLOW STYLING === */
+        .category {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-dark);
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--primary-purple);
+        }
+
+        .question-box {
+            background: var(--white);
+            padding: 1.2rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(139, 125, 216, 0.1);
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .prev-btn {
+            background: transparent;
+            border: 1.5px solid var(--primary-purple);
+            color: var(--primary-purple);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            margin-right: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .prev-btn:hover {
+            background: var(--light-purple);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .options-grid.centered {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            grid-template-columns: unset;
+        }
+
+        .option-btn {
+            padding: 0.8rem;
+            background: var(--white);
+            border: 1.5px solid rgba(139, 125, 216, 0.3);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-purple);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* === SUGGESTION PAGES === */
+        .suggestion-page {
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(139, 125, 216, 0.1);
+        }
+
+        .suggestion-page h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(139, 125, 216, 0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-purple);
+            font-size: 1.2rem;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 0.5rem 0 1rem;
+            overflow: hidden;
+        }
+
+        .confidence-level {
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            border-radius: 4px;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.8rem;
+        }
+
+        .book-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .repair-guides ul,
+        .recommended-fixes ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .repair-guides li,
+        .recommended-fixes li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .repair-guides li:hover,
+        .recommended-fixes li:hover {
+            color: var(--primary-purple);
+        }
+
+        .parts-tools .parts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .part-item {
+            padding: 1rem;
+            background: var(--light-blue);
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(139, 125, 216, 0.2);
+        }
+
+        .part-item:hover {
+            background: var(--accent-purple);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .suggestion-box.center-screen {
+            text-align: center;
+            padding: 2rem;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .container {
+                padding-top: 90px;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .top-section {
+                grid-template-columns: 1fr;
+            }
+
+            .options-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
 
-    <!-- Main Navbar -->
-    <nav class="navbar">
-        <div class="logo">Daily Fixer</div>
-        <ul class="nav-links">
-            <li><a href="${pageContext.request.contextPath}/index.jsp">Home</a></li>
-            <li><a href="${pageContext.request.contextPath}/login.jsp">Log in</a></li>
-        </ul>
-    </nav>
+<!-- Include Header -->
+<jsp:include page="/pages/shared/header.jsp" />
 
-    <!-- Rounded Subnav -->
-    <div class="subnav">
-        <a href="#" class="active">Diagnose Now</a>
-        <a href="find_technician.html">Find a Technician</a>
-        <a href="#">View Repair Guides</a>
-        <a href="store.html">Stores</a>
-    </div>
-</header>
-
+<!-- Main Content -->
 <main class="container">
-    <h2 class="page-title">Diagnostics</h2>
+    <h2 class="page-title">Diagnose Your Issue</h2>
+
     <div class="search-section">
         <h3 class="issue-title">What's the issue?</h3>
         <div class="search-box">
-            <input type="text" placeholder="search for a issue">
+            <input type="text" placeholder="Search for an issue" />
             <button>
-                <img src="images/search.png" alt="Search">
+                <img src="${pageContext.request.contextPath}/assets/images/pictures/search.png" alt="Search" />
             </button>
         </div>
     </div>
 
     <div class="category">Electrical Repairs</div>
-    <div class="problem-section">
-        <div class="question-box" id="question0">
-            Where is the problem occurring?
-        </div>
-        <div class="options-grid">
-            <button class="option-btn">Home Wiring</button>
-            <button class="option-btn">Switches</button>
-            <button class="option-btn">Lights</button>
-            <button class="option-btn">Iron</button>
-            <button class="option-btn">TV</button>
-            <button class="option-btn">Fridge</button>
-            <button class="option-btn" data-next="question1">Fan</button>
-            <button class="option-btn">Sockets</button>
-            <button class="option-btn">Overheating</button>
-            <button class="option-btn">Burning smell</button>
-            <button class="option-btn">Shocks</button>
-            <button class="option-btn">Cookers</button>
-            <button class="option-btn">Washing Machine</button>
-            <button class="option-btn">Blender</button>
-            <button class="option-btn">Oven</button>
-            <button class="option-btn">Plug point</button>
-        </div>
+
+    <!-- Initial Question -->
+    <div class="question-box" id="question0">
+        Where is the problem occurring?
+    </div>
+    <div class="options-grid">
+        <button class="option-btn">Home Wiring</button>
+        <button class="option-btn">Switches</button>
+        <button class="option-btn">Lights</button>
+        <button class="option-btn">Iron</button>
+        <button class="option-btn">TV</button>
+        <button class="option-btn">Fridge</button>
+        <button class="option-btn" data-next="question1">Fan</button>
+        <button class="option-btn">Sockets</button>
+        <button class="option-btn">Overheating</button>
+        <button class="option-btn">Burning smell</button>
+        <button class="option-btn">Shocks</button>
+        <button class="option-btn">Cookers</button>
+        <button class="option-btn">Washing Machine</button>
+        <button class="option-btn">Blender</button>
+        <button class="option-btn">Oven</button>
+        <button class="option-btn">Plug point</button>
     </div>
 
     <!-- Step 1 -->
-    <div class="question-box" id="question1"  style="display:none;">
+    <div class="question-box" id="question1" style="display:none;">
         <button class="prev-btn" data-prev="question0">Previous</button>
         Is the fan turning on when you switch it on?
     </div>
-    <div class="options-grid centered" id="options1"  style="display:none;">
+    <div class="options-grid centered" id="options1" style="display:none;">
         <button class="option-btn" data-next="question4" data-answer="yes">Yes</button>
         <button class="option-btn" data-next="question2" data-answer="no">No</button>
     </div>
@@ -96,7 +376,7 @@
 
     <!-- Step 4 -->
     <div class="question-box" id="question4" style="display:none;">
-        <button class="prev-btn" data-prev="question3">Previous</button>
+        <button class="prev-btn" data-prev="question1">Previous</button>
         Is the fan rotating slowly or unevenly?
     </div>
     <div class="options-grid centered" id="options4" style="display:none;">
@@ -104,10 +384,9 @@
         <button class="option-btn" data-next="question7" data-answer="no">No</button>
     </div>
 
-    <!-- Suggestion pages -->
+    <!-- Suggestion Pages -->
     <div class="suggestion-page" id="question5" style="display:none;">
         <h2>Diagnostic Results for Your Fan</h2>
-
         <div class="top-section">
             <div class="most-likely-issue card">
                 <h3>Most Likely Issue</h3>
@@ -117,10 +396,8 @@
                 <div class="confidence-bar">
                     <div class="confidence-level" style="width: 75%;"></div>
                 </div>
-                <button class="book-btn" onclick="window.location.href='find_technician.html'">Book Technician</button>
-
+                <button class="book-btn" onclick="window.location.href='${pageContext.request.contextPath}/findtech.jsp'">Book Technician</button>
             </div>
-
             <div class="recommended-fixes card">
                 <h3>Recommended Fixes</h3>
                 <ul>
@@ -130,29 +407,26 @@
                 </ul>
             </div>
         </div>
-
         <div class="repair-guides card">
             <h3>Recommended Repair Guides</h3>
             <ul>
-                <li onclick="window.open('guide1.html', '_blank')">How to Test a Ceiling Fan Capacitor</li>
-                <li onclick="window.open('guide2.html', '_blank')">Troubleshooting Ceiling Fan</li>
-                <li onclick="window.open('guide3.html', '_blank')">Routine Ceiling Fan Maintenance Guide</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide1.html', '_blank')">How to Test a Ceiling Fan Capacitor</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide2.html', '_blank')">Troubleshooting Ceiling Fan</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide3.html', '_blank')">Routine Ceiling Fan Maintenance Guide</li>
             </ul>
         </div>
-
         <div class="parts-tools card">
             <h3>Recommended Parts and Tools</h3>
             <div class="parts-grid">
-                <div class="part-item" onclick="alert('Blades selected!')">capacitor</div>
-                <div class="part-item" onclick="alert('Fan Motor selected!')">Screwdriver set</div>
-                <div class="part-item" onclick="alert('Bearings selected!')">Multimeter</div>
+                <div class="part-item">Capacitor</div>
+                <div class="part-item">Screwdriver Set</div>
+                <div class="part-item">Multimeter</div>
             </div>
         </div>
     </div>
 
     <div class="suggestion-page" id="question6" style="display:none;">
         <h2>Diagnostic Results for Your Fan</h2>
-
         <div class="top-section">
             <div class="most-likely-issue card">
                 <h3>Most Likely Issue</h3>
@@ -162,10 +436,8 @@
                 <div class="confidence-bar">
                     <div class="confidence-level" style="width: 75%;"></div>
                 </div>
-                <button class="book-btn" onclick="window.location.href='find_technician.html'">Book Technician</button>
-
+                <button class="book-btn" onclick="window.location.href='${pageContext.request.contextPath}/findtech.jsp'">Book Technician</button>
             </div>
-
             <div class="recommended-fixes card">
                 <h3>Recommended Fixes</h3>
                 <ul>
@@ -175,26 +447,23 @@
                 </ul>
             </div>
         </div>
-
         <div class="repair-guides card">
             <h3>Recommended Repair Guides</h3>
             <ul>
-                <li onclick="window.open('guide1.html', '_blank')">Cleaning a Ceiling Fan: Step-by-Step</li>
-                <li onclick="window.open('guide2.html', '_blank')">Lubricating Ceiling Fan Bearings</li>
-                <li onclick="window.open('guide3.html', '_blank')">Routine Ceiling Fan Maintenance Guide</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide1.html', '_blank')">Cleaning a Ceiling Fan: Step-by-Step</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide2.html', '_blank')">Lubricating Ceiling Fan Bearings</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide3.html', '_blank')">Routine Ceiling Fan Maintenance Guide</li>
             </ul>
         </div>
-
         <div class="parts-tools card">
             <h3>Recommended Parts and Tools</h3>
             <div class="parts-grid">
-                <div class="part-item" onclick="alert('Blades selected!')">Blades</div>
-                <div class="part-item" onclick="alert('Fan Motor selected!')">Fan Motor</div>
-                <div class="part-item" onclick="alert('Bearings selected!')">Bearings</div>
+                <div class="part-item">Blades</div>
+                <div class="part-item">Fan Motor</div>
+                <div class="part-item">Bearings</div>
             </div>
         </div>
     </div>
-
 
     <div class="suggestion-box center-screen" id="question7" style="display:none;">
         <h3>Fan rotates fine</h3>
@@ -203,7 +472,6 @@
 
     <div class="suggestion-page" id="check_power" style="display:none;">
         <h2>Diagnostic Results for Your Fan</h2>
-
         <div class="top-section">
             <div class="most-likely-issue card">
                 <h3>Most Likely Issue</h3>
@@ -213,10 +481,8 @@
                 <div class="confidence-bar">
                     <div class="confidence-level" style="width: 75%;"></div>
                 </div>
-                <button class="book-btn" onclick="window.location.href='find_technician.html'">Book Technician</button>
-
+                <button class="book-btn" onclick="window.location.href='${pageContext.request.contextPath}/findtech.jsp'">Book Technician</button>
             </div>
-
             <div class="recommended-fixes card">
                 <h3>Recommended Fixes</h3>
                 <ul>
@@ -226,29 +492,26 @@
                 </ul>
             </div>
         </div>
-
         <div class="repair-guides card">
             <h3>Recommended Repair Guides</h3>
             <ul>
-                <li onclick="window.open('guide1.html', '_blank')">How to Check Main Power Supply</li>
-                <li onclick="window.open('guide2.html', '_blank')">Resetting a Tripped Circuit Breaker Safely</li>
-                <li onclick="window.open('guide3.html', '_blank')">Inspecting Switchboard Wiring for Beginners</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide1.html', '_blank')">How to Check Main Power Supply</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide2.html', '_blank')">Resetting a Tripped Circuit Breaker Safely</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide3.html', '_blank')">Inspecting Switchboard Wiring for Beginners</li>
             </ul>
         </div>
-
         <div class="parts-tools card">
             <h3>Recommended Parts and Tools</h3>
             <div class="parts-grid">
-                <div class="part-item" onclick="alert('Blades selected!')">Multimeter</div>
-                <div class="part-item" onclick="alert('Fan Motor selected!')">Screwdriver set</div>
-                <div class="part-item" onclick="alert('Bearings selected!')">Electrical tape</div>
+                <div class="part-item">Multimeter</div>
+                <div class="part-item">Screwdriver Set</div>
+                <div class="part-item">Electrical Tape</div>
             </div>
         </div>
     </div>
 
     <div class="suggestion-page" id="wiring_fault" style="display:none;">
         <h2>Diagnostic Results for Your Fan</h2>
-
         <div class="top-section">
             <div class="most-likely-issue card">
                 <h3>Most Likely Issue</h3>
@@ -258,10 +521,8 @@
                 <div class="confidence-bar">
                     <div class="confidence-level" style="width: 75%;"></div>
                 </div>
-                <button class="book-btn" onclick="window.location.href='find_technician.html'">Book Technician</button>
-
+                <button class="book-btn" onclick="window.location.href='${pageContext.request.contextPath}/findtech.jsp'">Book Technician</button>
             </div>
-
             <div class="recommended-fixes card">
                 <h3>Recommended Fixes</h3>
                 <ul>
@@ -271,112 +532,62 @@
                 </ul>
             </div>
         </div>
-
         <div class="repair-guides card">
             <h3>Recommended Repair Guides</h3>
             <ul>
-                <li onclick="window.open('guide1.html', '_blank')">Basic Electrical Safety While Inspecting Wires</li>
-                <li onclick="window.open('guide2.html', '_blank')">How to Replace a Faulty Wall Switch</li>
-                <li onclick="window.open('guide3.html', '_blank')">Troubleshooting Ceiling Fan</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide1.html', '_blank')">Basic Electrical Safety While Inspecting Wires</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide2.html', '_blank')">How to Replace a Faulty Wall Switch</li>
+                <li onclick="window.open('${pageContext.request.contextPath}/guide3.html', '_blank')">Troubleshooting Ceiling Fan</li>
             </ul>
         </div>
-
         <div class="parts-tools card">
             <h3>Recommended Parts and Tools</h3>
             <div class="parts-grid">
-                <div class="part-item" onclick="alert('Blades selected!')">switch</div>
-                <div class="part-item" onclick="alert('Fan Motor selected!')">Screwdriver set</div>
-                <div class="part-item" onclick="alert('Bearings selected!')">Multimeter</div>
+                <div class="part-item">Switch</div>
+                <div class="part-item">Screwdriver Set</div>
+                <div class="part-item">Multimeter</div>
             </div>
         </div>
     </div>
 </main>
+
 <script>
-
-    const buttons = document.querySelectorAll('.option-btn');
-
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const nextId = btn.getAttribute('data-next');
-            if (!nextId) return;
-
-            // Hide current question and its options
-            let currentGrid = btn.closest('.options-grid');
-            let currentQuestion = currentGrid?.previousElementSibling;
-            if (currentQuestion) currentQuestion.style.display = 'none';
-            if (currentGrid) currentGrid.style.display = 'none';
-
-            // Determine next question + its option container
-            const nextQuestion = document.getElementById(nextId);
-            const nextOptions = document.getElementById('options' + nextId.replace('question',''));
-
-            // Show next question box
-            if (nextQuestion) nextQuestion.style.display = 'block';
-
-            // Show next options properly — flex if centered, grid otherwise
-            if (nextOptions) {
-                if (nextOptions.classList.contains('centered')) {
-                    nextOptions.style.display = 'flex';
-                } else {
-                    nextOptions.style.display = 'grid';
-                }
-            }
+    // Navigation logic
+    function showQuestion(id) {
+        // Hide all questions and option grids
+        document.querySelectorAll('.question-box, .options-grid, .suggestion-page, .suggestion-box').forEach(el => {
+            el.style.display = 'none';
         });
-    });
-    // Store all question boxes and their option grids
-    const questionBoxes = document.querySelectorAll('.question-box');
-    const optionGrids = document.querySelectorAll('.options-grid');
 
-    // Track the current question
-    let currentQuestion = document.getElementById('question0');
-    let currentOptions = document.querySelector('.problem-section .options-grid');
+        // Show target
+        const target = document.getElementById(id);
+        if (target) target.style.display =
+            target.classList.contains('center-screen') ? 'block' :
+                target.classList.contains('suggestion-page') ? 'block' :
+                    'block';
 
-    // Function to show a question
-    function showQuestion(questionId) {
-        // Hide current question and its options
-        if (currentQuestion) currentQuestion.style.display = 'none';
-        if (currentOptions) currentOptions.style.display = 'none';
-
-        // Show the new question
-        currentQuestion = document.getElementById(questionId);
-
-        if (!currentQuestion) return;
-
-        currentQuestion.style.display = 'block';
-
-        // Decide which options to show
-        if (questionId === 'question0') {
-            currentOptions = document.querySelector('.problem-section .options-grid');
-            if (currentOptions) currentOptions.style.display = 'grid';
-        } else {
-            currentOptions = document.getElementById('options' + questionId.replace('question', ''));
-            if (currentOptions) {
-                currentOptions.style.display = currentOptions.classList.contains('centered') ? 'flex' : 'grid';
-            }
+        // Show associated options if exists
+        const options = document.getElementById('options' + id.replace('question', ''));
+        if (options) {
+            options.style.display = options.classList.contains('centered') ? 'flex' : 'grid';
         }
     }
 
-    // Handle next buttons
+    // Handle option clicks
     document.querySelectorAll('.option-btn[data-next]').forEach(btn => {
         btn.addEventListener('click', () => {
-            const nextId = btn.getAttribute('data-next');
-            showQuestion(nextId);
+            const next = btn.getAttribute('data-next');
+            showQuestion(next);
         });
     });
 
     // Handle previous buttons
     document.querySelectorAll('.prev-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const prevId = btn.getAttribute('data-prev');
-            showQuestion(prevId);
+            const prev = btn.getAttribute('data-prev');
+            showQuestion(prev);
         });
     });
-
-
-
-
-
 </script>
-
 </body>
 </html>

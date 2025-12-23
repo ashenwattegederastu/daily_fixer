@@ -11,7 +11,8 @@
             margin: 0;
             padding: 0;
             /* Smooth gradient with subtle noise-like blend */
-            background: linear-gradient(135deg, #7c8cff 0%, #a9bbff 50%, #d7e3ff 100%);
+            /*background: linear-gradient(135deg, #7c8cff 0%, #a9bbff 50%, #d7e3ff 100%);*/
+            background: white;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -39,6 +40,7 @@
 
         .role-card {
             background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
             color: #333;
             padding: 30px 20px;
             border-radius: 16px;
@@ -71,7 +73,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #7c8cff;
+            background: #c7d4f2;
         }
 
         .role-card .role-icon img {

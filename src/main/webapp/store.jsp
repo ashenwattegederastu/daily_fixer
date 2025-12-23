@@ -11,7 +11,7 @@
 
     <!-- Main Navbar -->
     <nav class="navbar">
-        <div class="logo">Daily Fixer</div>
+        <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
         <ul class="nav-links">
             <li><a href="${pageContext.request.contextPath}/index.jsp" class="active">Home</a></li>
             <li><a href="${pageContext.request.contextPath}/login">Log in</a></li>
@@ -22,7 +22,7 @@
     <div class="subnav">
         <a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnose Now</a>
         <a href="#">Find a Technician</a>
-        <a href="${pageContext.request.contextPath}/viewguides.jsp">View Repair Guides</a>
+        <a href="${pageContext.request.contextPath}/listguides.jsp">View Repair Guides</a>
         <a href="${pageContext.request.contextPath}/store.jsp" class="active">Stores</a>
     </div>
 </header>

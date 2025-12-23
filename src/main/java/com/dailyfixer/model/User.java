@@ -10,6 +10,7 @@ public class User {
     private String phoneNumber;
     private String city;
     private String role = "user";
+    private String status;
 
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
@@ -29,4 +30,10 @@ public class User {
     public void setCity(String city) { this.city = city; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

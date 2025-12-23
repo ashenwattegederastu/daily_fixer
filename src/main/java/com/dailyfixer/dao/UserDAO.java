@@ -2,6 +2,7 @@ package com.dailyfixer.dao;
 
 import com.dailyfixer.model.User;
 import com.dailyfixer.util.DBConnection;
+import com.dailyfixer.util.HashUtil;
 
 import java.sql.*;
 
@@ -97,6 +98,29 @@ public class UserDAO {
         }
     }
 
+    public void resetPasswordByUserId(int userId, String newPassword) throws Exception {
+        // 1. Hash the new password using your existing HashUtil
+        String hashedPassword = HashUtil.sha256(newPassword);
+
+        String sql = "UPDATE users SET password = ? WHERE user_id = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, hashedPassword);
+            ps.setInt(2, userId);
+
+            int rowsAffected = ps.executeUpdate();
+
+            // Debugging logs to help you see it in the console
+            if (rowsAffected > 0) {
+                System.out.println("SUCCESS: Password reset in DB for user_id: " + userId);
+            } else {
+                System.out.println("FAILURE: No user found with user_id: " + userId);
+            }
+        }
+    }
+
 
     public User getUserById(int userId) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
@@ -123,6 +147,29 @@ public class UserDAO {
         }
         return null;
     }
+
+    public User getUserByEmail(String email) throws Exception {
+        String sql = "SELECT user_id, username, email, password FROM users WHERE email = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setUserId(rs.getInt("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setPassword(rs.getString("password"));
+                    return user;
+                }
+            }
+        }
+        return null; // email not found
+    }
+
 
 
 

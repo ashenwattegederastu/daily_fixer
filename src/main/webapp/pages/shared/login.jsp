@@ -3,7 +3,7 @@
 <html>
 <head>
   <title>DailyFixer - Login</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+<%--  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">--%>
 </head>
 <body>
 <div class="login-wrapper">
@@ -41,5 +41,6 @@
     return true;
   }
 </script>
+<script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 </body>
 </html>

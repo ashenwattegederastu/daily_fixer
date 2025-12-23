@@ -16,78 +16,124 @@
     }
 %>
 
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Technician Dashboard</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/deliverdashmain.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technician Dashboard | Daily Fixer</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
+<style>
+.container {
+    flex:1;
+    margin-left:240px;
+    margin-top:83px;
+    padding:30px;
+    background-color: var(--background);
+}
+
+.container h2 {
+    font-size:1.6em;
+    margin-bottom:20px;
+    color: var(--foreground);
+}
+
+.driver-stats {
+    background: var(--card);
+    padding: 25px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    margin-bottom: 30px;
+}
+.driver-stats h3 {
+    margin-bottom: 20px;
+    color: var(--foreground);
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+.info-box {
+    background: var(--muted);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary);
+}
+.info-box p {
+    margin: 0;
+    color: var(--foreground);
+}
+</style>
 </head>
 <body>
-<%--<h1>Welcome, <c:out value="${user.username}"/></h1>--%>
-<%--<a href="${pageContext.request.contextPath}/LogoutServlet">Logout</a>--%>
-<header>
-    <!-- Main Navbar -->
-    <nav class="navbar">
-        <div class="logo">Daily Fixer</div>
-        <ul class="nav-links">
-            <%--      <li><a href="../../../index.jsp">Home</a></li>--%>
-            <%--      <li><a href="#">Log in</a></li>--%>
-            <li><a href="${pageContext.request.contextPath}">Home</a></li>
-            <li><a href="${pageContext.request.contextPath}/logout">Log Out</a></li>
-        </ul>
-    </nav>
 
-    <!-- Subnav -->
-    <nav class="subnav">
-        <div class="store-name">Technician Dashboard</div>
-        <ul>
-            <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/storedashmain.jsp" class="active">Dashboard</a></li>
-            <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/orders.jsp">Bookings</a></li>
-            <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/serviceListings.jsp">Service Listing</a></li>
-            <li><a href="${pageContext.request.contextPath}/ListProductsServlet">Verification</a></li>
-            <%--            <li><a href="#">Orders</a></li>--%>
-            <%--      <li><a href="#">Set Rates</a></li>--%>
-            <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
-        </ul>
-    </nav>
+<header class="topbar">
+    <div class="logo">Daily Fixer</div>
+    <div class="panel-name">Technician Dashboard</div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
+        <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
+    </div>
 </header>
 
-<div class="container">
-    <main class="dashboard">
-        <h2>Dashboard</h2>
-        <p class="subtitle">Site Performance Index</p>
+<aside class="sidebar">
+    <h3>Navigation</h3>
+    <ul>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/techniciandashmain.jsp" class="active">Dashboard</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/bookings.jsp">Bookings</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/serviceListings.jsp">Service Listings</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/acceptedBookings.jsp">Accepted Bookings</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/completedBookings.jsp">Completed Bookings</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/techniciandash/myProfile.jsp">My Profile</a></li>
+    </ul>
+</aside>
 
-        <div class="stats-container">
-            <div class="stat-card">
-                <p class="number">5</p>
-                <p>Site Visits Today</p>
+<main class="container">
+    <h2>Dashboard</h2>
+    
+    <div class="stats-container">
+        <div class="stat-card">
+            <p class="number">12</p>
+            <p>Pending Bookings</p>
+        </div>
+        <div class="stat-card">
+            <p class="number">8</p>
+            <p>Active Services</p>
+        </div>
+        <div class="stat-card is_new_cell">
+            <p class="number">4.8</p>
+            <p>Average Rating</p>
+        </div>
+        <div class="stat-card">
+            <p class="number">45</p>
+            <p>Completed Jobs</p>
+        </div>
+    </div>
+
+    <div class="driver-stats">
+        <h3>Technician Performance</h3>
+        <div class="stats-grid">
+            <div class="info-box">
+                <p><strong>Total Services:</strong> 45 completed</p>
             </div>
-            <div class="stat-card">
-                <p class="number">3</p>
-                <p>Site Visits Month</p>
+            <div class="info-box">
+                <p><strong>Average Rating:</strong> 4.8/5.0</p>
             </div>
-            <div class="stat-card">
-                <p class="number">2</p>
-                <p>Current User Count</p>
+            <div class="info-box">
+                <p><strong>This Month:</strong> 8 services completed</p>
+            </div>
+            <div class="info-box">
+                <p><strong>Response Time:</strong> 2.3 hours average</p>
             </div>
         </div>
+    </div>
+</main>
 
-        <!-- Driver Stats -->
-        <div class="driver-stats">
-            <h3>Driver Stats</h3>
-            <div class="stats-grid">
-                <div class="info-box">
-                    <p><strong>Total Deliveries:</strong> 342</p>
-                </div>
-                <div class="info-box">
-                    <p><strong>Driver Rating:</strong> 4.9/5</p>
-                </div>
-                <div class="info-box">
-                    <p><strong>This Month:</strong> 28 deliveries</p>
-                </div>
-            </div>
-        </div>
-    </main>
-</div>
+<script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
+
 </body>
 </html>
 

@@ -6,12 +6,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - DailyFixer</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
 </head>
 <body>
 
 <div class="login-container">
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
+    </div>
     <div class="login-card">
         <!-- Added logo/branding section -->
         <div class="login-header">
@@ -64,7 +67,7 @@
                 <a href="${pageContext.request.contextPath}/preliminarySignup.jsp" class="footer-link">Create one</a>
             </p>
             <p class="footer-text">
-                <a href="#" class="footer-link">Forgot your password?</a>
+                <a href="${pageContext.request.contextPath}/forgot_password.jsp" class="footer-link">Forgot your password?</a>
             </p>
             <p class="footer-text">
                 <a href="${pageContext.request.contextPath}/index.jsp" class="footer-link-secondary">← Back to Home</a>
@@ -72,6 +75,9 @@
         </div>
     </div>
 </div>
+
+<script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 
 </body>
 </html>

@@ -224,12 +224,38 @@
 
             <div class="input-field">
                 <label>City</label>
-                <select name="city" id="city">
-                    <option value="">-- Select City --</option>
-                    <option>Colombo</option>
-                    <option>Kandy</option>
-                    <option>Galle</option>
-                </select>
+                <div class="input-field">
+
+                    <select name="city" id="city">
+                        <option value="">-- Select City --</option>
+                        <option>Colombo</option>
+                        <option>Kandy</option>
+                        <option>Galle</option>
+                        <option>Jaffna</option>
+                        <option>Negombo</option>
+                        <option>Matara</option>
+                        <option>Trincomalee</option>
+                        <option>Anuradhapura</option>
+                        <option>Kurunegala</option>
+                        <option>Ratnapura</option>
+                        <option>Badulla</option>
+                        <option>Hambantota</option>
+                        <option>Puttalam</option>
+                        <option>Polonnaruwa</option>
+                        <option>Nuwara Eliya</option>
+                        <option>Vavuniya</option>
+                        <option>Mannar</option>
+                        <option>Mullaitivu</option>
+                        <option>Kalutara</option>
+                        <option>Batticaloa</option>
+                        <option>Ampara</option>
+                        <option>Monaragala</option>
+                        <option>Kegalle</option>
+                        <option>Matalawa</option>
+                    </select>
+                    <div id="cityError" class="error"></div>
+                </div>
+
                 <div id="cityError" class="error"></div>
             </div>
 
@@ -255,8 +281,34 @@
         if(f('password') !== f('confirmPassword')){ document.getElementById('confirmPasswordError').textContent = 'Passwords do not match'; hasError = true;}
         if(!f('city')){ document.getElementById('cityError').textContent = 'City required'; hasError = true;}
 
+        // Phone number validation: exactly 10 digits
+        const phoneVal = f('phone').replace(/\D/g, ''); // remove non-digit characters
+        if(!phoneVal){
+            document.getElementById('phoneError').textContent = 'Phone number required';
+            hasError = true;
+        } else if(phoneVal.length !== 10) {
+            document.getElementById('phoneError').textContent = 'Phone must be exactly 10 digits';
+            hasError = true;
+        }
+
+        // Email validation: required + valid format
+        const emailVal = f('email');
+        if (!emailVal) {
+            document.getElementById('emailError').textContent = 'Email required';
+            hasError = true;
+        } else {
+            // Simple regex for basic email format check
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailVal)) {
+                document.getElementById('emailError').textContent = 'Invalid email format';
+                hasError = true;
+            }
+        }
+
+
         if(hasError) e.preventDefault();
     });
 </script>
+<script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 </body>
 </html>

@@ -23,7 +23,7 @@
     <a href="${pageContext.request.contextPath}/diagnostic.jsp" >Diagnose Now</a>
     <a href="${pageContext.request.contextPath}/findtech.jsp" class="active">Find a Technician</a>
     <a href="${pageContext.request.contextPath}/viewguides.jsp">View Repair Guides</a>
-    <a href="${pageContext.request.contextPath}/store.jsp">Stores</a>
+    <a href="${pageContext.request.contextPath}/store_main.jsp">Stores</a>
   </div>
 </header>
 

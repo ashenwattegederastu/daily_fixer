@@ -35,6 +35,45 @@
             border-radius: 6px;
         }
 
+        /* Password toggle styles */
+        .signup-container {
+            position: relative;
+        }
+
+        form {
+            position: relative;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            color: #666;
+            transition: color 0.2s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            font-family: "Poppins", sans-serif;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            padding-right: 3rem !important;
+        }
+
         button {
             width: 100%;
             background-color: #007BFF;
@@ -91,5 +130,6 @@
         <button type="submit">Register as Driver</button>
     </form>
 </div>
+<script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
 </body>
 </html>

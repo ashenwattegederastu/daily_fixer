@@ -1,41 +1,53 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page session="true" %>
 
-<header>
-    <!-- Main Navbar -->
-    <nav class="navbar">
-        <div class="logo">Daily Fixer</div>
-        <ul class="nav-links">
-            <li><a href="${pageContext.request.contextPath}/index.jsp" class="${page == 'home' ? 'active' : ''}">Home</a></li>
-            <li><a href="#about" class="${page == 'about' ? 'active' : ''}">About</a></li>
-            <li><a href="#services" class="${page == 'services' ? 'active' : ''}">Services</a></li>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
 
-            <!-- User greeting / login-logout -->
+<!-- Navigation -->
+<nav id="navbar" class="public-nav">
+    <div class="nav-container">
+        <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
+
+        <ul class="nav-links">
+            <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
+            <li><a href="${pageContext.request.contextPath}/listguides.jsp">View Repair Guides</a></li>
+            <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
+            <li><a href="${pageContext.request.contextPath}/store_main.jsp">Store</a></li>
+        </ul>
+
+        <!-- Dynamic Login/Logout -->
+        <div class="nav-buttons">
+            <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
             <c:choose>
                 <c:when test="${not empty sessionScope.currentUser}">
-                    <li>
-                        <a href="${pageContext.request.contextPath}/pages/dashboards/${sessionScope.currentUser.role}dash/${sessionScope.currentUser.role}dashmain.jsp">
-                            Hi, ${sessionScope.currentUser.firstName}
-                        </a>
-                    </li>
-                    <li><a href="${pageContext.request.contextPath}/logout">Logout</a></li>
+                    <!-- User is logged in -->
+                    <a href="${pageContext.request.contextPath}/pages/dashboards/${sessionScope.currentUser.role}dash/${sessionScope.currentUser.role}dashmain.jsp"
+                       class="btn-login">
+                        Hi, ${sessionScope.currentUser.firstName}
+                    </a>
+                    <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Logout</a>
                 </c:when>
                 <c:otherwise>
-                    <li><a href="${pageContext.request.contextPath}/login.jsp">Log in</a></li>
-                    <li><a href="${pageContext.request.contextPath}/preliminarySignup.jsp">Sign Up</a></li>
+                    <!-- Guest -->
+                    <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login">Login</a>
+                    <a href="${pageContext.request.contextPath}/preliminarySignup.jsp" class="btn-signup">Sign Up</a>
                 </c:otherwise>
             </c:choose>
-        </ul>
-    </nav>
-
-    <!-- Subnav -->
-    <div class="sub-nav">
-        <a href="${pageContext.request.contextPath}/diagnostic.jsp" class="${page == 'diagnostic' ? 'active' : ''}">Diagnose Now</a>
-        <a href="${pageContext.request.contextPath}/findtech.jsp" class="${page == 'findtech' ? 'active' : ''}">Find a Technician</a>
-        <a href="${pageContext.request.contextPath}/viewguides.jsp" class="${page == 'guides' ? 'active' : ''}">View Repair Guides</a>
-        <a href="${pageContext.request.contextPath}/store.jsp" class="${page == 'store' ? 'active' : ''}">Stores</a>
+        </div>
     </div>
+</nav>
 
-    <!-- Include CSS -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
-</header>
+<script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+</script>
+<script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>

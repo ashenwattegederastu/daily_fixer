@@ -1,99 +1,92 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ page import="com.dailyfixer.model.User" %>
-<%@ page import="java.sql.*, com.dailyfixer.util.DBConnection" %>
 
 <%
-  User user = (User) session.getAttribute("currentUser");
-  if (user == null || user.getRole() == null) {
-    response.sendRedirect(request.getContextPath() + "/login.jsp");
-    return;
-  }
-
-  String role = user.getRole().trim().toLowerCase();
-  if (!"admin".equals(role)) {
-    response.sendRedirect(request.getContextPath() + "/login.jsp");
-    return;
-  }
-
-  // Fetch total registered users
-  int totalUsers = 0;
-  try (Connection conn = DBConnection.getConnection();
-       PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS count FROM users");
-       ResultSet rs = ps.executeQuery()) {
-
-    if (rs.next()) {
-      totalUsers = rs.getInt("count");
+    User user = (User) session.getAttribute("currentUser");
+    if (user == null || user.getRole() == null ||
+            !"admin".equalsIgnoreCase(user.getRole().trim())) {
+        response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
+        return;
     }
-  } catch (Exception e) {
-    e.printStackTrace();
-  }
 %>
 
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/deliverdashmain.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Daily Fixer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
 </head>
-<body>
-<header>
-  <!-- Main Navbar -->
-  <nav class="navbar">
-    <div class="logo">Daily Fixer</div>
-    <ul class="nav-links">
-      <li><a href="${pageContext.request.contextPath}">Home</a></li>
-      <li><a href="${pageContext.request.contextPath}/LogoutServlet">Log Out</a></li>
-    </ul>
-  </nav>
 
-  <!-- Subnav -->
-  <nav class="subnav">
-    <div class="store-name">Administrator</div>
-    <ul>
-      <li><a href="#" class="active">Dashboard</a></li>
-      <li><a href="#">User Management</a></li>
-      <li><a href="#">Reports/Flags</a></li>
-      <li><a href="#">Profile</a></li>
-    </ul>
-  </nav>
+<body>
+
+<header class="topbar">
+    <div class="logo">Daily Fixer</div>
+    <div class="panel-name">Admin Panel </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
+        <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
+    </div>
 </header>
 
-<div class="container">
-  <main class="dashboard">
-    <h2>Dashboard</h2>
-    <p class="subtitle">Site Performance Index</p>
+<aside class="sidebar">
+    <h3>Navigation</h3>
+    <ul>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/admindashmain.jsp" class="active"> Dashboard</a></li>
+        <li><a href="${pageContext.request.contextPath}/admin/users"> User Management</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/flags.jsp"> Flags</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/transactions.jsp"> Transactions</a></li>
+    </ul>
+</aside>
 
-    <div class="stats-container">
-      <div class="stat-card">
-        <p class="number">5</p>
-        <p>Site Visits Today</p>
-      </div>
-      <div class="stat-card">
-        <p class="number">3</p>
-        <p>Site Visits Month</p>
-      </div>
-      <div class="stat-card">
-        <p class="number"><%= totalUsers %></p>
-        <p>Current User Count</p>
-      </div>
+<main class="main-content">
+    <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p>Quick System Overview</p>
     </div>
 
-    <!-- Driver Stats -->
-<%--    <div class="driver-stats">--%>
-<%--      <h3>Driver Stats</h3>--%>
-<%--      <div class="stats-grid">--%>
-<%--        <div class="info-box">--%>
-<%--          <p><strong>Total Deliveries:</strong> 342</p>--%>
+    <!-- Quick Stats -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="number">30</div>
+            <p>Total site visits within last 24 hrs</p>
+        </div>
+        <div class="stat-card">
+            <div class="number">45</div>
+            <p>Transactions in the last 24 hrs</p>
+        </div>
+
+
+
+
+        <div class="stat-card">
+            <div class="number">120</div>
+            <p>Total Users</p>
+        </div>
+<%--        <div class="stat-card">--%>
+<%--            <div class="number">35</div>--%>
+<%--            <p>Technicians</p>--%>
 <%--        </div>--%>
-<%--        <div class="info-box">--%>
-<%--          <p><strong>Driver Rating:</strong> 4.9/5</p>--%>
-<%--        </div>--%>
-<%--        <div class="info-box">--%>
-<%--          <p><strong>This Month:</strong> 28 deliveries</p>--%>
-<%--        </div>--%>
-<%--      </div>--%>
-<%--    </div>--%>
-  </main>
-</div>
+
+    </div>
+
+    <!-- Quick Links -->
+    <div class="section">
+        <h2>Quick Links</h2>
+        <div class="stats-container">
+            <div class="stat-card"><p>View Users</p></div>
+            <div class="stat-card"><p>View Transactions</p></div>
+            <div class="stat-card"><p>Flags</p></div>
+
+        </div>
+    </div>
+
+</main>
+
+<script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
+
 </body>
 </html>
