@@ -104,7 +104,7 @@ public class VehicleDAO {
             stmt.setString(4, v.getModel());
             stmt.setString(5, v.getPlateNumber());
             stmt.setBytes(6, v.getPicture());
-
+////Added max Weight and Volume
             stmt.setDouble(7, v.getMaxWeight());
             stmt.setDouble(8, v.getMaxVolume());
 
