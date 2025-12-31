@@ -1,11 +1,13 @@
 package com.dailyfixer.guidewrite;
 
-import com.dailyfixer.dao.GuideDAO;
-import com.dailyfixer.model.Guide;
+
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
 import java.io.IOException;
+
+import com.dailyfixer.dao.GuideDAO;
+import com.dailyfixer.model.Guide;
 
 @WebServlet("/ImageServlet")
 public class ImageServlet extends HttpServlet {
