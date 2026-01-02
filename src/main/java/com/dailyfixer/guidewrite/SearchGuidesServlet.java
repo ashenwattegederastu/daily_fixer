@@ -8,11 +8,12 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/ViewGuidesServlet")
-public class ViewGuidesServlet extends HttpServlet {
+@WebServlet("/SearchGuidesServlet")
+public class SearchGuidesServlet extends HttpServlet {
+    
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         String keyword = request.getParameter("keyword");
         String mainCategory = request.getParameter("mainCategory");
         String subCategory = request.getParameter("subCategory");

@@ -170,6 +170,124 @@ CREATE TABLE `volunteers` (
   CONSTRAINT `volunteers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `guides`
+--
+
+DROP TABLE IF EXISTS `guides`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guides` (
+  `guide_id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `main_image` longblob,
+  `main_category` varchar(100) NOT NULL,
+  `sub_category` varchar(100) NOT NULL,
+  `youtube_url` varchar(255) DEFAULT NULL,
+  `created_by` int NOT NULL,
+  `created_role` varchar(20) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`guide_id`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `guides_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `guide_requirements`
+--
+
+DROP TABLE IF EXISTS `guide_requirements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guide_requirements` (
+  `req_id` int NOT NULL AUTO_INCREMENT,
+  `guide_id` int NOT NULL,
+  `requirement` text NOT NULL,
+  PRIMARY KEY (`req_id`),
+  KEY `guide_id` (`guide_id`),
+  CONSTRAINT `guide_requirements_ibfk_1` FOREIGN KEY (`guide_id`) REFERENCES `guides` (`guide_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `guide_steps`
+--
+
+DROP TABLE IF EXISTS `guide_steps`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guide_steps` (
+  `step_id` int NOT NULL AUTO_INCREMENT,
+  `guide_id` int NOT NULL,
+  `step_order` int NOT NULL,
+  `step_title` varchar(255) NOT NULL,
+  `step_body` text,
+  PRIMARY KEY (`step_id`),
+  KEY `guide_id` (`guide_id`),
+  CONSTRAINT `guide_steps_ibfk_1` FOREIGN KEY (`guide_id`) REFERENCES `guides` (`guide_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `guide_step_images`
+--
+
+DROP TABLE IF EXISTS `guide_step_images`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guide_step_images` (
+  `image_id` int NOT NULL AUTO_INCREMENT,
+  `step_id` int NOT NULL,
+  `image_data` longblob NOT NULL,
+  PRIMARY KEY (`image_id`),
+  KEY `step_id` (`step_id`),
+  CONSTRAINT `guide_step_images_ibfk_1` FOREIGN KEY (`step_id`) REFERENCES `guide_steps` (`step_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `guide_ratings`
+--
+
+DROP TABLE IF EXISTS `guide_ratings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guide_ratings` (
+  `rating_id` int NOT NULL AUTO_INCREMENT,
+  `guide_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `rating` enum('UP','DOWN') NOT NULL,
+  PRIMARY KEY (`rating_id`),
+  UNIQUE KEY `guide_user_unique` (`guide_id`, `user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `guide_ratings_ibfk_1` FOREIGN KEY (`guide_id`) REFERENCES `guides` (`guide_id`) ON DELETE CASCADE,
+  CONSTRAINT `guide_ratings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `guide_comments`
+--
+
+DROP TABLE IF EXISTS `guide_comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `guide_comments` (
+  `comment_id` int NOT NULL AUTO_INCREMENT,
+  `guide_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `comment` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`comment_id`),
+  KEY `guide_id` (`guide_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `guide_comments_ibfk_1` FOREIGN KEY (`guide_id`) REFERENCES `guides` (`guide_id`) ON DELETE CASCADE,
+  CONSTRAINT `guide_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

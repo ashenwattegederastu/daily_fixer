@@ -11,7 +11,10 @@
 
   int userId = currentUser.getUserId();
   GuideDAO dao = new GuideDAO();
-  List<Guide> myGuides = dao.getGuidesByVolunteer(userId);
+  List<Guide> myGuides = dao.getGuidesByCreator(userId);
+  
+  String success = request.getParameter("success");
+  String error = request.getParameter("error");
 %>
 
 <!DOCTYPE html>
@@ -20,95 +23,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Guides | Daily Fixer</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
 <style>
-:root {
-    --panel-color: #dcdaff;
-    --accent: #8b95ff;
-    --text-dark: #000000;
-    --text-secondary: #333333;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.12);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.18);
-    --shadow-lg: 0 12px 36px rgba(0,0,0,0.22);
-}
-
-/* Reset */
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #ffffff;
-    color: var(--text-dark);
-    display: flex;
-    min-height: 100vh;
-}
-
-/* Top Navbar */
-.topbar {
-    position: fixed;
-    top:0; left:0; right:0;
-    height:76px;
-    background-color: var(--panel-color);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 30px;
-    z-index: 200;
-    box-shadow: var(--shadow-md);
-}
-.topbar .logo { font-size: 1.5em; font-weight: 700; color: var(--accent); }
-.topbar .panel-name { font-weight: 600; flex:1; text-align:center; color: var(--text-dark); }
-.topbar .logout-btn {
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, var(--accent), #7ba3d4);
-    border: none;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-}
-.topbar .logout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 240px;
-    background-color: var(--panel-color);
-    height: 100vh;
-    position: fixed;
-    top:0;
-    left:0;
-    padding-top: 96px;
-    box-shadow: var(--shadow-md);
-    overflow-y: auto;
-    z-index: 100;
-}
-.sidebar h3 { padding: 0 20px 12px; font-size: 0.85em; color: var(--text-dark); text-transform: uppercase; }
-.sidebar ul { list-style:none; }
-.sidebar a {
-    display:block;
-    padding:12px 20px;
-    text-decoration:none;
-    color: var(--text-dark);
-    font-weight:500;
-    border-left:3px solid transparent;
-    border-radius:0 8px 8px 0;
-    margin-bottom:4px;
-    transition: all 0.2s;
-}
-.sidebar a:hover, .sidebar a.active {
-    background-color: #f0f0ff;
-    border-left-color: var(--accent);
-}
-
-/* Main Content */
 .container {
     flex:1;
     margin-left:240px;
@@ -118,119 +35,136 @@ body {
 .container h2 {
     font-size:1.6em;
     margin-bottom:20px;
-    color: #000000;
+    color: var(--foreground);
 }
-
-/* Guide Cards */
 .guide-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
     margin-top: 20px;
 }
-
 .guide-card {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
     padding: 20px;
     box-shadow: var(--shadow-sm);
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid var(--border);
     text-align: center;
     transition: transform 0.2s ease;
 }
-
 .guide-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
 }
-
 .guide-card img {
     width: 100%;
     height: 150px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     margin-bottom: 15px;
 }
-
 .guide-card .title-link {
     display: block;
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--foreground);
     text-decoration: none;
     font-size: 1.1em;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
-
 .guide-card .title-link:hover {
-    color: var(--accent);
+    color: var(--primary);
 }
-
+.guide-meta {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.category-tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    border-radius: var(--radius-sm);
+}
 .btn-group {
     display: flex;
     justify-content: center;
     gap: 10px;
     margin-top: 15px;
 }
-
 .guide-btn {
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     color: white;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s;
     font-size: 0.9em;
 }
-
 .guide-btn.edit { 
-    background: var(--accent);
+    background: var(--primary);
 }
 .guide-btn.edit:hover { 
-    background: #7a85e6;
+    opacity: 0.9;
     transform: translateY(-1px);
 }
-
 .guide-btn.delete { 
-    background: #ff4c4c;
+    background: var(--destructive);
 }
 .guide-btn.delete:hover { 
-    background: #e04343;
+    opacity: 0.9;
     transform: translateY(-1px);
 }
-
 .add-guide-btn {
     display: inline-block;
     margin-bottom: 20px;
     padding: 12px 24px;
-    background: var(--accent);
-    color: white;
+    background: var(--primary);
+    color: var(--primary-foreground);
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     transition: all 0.2s;
     box-shadow: var(--shadow-sm);
 }
-
 .add-guide-btn:hover {
-    background: #7a85e6;
+    opacity: 0.9;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
-
 .empty-state {
     text-align: center;
     padding: 40px;
-    color: var(--text-secondary);
+    color: var(--muted-foreground);
     font-size: 1.1em;
+}
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+.alert-success {
+    background-color: oklch(0.6290 0.1902 156.4499);
+    color: white;
+}
+.alert-error {
+    background-color: var(--destructive);
+    color: var(--destructive-foreground);
 }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-    <div class="logo">Daily Fixer</div>
+    <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
     <div class="panel-name">Volunteer Panel</div>
-    <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
+        <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
+    </div>
 </header>
 
 <aside class="sidebar">
@@ -247,14 +181,32 @@ body {
 
 <main class="container">
     <h2>My Guides</h2>
+    
+    <% if ("true".equals(success)) { %>
+    <div class="alert alert-success">Guide created successfully!</div>
+    <% } else if ("updated".equals(success)) { %>
+    <div class="alert alert-success">Guide updated successfully!</div>
+    <% } else if ("deleted".equals(success)) { %>
+    <div class="alert alert-success">Guide deleted successfully!</div>
+    <% } %>
+    
+    <% if ("unauthorized".equals(error)) { %>
+    <div class="alert alert-error">You are not authorized to perform this action.</div>
+    <% } %>
+    
     <a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/addGuide.jsp" class="add-guide-btn">+ Add New Guide</a>
 
     <% if (myGuides != null && !myGuides.isEmpty()) { %>
     <div class="guide-container">
       <% for (Guide g : myGuides) { %>
       <div class="guide-card">
-        <img src="${pageContext.request.contextPath}/ImageServlet?id=<%= g.getGuideId() %>" alt="Guide Image">
+        <img src="${pageContext.request.contextPath}/ImageServlet?id=<%= g.getGuideId() %>" alt="Guide Image"
+             onerror="this.src='${pageContext.request.contextPath}/assets/images/placeholder.jpg'">
         <a href="${pageContext.request.contextPath}/ViewGuideServlet?id=<%= g.getGuideId() %>" class="title-link"><%= g.getTitle() %></a>
+        <div class="guide-meta">
+            <span class="category-tag"><%= g.getMainCategory() %></span>
+            <span class="category-tag"><%= g.getSubCategory() %></span>
+        </div>
         <div class="btn-group">
           <a href="${pageContext.request.contextPath}/EditGuideServlet?id=<%= g.getGuideId() %>" class="guide-btn edit">Edit</a>
           <a href="${pageContext.request.contextPath}/DeleteGuideServlet?id=<%= g.getGuideId() %>" class="guide-btn delete" onclick="return confirm('Are you sure you want to delete this guide?');">Delete</a>
@@ -270,5 +222,6 @@ body {
     <% } %>
 </main>
 
+<script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
 </body>
 </html>

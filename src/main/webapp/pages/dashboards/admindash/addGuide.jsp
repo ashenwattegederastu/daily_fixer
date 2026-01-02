@@ -3,7 +3,7 @@
 
 <%
   User currentUser = (User) session.getAttribute("currentUser");
-  if (currentUser == null || !"volunteer".equalsIgnoreCase(currentUser.getRole())) {
+  if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
     response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
     return;
   }
@@ -14,21 +14,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add New Guide | Daily Fixer</title>
+  <title>Add New Guide | Admin Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
   <style>
-  .container {
-      flex:1;
-      margin-left:240px;
-      margin-top:83px;
-      padding:30px;
-  }
-  .container h2 {
-      font-size:1.6em;
-      margin-bottom:20px;
-      color: var(--foreground);
-  }
   .form-container {
       background: var(--card);
       border-radius: var(--radius-lg);
@@ -36,6 +25,7 @@
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border);
       margin-top: 20px;
+      max-width: 900px;
   }
   .form-section {
       margin-bottom: 30px;
@@ -164,7 +154,7 @@
 
 <header class="topbar">
     <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
-    <div class="panel-name">Volunteer Panel</div>
+    <div class="panel-name">Admin Panel</div>
     <div style="display: flex; align-items: center; gap: 10px;">
         <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
         <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
@@ -174,18 +164,19 @@
 <aside class="sidebar">
     <h3>Navigation</h3>
     <ul>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/volunteerdashmain.jsp">Dashboard</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp">My Guides</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/guideComments.jsp">Guide Comments</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/notifications.jsp">Notifications</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/addGuide.jsp" class="active">Add Guide</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myProfile.jsp">My Profile</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/admindashmain.jsp">Dashboard</a></li>
+        <li><a href="${pageContext.request.contextPath}/admin/users">User Management</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/guides.jsp" class="active">View All Guides</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/flags.jsp">Flags</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/transactions.jsp">Transactions</a></li>
     </ul>
 </aside>
 
-<div class="container">
-    <h2>Add New Guide</h2>
-    <p style="color: var(--muted-foreground); margin-bottom: 20px;">Create a helpful guide to assist users with their daily repair needs</p>
+<main class="main-content">
+    <div class="dashboard-header">
+        <h1>Add New Guide</h1>
+        <p>Create a helpful guide to assist users with their daily repair needs</p>
+    </div>
 
     <div class="form-container">
         <form action="${pageContext.request.contextPath}/AddGuideServlet" method="post" enctype="multipart/form-data">
@@ -257,11 +248,11 @@
 
             <div style="margin-top: 30px;">
                 <button type="submit" class="submit-btn" onclick="prepareSubmit()">Submit Guide</button>
-                <a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myguides.jsp" class="back-btn">← Back to My Guides</a>
+                <a href="${pageContext.request.contextPath}/pages/dashboards/admindash/guides.jsp" class="back-btn">← Back to Guides</a>
             </div>
         </form>
     </div>
-</div>
+</main>
 
 <script>
 const subCategories = {
@@ -323,7 +314,6 @@ function addStep() {
 }
 
 function prepareSubmit() {
-    // Copy contenteditable content to hidden inputs
     document.querySelectorAll('.rich-text-editor').forEach((editor, index) => {
         const hiddenInputs = document.querySelectorAll('input[name="stepBody"]');
         if (hiddenInputs[index]) {

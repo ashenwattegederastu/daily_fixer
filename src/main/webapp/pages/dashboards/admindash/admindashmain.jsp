@@ -37,6 +37,7 @@
     <ul>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/admindashmain.jsp" class="active"> Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/admin/users"> User Management</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/guides.jsp"> View All Guides</a></li>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/flags.jsp"> Flags</a></li>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/transactions.jsp"> Transactions</a></li>
     </ul>
