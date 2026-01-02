@@ -394,7 +394,8 @@
                 videoId = videoId.substring(0, videoId.indexOf("?"));
             }
         }
-        if (!videoId.isEmpty()) {
+        // Validate video ID format (only allow alphanumeric, underscore, and hyphen)
+        if (!videoId.isEmpty() && videoId.matches("^[a-zA-Z0-9_-]{11}$")) {
     %>
     <div class="youtube-section">
         <h2>Video Tutorial</h2>
