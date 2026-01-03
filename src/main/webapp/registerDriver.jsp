@@ -1,135 +1,176 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Driver Signup | DailyFixer</title>
-    <style>
-        body {
-            font-family: "Poppins", sans-serif;
-            background: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+    <!DOCTYPE html>
+    <html>
 
-        .signup-container {
-            background: #fff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 400px;
-        }
+    <head>
+        <title>Driver Signup | DailyFixer</title>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
+        <style>
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background-color: var(--background);
+                padding: 40px 20px;
+            }
 
-        h2 {
-            text-align: center;
-            color: #007BFF;
-            margin-bottom: 25px;
-        }
+            .register-container {
+                width: 100%;
+                max-width: 600px;
+            }
 
-        input[type=text], input[type=password], input[type=email], input[type=tel] {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
+            .form-container {
+                margin: 0 auto;
+            }
 
-        /* Password toggle styles */
-        .signup-container {
-            position: relative;
-        }
+            .page-header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
 
-        form {
-            position: relative;
-        }
+            .page-header h2 {
+                font-size: 2rem;
+                color: var(--primary);
+                margin-bottom: 10px;
+            }
 
-        .password-input-wrapper {
-            position: relative;
-        }
+            .error-text {
+                color: var(--destructive);
+                font-size: 0.85rem;
+                margin-top: 5px;
+                font-weight: 500;
+            }
 
-        .password-toggle-btn {
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            padding: 0.25rem 0.5rem;
-            color: #666;
-            transition: color 0.2s ease;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            font-family: "Poppins", sans-serif;
-        }
+            .server-error {
+                background-color: var(--destructive);
+                color: white;
+                padding: 15px;
+                border-radius: var(--radius-md);
+                margin-bottom: 20px;
+                font-weight: 500;
+            }
 
-        input[type="password"],
-        input[type="text"] {
-            padding-right: 3rem !important;
-        }
+            .form-cols {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
 
-        button {
-            width: 100%;
-            background-color: #007BFF;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+            @media (max-width: 600px) {
+                .form-cols {
+                    grid-template-columns: 1fr;
+                    gap: 0;
+                }
+            }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+            .login-link {
+                text-align: center;
+                margin-top: 20px;
+                color: var(--muted-foreground);
+            }
 
-        .error {
-            color: red;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-    </style>
-    <script>
-        function validateForm() {
-            let pw = document.getElementById("password").value;
-            let cpw = document.getElementById("confirmPassword").value;
-            let email = document.getElementById("email").value;
-            let phone = document.getElementById("phone_number").value;
+            .login-link a {
+                color: var(--primary);
+                font-weight: 600;
+                text-decoration: none;
+            }
 
-            let errorMsg = "";
+            .login-link a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
 
-            if (!email.includes("@")) errorMsg += "Invalid email format.<br>";
-            if (pw.length < 6) errorMsg += "Password must be at least 6 characters.<br>";
-            if (pw !== cpw) errorMsg += "Passwords do not match.<br>";
-            if (phone.length < 10) errorMsg += "Enter a valid phone number.<br>";
+    <body>
 
-            document.getElementById("error").innerHTML = errorMsg;
+        <div class="register-container">
+            <div class="form-container">
+                <div class="page-header">
+                    <h2>Driver Signup</h2>
+                    <p style="color: var(--muted-foreground)">Join DailyFixer as a Driver</p>
+                </div>
 
-            return errorMsg === "";
-        }
-    </script>
-</head>
-<body>
-<div class="signup-container">
-    <h2>Driver Signup</h2>
-    <form action="RegisterDriverServlet" method="post" onsubmit="return validateForm()">
-        <div id="error" class="error"></div>
-        <input type="text" name="first_name" placeholder="First Name" required>
-        <input type="text" name="last_name" placeholder="Last Name" required>
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="email" name="email" id="email" placeholder="Email" required>
-        <input type="tel" name="phone_number" id="phone_number" placeholder="Phone Number" required>
-        <input type="text" name="city" placeholder="City" required>
-        <input type="password" name="password" id="password" placeholder="Password" required>
-        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required>
-        <button type="submit">Register as Driver</button>
-    </form>
-</div>
-<script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
-</body>
-</html>
+                <div id="error" class="error-text" style="margin-bottom: 15px; text-align: center;"></div>
+
+                <form action="RegisterDriverServlet" method="post" id="registerForm">
+                    <div class="form-cols">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" name="first_name" id="first_name" placeholder="First Name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" name="last_name" id="last_name" placeholder="Last Name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" name="username" id="username" placeholder="Username" required>
+                    </div>
+
+                    <div class="form-cols">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" placeholder="Email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone_number">Phone Number</label>
+                            <input type="tel" name="phone_number" id="phone_number" placeholder="Phone Number" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" name="city" id="city" placeholder="City" required>
+                    </div>
+
+                    <div class="form-cols">
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" name="password" id="password" placeholder="Password" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" name="confirmPassword" id="confirmPassword"
+                                placeholder="Confirm Password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 20px;">Register as
+                        Driver</button>
+                </form>
+                <p class="login-link">Already have an account? <a href="login.jsp">Login here</a></p>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('registerForm').addEventListener('submit', function (e) {
+                let pw = document.getElementById("password").value;
+                let cpw = document.getElementById("confirmPassword").value;
+                let email = document.getElementById("email").value;
+                let phone = document.getElementById("phone_number").value;
+
+                let errorMsg = "";
+
+                if (!email.includes("@")) errorMsg += "Invalid email format.<br>";
+                if (pw.length < 6) errorMsg += "Password must be at least 6 characters.<br>";
+                if (pw !== cpw) errorMsg += "Passwords do not match.<br>";
+                if (phone.length < 10) errorMsg += "Enter a valid phone number.<br>";
+
+                let errorDiv = document.getElementById("error");
+                errorDiv.innerHTML = errorMsg;
+
+                if (errorMsg !== "") {
+                    e.preventDefault();
+                }
+            });
+        </script>
+        <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
+    </body>
+
+    </html>
