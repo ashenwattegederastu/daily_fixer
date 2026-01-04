@@ -161,6 +161,41 @@
                                 grid-template-columns: 1fr;
                             }
                         }
+
+                        .step-card {
+                            background: var(--muted);
+                            border-radius: var(--radius-md);
+                            padding: 20px;
+                            margin-bottom: 20px;
+                            position: relative;
+                        }
+
+                        .step-card-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 15px;
+                        }
+
+                        .step-number {
+                            font-weight: 700;
+                            color: var(--primary);
+                        }
+
+                        .image-preview {
+                            max-width: 200px;
+                            max-height: 150px;
+                            object-fit: cover;
+                            border-radius: var(--radius-sm);
+                            margin-top: 10px;
+                        }
+
+                        .existing-images-container {
+                            display: flex;
+                            gap: 15px;
+                            flex-wrap: wrap;
+                            margin-top: 10px;
+                        }
                     </style>
                 </head>
 
@@ -193,10 +228,7 @@
                             <div class="error-message">${error}</div>
                         </c:if>
 
-                        <div class="info-message">
-                            Note: Editing steps is not supported in this version. You can only update basic information
-                            and requirements.
-                        </div>
+
 
                         <form action="${pageContext.request.contextPath}/guides/edit" method="post"
                             enctype="multipart/form-data">
@@ -276,6 +308,64 @@
                                     Requirement</button>
                             </div>
 
+                            <!-- Steps -->
+                            <div class="form-card">
+                                <h2>📋 Guide Steps</h2>
+                                <p style="color: var(--muted-foreground); margin-bottom: 15px;">Add, edit, or remove
+                                    step-by-step instructions. rearrange steps or images as needed.</p>
+                                <div id="stepsList">
+                                    <c:forEach var="step" items="${guide.steps}" varStatus="status">
+                                        <div class="step-card" data-step="${status.index}">
+                                            <div class="step-card-header">
+                                                <span class="step-number">Step ${status.index + 1}</span>
+                                                <button type="button" class="remove-btn"
+                                                    onclick="removeStep(this)">Remove Step</button>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Step Title *</label>
+                                                <input type="text" name="stepTitle" required value="${step.stepTitle}"
+                                                    placeholder="e.g., Turn off the water supply">
+                                            </div>
+
+                                            <!-- Existing Images -->
+                                            <c:if test="${not empty step.imagePaths}">
+                                                <div class="form-group">
+                                                    <label>Current Images</label>
+                                                    <div class="existing-images-container"
+                                                        style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                                        <c:forEach var="imgPath" items="${step.imagePaths}">
+                                                            <div class="existing-image-wrapper"
+                                                                style="position: relative;">
+                                                                <img src="${pageContext.request.contextPath}/${imgPath}"
+                                                                    class="image-preview" alt="Step image">
+                                                                <input type="hidden"
+                                                                    name="existingImages_${status.index}"
+                                                                    value="${imgPath}">
+                                                                <button type="button" class="remove-btn"
+                                                                    style="position: absolute; top: 5px; right: 5px; padding: 2px 6px; font-size: 0.8rem;"
+                                                                    onclick="removeExistingImage(this)">✕</button>
+                                                            </div>
+                                                        </c:forEach>
+                                                    </div>
+                                                </div>
+                                            </c:if>
+
+                                            <div class="form-group">
+                                                <label>Add New Images</label>
+                                                <input type="file" name="stepImage_${status.index}" accept="image/*"
+                                                    multiple>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Step Description</label>
+                                                <textarea name="stepBody"
+                                                    placeholder="Describe what to do in this step...">${step.stepBody}</textarea>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                                <button type="button" class="add-btn" onclick="addStep()">+ Add Step</button>
+                            </div>
+
                             <div class="form-actions">
                                 <a href="${pageContext.request.contextPath}/guides/view?id=${guide.guideId}"
                                     class="btn-secondary">Cancel</a>
@@ -333,6 +423,66 @@
 
                         function removeItem(btn) {
                             btn.parentElement.remove();
+                        }
+
+                        function removeExistingImage(btn) {
+                            btn.parentElement.remove();
+                        }
+
+                        let stepCount = ${ guide.steps != null ? guide.steps.size() : 0};
+
+                        function addStep() {
+                            const list = document.getElementById('stepsList');
+                            const div = document.createElement('div');
+                            div.className = 'step-card';
+                            div.dataset.step = stepCount;
+                            div.innerHTML = `
+            <div class="step-card-header">
+                <span class="step-number">Step ${stepCount + 1}</span>
+                <button type="button" class="remove-btn" onclick="removeStep(this)">Remove Step</button>
+            </div>
+            <div class="form-group">
+                <label>Step Title *</label>
+                <input type="text" name="stepTitle" required placeholder="e.g., Remove the old part">
+            </div>
+            <div class="form-group">
+                <label>Step Images</label>
+                <input type="file" name="stepImage_${stepCount}" accept="image/*" multiple>
+            </div>
+            <div class="form-group">
+                <label>Step Description</label>
+                <textarea name="stepBody" placeholder="Describe what to do in this step..."></textarea>
+            </div>
+        `;
+                            list.appendChild(div);
+                            stepCount++;
+                            renumberSteps();
+                        }
+
+                        function removeStep(btn) {
+                            btn.closest('.step-card').remove();
+                            renumberSteps();
+                        }
+
+                        function renumberSteps() {
+                            const stepCards = document.querySelectorAll('.step-card');
+                            stepCards.forEach((card, index) => {
+                                card.querySelector('.step-number').textContent = 'Step ' + (index + 1);
+                                card.dataset.step = index;
+
+                                // Update file input name
+                                const fileInput = card.querySelector('input[type="file"]');
+                                if (fileInput) {
+                                    fileInput.name = 'stepImage_' + index;
+                                }
+
+                                // Update existing images hidden inputs
+                                const hiddenInputs = card.querySelectorAll('input[type="hidden"][name^="existingImages_"]');
+                                hiddenInputs.forEach(input => {
+                                    input.name = 'existingImages_' + index;
+                                });
+                            });
+                            stepCount = stepCards.length;
                         }
                     </script>
                 </body>

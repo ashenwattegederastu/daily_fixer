@@ -336,6 +336,81 @@ public class GuideDAO {
         }
     }
 
+    /**
+     * Update steps for a guide (delete existing, add new).
+     * Returns list of old image paths that should be deleted from disk.
+     */
+    public List<String> updateSteps(int guideId, List<GuideStep> steps) {
+        List<String> oldImagePaths = new ArrayList<>();
+        String stepSQL = "INSERT INTO guide_steps (guide_id, step_order, step_title, step_body) VALUES (?, ?, ?, ?)";
+        String imageSQL = "INSERT INTO guide_step_images (step_id, image_path) VALUES (?, ?)";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            // Get old step image paths before deleting
+            String oldImgSql = "SELECT i.image_path FROM guide_step_images i " +
+                    "JOIN guide_steps s ON i.step_id = s.step_id WHERE s.guide_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(oldImgSql)) {
+                ps.setInt(1, guideId);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    String path = rs.getString("image_path");
+                    if (path != null) {
+                        oldImagePaths.add(path);
+                    }
+                }
+            }
+
+            // Delete existing steps (cascade deletes step_images)
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM guide_steps WHERE guide_id = ?")) {
+                ps.setInt(1, guideId);
+                ps.executeUpdate();
+            }
+
+            // Insert new steps and their images
+            if (steps != null && !steps.isEmpty()) {
+                try (PreparedStatement psStep = conn.prepareStatement(stepSQL, Statement.RETURN_GENERATED_KEYS)) {
+                    for (int i = 0; i < steps.size(); i++) {
+                        GuideStep step = steps.get(i);
+                        psStep.setInt(1, guideId);
+                        psStep.setInt(2, i + 1); // step_order
+                        psStep.setString(3, step.getStepTitle());
+                        psStep.setString(4, step.getStepBody());
+                        psStep.executeUpdate();
+
+                        ResultSet rsStep = psStep.getGeneratedKeys();
+                        if (rsStep.next()) {
+                            int stepId = rsStep.getInt(1);
+
+                            // Insert step images
+                            if (step.getImagePaths() != null && !step.getImagePaths().isEmpty()) {
+                                try (PreparedStatement psImg = conn.prepareStatement(imageSQL)) {
+                                    for (String imgPath : step.getImagePaths()) {
+                                        if (imgPath != null && !imgPath.isEmpty()) {
+                                            psImg.setInt(1, stepId);
+                                            psImg.setString(2, imgPath);
+                                            psImg.addBatch();
+                                            // Remove from old paths if it's being kept
+                                            oldImagePaths.remove(imgPath);
+                                        }
+                                    }
+                                    psImg.executeBatch();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return oldImagePaths;
+    }
+
     // ==================== DELETE ====================
 
     /**

@@ -2,6 +2,7 @@ package com.dailyfixer.guidewrite;
 
 import com.dailyfixer.dao.GuideDAO;
 import com.dailyfixer.model.Guide;
+import com.dailyfixer.model.GuideStep;
 import com.dailyfixer.model.User;
 import com.dailyfixer.util.ImageUploadUtil;
 import jakarta.servlet.ServletException;
@@ -172,6 +173,58 @@ public class GuideEditServlet extends HttpServlet {
                 }
             }
             guideDAO.updateRequirements(guideId, requirements);
+
+            // Update steps
+            String[] stepTitles = request.getParameterValues("stepTitle");
+            String[] stepBodies = request.getParameterValues("stepBody");
+            List<GuideStep> steps = new ArrayList<>();
+
+            if (stepTitles != null) {
+                for (int i = 0; i < stepTitles.length; i++) {
+                    if (stepTitles[i] != null && !stepTitles[i].trim().isEmpty()) {
+                        GuideStep step = new GuideStep();
+                        step.setStepTitle(stepTitles[i].trim());
+                        step.setStepBody(stepBodies != null && i < stepBodies.length ? stepBodies[i] : "");
+                        step.setStepOrder(i + 1);
+
+                        List<String> stepImagePaths = new ArrayList<>();
+
+                        // 1. Handle existing images (kept by user)
+                        String[] keptImages = request.getParameterValues("existingImages_" + i);
+                        if (keptImages != null) {
+                            for (String path : keptImages) {
+                                if (path != null && !path.isEmpty()) {
+                                    stepImagePaths.add(path);
+                                }
+                            }
+                        }
+
+                        // 2. Handle new images
+                        int imageIndex = 0;
+                        for (Part part : request.getParts()) {
+                            if (part.getName().equals("stepImage_" + i) && part.getSize() > 0) {
+                                String imagePath = ImageUploadUtil.saveTempImage(part,
+                                        "step_" + i + "_" + System.currentTimeMillis() + "_" + imageIndex, webAppPath);
+                                if (imagePath != null) {
+                                    stepImagePaths.add(imagePath);
+                                    imageIndex++;
+                                }
+                            }
+                        }
+                        step.setImagePaths(stepImagePaths);
+                        steps.add(step);
+                    }
+                }
+            }
+
+            // Update steps in DB and get list of old images to delete from disk (images
+            // that were NOT kept)
+            List<String> imagesToDelete = guideDAO.updateSteps(guideId, steps);
+
+            // Delete removed images from disk
+            for (String path : imagesToDelete) {
+                ImageUploadUtil.deleteImage(path, webAppPath);
+            }
 
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/guides/view?id=" + guideId + "&success=updated");
