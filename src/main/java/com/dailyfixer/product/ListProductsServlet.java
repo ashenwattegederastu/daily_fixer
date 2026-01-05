@@ -8,6 +8,9 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
+import jakarta.servlet.annotation.WebServlet;
+
+@WebServlet("/ListProductsServlet")
 public class ListProductsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

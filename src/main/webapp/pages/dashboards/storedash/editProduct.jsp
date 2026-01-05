@@ -1,287 +1,457 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="com.dailyfixer.dao.ProductDAO" %>
-<%@ page import="com.dailyfixer.model.Product" %>
-<%@ page import="com.dailyfixer.model.User" %>
+    <%@ page import="com.dailyfixer.model.*" %>
+        <%@ page import="java.util.*" %>
+            <% User user=(User) session.getAttribute("currentUser"); if (user==null || !"store".equals(user.getRole()))
+                { response.sendRedirect(request.getContextPath() + "/login.jsp" ); return; } Product p=(Product)
+                request.getAttribute("product"); List<ProductVariation> variations = (List<ProductVariation>)
+                    request.getAttribute("variations");
 
-<%
-    User user = (User) session.getAttribute("currentUser");
-    if (user == null || user.getRole() == null) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
-    }
+                    if(p == null) {
+                    response.sendRedirect(request.getContextPath() + "/ListProductsServlet");
+                    return;
+                    }
 
-    String role = user.getRole().trim().toLowerCase();
-    if (!("admin".equals(role) || "store".equals(role))) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
-    }
+                    String currentMain = p.getCategoryMain();
+                    String currentSub = p.getCategorySub();
+                    String categoryOtherStyle = "Other".equals(p.getCategorySub()) ? "display:block;" : "display:none;";
+                    String currentOtherVal = (p.getCategoryOther() != null) ? p.getCategoryOther() : "";
+                    %>
+                    <!DOCTYPE html>
+                    <html lang="en">
 
-    int id = Integer.parseInt(request.getParameter("productId"));
-    Product product = new ProductDAO().getProductById(id);
-%>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edit Product | Daily Fixer</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Edit Product | Daily Fixer</title>
+                        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
+                        <style>
+                            .dashboard-container {
+                                display: flex;
+                                min-height: 100vh;
+                            }
 
-<style>
-:root {
-    --panel-color: #dcdaff;
-    --accent: #8b95ff;
-    --text-dark: #000000;
-    --text-secondary: #333333;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.12);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.18);
-    --shadow-lg: 0 12px 36px rgba(0,0,0,0.22);
-}
+                            .main-content {
+                                padding: 30px;
+                                background-color: var(--background);
+                                margin-top: 76px;
+                                margin-left: 240px;
+                                flex: 1;
+                            }
 
-/* Reset */
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #ffffff;
-    color: var(--text-dark);
-    display: flex;
-    min-height: 100vh;
-}
+                            .section-title {
+                                font-size: 1.1rem;
+                                font-weight: 700;
+                                margin-bottom: 15px;
+                                color: var(--primary);
+                                border-bottom: 2px solid var(--border);
+                                padding-bottom: 5px;
+                                margin-top: 20px;
+                            }
 
-/* Top Navbar */
-.topbar {
-    position: fixed;
-    top:0; left:0; right:0;
-    height:76px;
-    background-color: var(--panel-color);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 30px;
-    z-index: 200;
-    box-shadow: var(--shadow-md);
-}
-.topbar .logo { font-size: 1.5em; font-weight: 700; color: var(--accent); }
-.topbar .panel-name { font-weight: 600; flex:1; text-align:center; color: var(--text-dark); }
-.topbar .logout-btn {
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, var(--accent), #7ba3d4);
-    border: none;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-}
-.topbar .logout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
+                            .dynamic-row {
+                                display: flex;
+                                gap: 15px;
+                                margin-bottom: 10px;
+                                align-items: center;
+                            }
 
-/* Sidebar */
-.sidebar {
-    width: 240px;
-    background-color: var(--panel-color);
-    height: 100vh;
-    position: fixed;
-    top:0;
-    left:0;
-    padding-top: 96px;
-    box-shadow: var(--shadow-md);
-    overflow-y: auto;
-    z-index: 100;
-}
-.sidebar h3 { padding: 0 20px 12px; font-size: 0.85em; color: var(--text-dark); text-transform: uppercase; }
-.sidebar ul { list-style:none; }
-.sidebar a {
-    display:block;
-    padding:12px 20px;
-    text-decoration:none;
-    color: var(--text-dark);
-    font-weight:500;
-    border-left:3px solid transparent;
-    border-radius:0 8px 8px 0;
-    margin-bottom:4px;
-    transition: all 0.2s;
-}
-.sidebar a:hover, .sidebar a.active {
-    background-color: #f0f0ff;
-    border-left-color: var(--accent);
-}
+                            .dynamic-row input {
+                                flex: 1;
+                            }
 
-/* Main Content */
-.container {
-    flex:1;
-    margin-left:240px;
-    margin-top:83px;
-    padding:30px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-}
+                            .remove-btn {
+                                background: var(--destructive);
+                                color: white;
+                                border: none;
+                                padding: 8px 12px;
+                                border-radius: var(--radius-md);
+                                cursor: pointer;
+                            }
 
-.form-card {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid rgba(0,0,0,0.1);
-}
+                            .variation-table-container {
+                                overflow-x: auto;
+                                margin-top: 15px;
+                                border: 1px solid var(--border);
+                                border-radius: var(--radius-md);
+                            }
 
-.form-card h2 {
-    color: var(--accent);
-    text-align: center;
-    margin-bottom: 25px;
-    font-size: 1.5em;
-}
+                            .variation-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                            }
 
-.form-card label {
-    display: block;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-top: 15px;
-    margin-bottom: 5px;
-}
+                            .variation-table th,
+                            .variation-table td {
+                                padding: 10px;
+                                text-align: left;
+                                border-bottom: 1px solid var(--border);
+                            }
 
-.form-card input,
-.form-card select {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    background: #fafafa;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-    transition: all 0.2s;
-}
+                            .variation-table th {
+                                background: var(--muted);
+                                font-weight: 600;
+                            }
 
-.form-card input:focus,
-.form-card select:focus {
-    outline: none;
-    border-color: var(--accent);
-    background: white;
-    box-shadow: 0 0 0 3px rgba(139, 149, 255, 0.1);
-}
+                            .variation-table input {
+                                width: 100%;
+                                padding: 6px;
+                            }
 
-.form-card button {
-    background: var(--accent);
-    color: white;
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 20px;
-    font-weight: 600;
-    font-size: 1em;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s;
-}
+                            .help-text {
+                                font-size: 0.85rem;
+                                color: var(--muted-foreground);
+                                margin-bottom: 10px;
+                            }
+                        </style>
+                    </head>
 
-.form-card button:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
+                    <body>
 
-.back-btn {
-    background: #6c757d;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    margin-top: 15px;
-    text-align: center;
-    font-weight: 500;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s;
-}
+                        <header class="topbar">
+                            <div class="logo">Daily Fixer</div>
+                            <div class="panel-name">Store Panel</div>
+                            <div><a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
+                            </div>
+                        </header>
+                        <aside class="sidebar">
+                            <h3>Navigation</h3>
+                            <ul>
+                                <li><a
+                                        href="${pageContext.request.contextPath}/pages/dashboards/storedash/storedashmain.jsp">Dashboard</a>
+                                </li>
+                                <li><a href="${pageContext.request.contextPath}/ListProductsServlet"
+                                        class="active">Catalogue</a></li>
+                            </ul>
+                        </aside>
 
-.back-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
-</style>
-</head>
-<body>
+                        <main class="main-content">
+                            <div class="form-container">
+                                <h2>Edit Product</h2>
+                                <p style="margin-bottom:20px; color:var(--muted-foreground);">Update product details.
+                                    Note that changing variations will reset stock for new units.</p>
 
-<header class="topbar">
-    <div class="logo">Daily Fixer</div>
-    <div class="panel-name">Store Panel</div>
-    <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
-</header>
+                                <% if(request.getAttribute("errorMessage") !=null) { %>
+                                    <div class="error-message">
+                                        <%= request.getAttribute("errorMessage") %>
+                                    </div>
+                                    <% } %>
 
-<aside class="sidebar">
-    <h3>Navigation</h3>
-    <ul>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/storedashmain.jsp">Dashboard</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/orders.jsp">Orders</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/upfordelivery.jsp">Up for Delivery</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/completedorders.jsp">Completed Orders</a></li>
-        <li><a href="${pageContext.request.contextPath}/ListProductsServlet">Catalogue</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
-    </ul>
-</aside>
+                                        <form action="${pageContext.request.contextPath}/EditProductServlet"
+                                            method="post" enctype="multipart/form-data">
+                                            <input type="hidden" name="productId" value="<%=p.getProductId()%>">
 
-<main class="container">
-    <div class="form-card">
-        <h2>Edit Product</h2>
+                                            <!-- 1. Core Details -->
+                                            <div class="section-title">Core Details</div>
 
-        <form action="${pageContext.request.contextPath}/EditProductServlet" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="productId" value="<%=product.getProductId()%>">
+                                            <div class="form-group">
+                                                <label>Product Name *</label>
+                                                <input type="text" name="name" value="<%=p.getName()%>" required>
+                                            </div>
 
-            <label>Product Name</label>
-            <input type="text" name="name" value="<%=product.getName()%>" placeholder="Enter product name" required>
+                                            <div class="form-group">
+                                                <label>Brand *</label>
+                                                <input type="text" name="brand" value="<%=p.getBrand()%>" required>
+                                            </div>
 
-            <label>Category</label>
-            <select name="type" required>
-                <option value="Cutting Tools" <%=product.getType().equals("Cutting Tools")?"selected":""%>>Cutting Tools</option>
-                <option value="Painting Tools" <%=product.getType().equals("Painting Tools")?"selected":""%>>Painting Tools</option>
-                <option value="Tool Storage & Safety Gear" <%=product.getType().equals("Tool Storage & Safety Gear")?"selected":""%>>Tool Storage & Safety Gear</option>
-                <option value="Electrical Tools & Accessories" <%=product.getType().equals("Electrical Tools & Accessories")?"selected":""%>>Electrical Tools & Accessories</option>
-                <option value="Power Tools" <%=product.getType().equals("Power Tools")?"selected":""%>>Power Tools</option>
-                <option value="Cleaning & Maintenance" <%=product.getType().equals("Cleaning & Maintenance")?"selected":""%>>Cleaning & Maintenance</option>
-                <option value="Vehicle Parts & Accessories" <%=product.getType().equals("Vehicle Parts & Accessories")?"selected":""%>>Vehicle Parts & Accessories</option>
-                <option value="Measuring & Marking Tools" <%=product.getType().equals("Measuring & Marking Tools")?"selected":""%>>Measuring & Marking Tools</option>
-                <option value="Tapes" <%=product.getType().equals("Tapes")?"selected":""%>>Tapes</option>
-                <option value="Fasteners & Fittings" <%=product.getType().equals("Fasteners & Fittings")?"selected":""%>>Fasteners & Fittings</option>
-                <option value="Plumbing Tools & Supplies" <%=product.getType().equals("Plumbing Tools & Supplies")?"selected":""%>>Plumbing Tools & Supplies</option>
-                <option value="Adhesives & Sealants" <%=product.getType().equals("Adhesives & Sealants")?"selected":""%>>Adhesives & Sealants</option>
-            </select>
+                                            <div class="form-group">
+                                                <label>Base Price (Rs.) *</label>
+                                                <input type="number" step="0.01" name="basePrice"
+                                                    value="<%=p.getBasePrice()%>" required>
+                                            </div>
 
-            <label>Quantity</label>
-            <input type="number" step="0.01" name="quantity" value="<%=product.getQuantity()%>" placeholder="Enter quantity" required>
+                                            <div class="form-group">
+                                                <label>Stock Status</label>
+                                                <select class="filter-select" name="stockStatus">
+                                                    <option value="ACTIVE" <%="ACTIVE"
+                                                        .equals(p.getStockStatus())?"selected":"" %>>Active</option>
+                                                    <option value="OUT_OF_STOCK" <%="OUT_OF_STOCK"
+                                                        .equals(p.getStockStatus())?"selected":"" %>>Out of Stock
+                                                    </option>
+                                                    <option value="DISCONTINUED" <%="DISCONTINUED"
+                                                        .equals(p.getStockStatus())?"selected":"" %>>Discontinued
+                                                    </option>
+                                                </select>
+                                            </div>
 
-            <label>Quantity Unit</label>
-            <select name="quantityUnit" required>
-                <option value="No of items" <%=product.getQuantityUnit().equals("No of items")?"selected":""%>>No of items</option>
-                <option value="Litres" <%=product.getQuantityUnit().equals("Litres")?"selected":""%>>Litres</option>
-                <option value="Kg" <%=product.getQuantityUnit().equals("Kg")?"selected":""%>>Kg</option>
-                <option value="Metres" <%=product.getQuantityUnit().equals("Metres")?"selected":""%>>Metres</option>
-            </select>
+                                            <div class="form-group">
+                                                <label>Description</label>
+                                                <textarea name="description"><%=p.getDescription()%></textarea>
+                                            </div>
 
-            <label>Price (Rs.)</label>
-            <input type="number" step="0.01" name="price" value="<%=product.getPrice()%>" placeholder="Enter price" required>
+                                            <div class="form-group">
+                                                <label>Warranty Info</label>
+                                                <input type="text" name="warrantyInfo" value="<%=p.getWarrantyInfo()%>">
+                                            </div>
 
-            <label>Product Image</label>
-            <input type="file" name="image" accept="image/*">
+                                            <!-- Categories -->
+                                            <div class="dynamic-row">
+                                                <div class="form-group" style="flex:1">
+                                                    <label>Main Category *</label>
+                                                    <select class="filter-select" name="categoryMain" id="mainCat"
+                                                        onchange="updateSubCats()" required>
+                                                        <option value="">-- Select --</option>
+                                                        <option value="Home Repair">Home Repair</option>
+                                                        <option value="Home Electronic Repair">Home Electronic Repair
+                                                        </option>
+                                                        <option value="Vehicle Repair">Vehicle Repair</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group" style="flex:1">
+                                                    <label>Sub Category *</label>
+                                                    <select class="filter-select" name="categorySub" id="subCat"
+                                                        onchange="checkOther(this)" required>
+                                                        <option value="<%=p.getCategorySub()%>" selected>
+                                                            <%=p.getCategorySub()%>
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
 
-            <button type="submit">Update Product</button>
-        </form>
+                                            <div class="form-group" id="otherCatContainer"
+                                                style="<%=categoryOtherStyle%>">
+                                                <label>Specify 'Other' Category</label>
+                                                <input type="text" name="categoryOther" value="<%=currentOtherVal%>">
+                                            </div>
 
-        <a href="${pageContext.request.contextPath}/ListProductsServlet" class="back-btn">Back to Products</a>
-    </div>
-</main>
+                                            <div class="form-group">
+                                                <label>Update Image (Leave blank to keep current)</label>
+                                                <input type="file" name="image" accept="image/*">
+                                                <% if(p.getImages() !=null && !p.getImages().isEmpty()) { %>
+                                                    <p style="font-size:0.8rem; margin-top:5px;">Current: <a
+                                                            href="${pageContext.request.contextPath}/<%=p.getImages().get(0).getImagePath()%>"
+                                                            target="_blank">View Image</a></p>
+                                                    <% } %>
+                                            </div>
 
-</body>
-</html>
+                                            <!-- 2. Dynamic Attributes -->
+                                            <div class="section-title">Specification Attributes</div>
+                                            <div id="attributes-list">
+                                                <% if(p.getAttributes() !=null) { for(ProductAttribute pa :
+                                                    p.getAttributes()) { %>
+                                                    <div class="dynamic-row">
+                                                        <input type="text" name="attrNames"
+                                                            value="<%=pa.getAttrName()%>" required>
+                                                        <input type="text" name="attrValues"
+                                                            value="<%=pa.getAttrValue()%>" required>
+                                                        <button type="button" class="remove-btn"
+                                                            onclick="this.parentElement.remove()">X</button>
+                                                    </div>
+                                                    <% } } %>
+                                            </div>
+                                            <button type="button" class="btn-secondary" onclick="addAttributeRow()">+
+                                                Add Attribute</button>
+
+
+                                            <!-- 3. Variations -->
+                                            <div class="section-title">Product Variations</div>
+                                            <p class="help-text">Modify groups and re-generate to update pricing.</p>
+
+                                            <div id="variation-groups-list">
+                                                <% int groupIdx=0; if(p.getVariationGroups() !=null) {
+                                                    for(VariationGroup vg : p.getVariationGroups()) { String optsStr=""
+                                                    ; if(vg.getOptions() !=null) { StringBuilder sb=new StringBuilder();
+                                                    for(int k=0; k<vg.getOptions().size(); k++) {
+                                                    sb.append(vg.getOptions().get(k).getOptionValue()); if(k <
+                                                    vg.getOptions().size()-1) sb.append(", ");
+                               }
+                               optsStr = sb.toString();
+                           }
+                %>
+                   <div class=" dynamic-row" style="background:var(--muted); padding:10px; border-radius:var(--radius-md);">
+                                                    <div style="flex:1">
+                                                        <label style="font-size:0.8rem; font-weight:600;">Group
+                                                            Name</label>
+                                                        <input type="text" name="groupName_<%=groupIdx%>"
+                                                            class="grp-name" value="<%=vg.getGroupName()%>">
+                                                    </div>
+                                                    <div style="flex:2">
+                                                        <label
+                                                            style="font-size:0.8rem; font-weight:600;">Options</label>
+                                                        <input type="text" name="groupOptions_<%=groupIdx%>"
+                                                            class="grp-opts" value="<%=optsStr%>">
+                                                    </div>
+                                                    <button type="button" class="remove-btn"
+                                                        onclick="this.parentElement.remove()"
+                                                        style="margin-top:20px;">X</button>
+                                            </div>
+                                            <% groupIdx++; } } %>
+                            </div>
+
+                            <button type="button" class="btn-secondary" onclick="addVariationGroup()">+ Add Variation
+                                Group</button>
+                            <button type="button" class="btn-primary" onclick="generateVariations()"
+                                style="margin-left:10px;">Re-Generate Combinations</button>
+                            <input type="hidden" name="groupCount" id="groupCount" value="<%=groupIdx%>">
+
+                            <div id="variations-output" style="display:block; margin-top:20px;">
+                                <h4 style="margin-bottom:10px;">Variation Combinations</h4>
+                                <p class="help-text">Click "Re-Generate" to refresh this list based on groups above.</p>
+                                <div class="variation-table-container">
+                                    <table class="variation-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Combination</th>
+                                                <th>SKU</th>
+                                                <th>Price</th>
+                                                <th>Stock</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="variations-tbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">Update Product</button>
+                                <a href="${pageContext.request.contextPath}/ListProductsServlet"
+                                    class="btn-secondary">Cancel</a>
+                            </div>
+
+                            </form>
+                            </div>
+                        </main>
+
+                        <script>
+                            // --- Category Logic ---
+                            const subCats = {
+                                "Home Repair": ["Plumbing", "Electrical (Basic)", "Carpentry", "Painting & Finishing", "Masonry", "Roofing", "Flooring", "Doors & Windows", "Other"],
+                                "Home Electronic Repair": ["Mobile Devices", "Computers & Laptops", "Networking Devices", "Home Appliances", "Kitchen Electronics", "Entertainment Systems", "Power & Batteries", "Other"],
+                                "Vehicle Repair": ["Engine & Mechanical", "Electrical Systems", "Braking System", "Suspension & Steering", "Transmission", "Cooling System", "Tyres & Wheels", "Body & Paint", "Other"]
+                            };
+
+                            function updateSubCats() {
+                                const main = document.getElementById("mainCat").value;
+                                const sub = document.getElementById("subCat");
+                                const currentSubVal = "<%=currentSub%>";
+
+                                sub.innerHTML = '<option value="">-- Select --</option>';
+                                if (subCats[main]) {
+                                    subCats[main].forEach(c => {
+                                        const opt = document.createElement("option");
+                                        opt.value = c;
+                                        opt.innerText = c;
+                                        if (c === currentSubVal) opt.selected = true;
+                                        sub.appendChild(opt);
+                                    });
+                                }
+                            }
+
+                            function checkOther(sel) {
+                                const otherDiv = document.getElementById("otherCatContainer");
+                                if (sel.value === "Other") {
+                                    otherDiv.style.display = "block";
+                                } else {
+                                    otherDiv.style.display = "none";
+                                }
+                            }
+
+                            // Init categories
+                            document.getElementById("mainCat").value = "<%=currentMain%>";
+                            updateSubCats(); // Will select sub if matches
+
+                            // --- Attribute Logic ---
+                            function addAttributeRow() {
+                                const div = document.createElement("div");
+                                div.className = "dynamic-row";
+                                div.innerHTML = `
+            <input type="text" name="attrNames" placeholder="Name" required>
+            <input type="text" name="attrValues" placeholder="Value" required>
+            <button type="button" class="remove-btn" onclick="this.parentElement.remove()">X</button>
+        `;
+                                document.getElementById("attributes-list").appendChild(div);
+                            }
+
+                            // --- Variation Logic ---
+                            let groupCounter = <%=groupIdx%>;
+
+                            function addVariationGroup() {
+                                const div = document.createElement("div");
+                                div.className = "dynamic-row";
+                                div.style.background = "var(--muted)";
+                                div.style.padding = "10px";
+                                div.style.borderRadius = "var(--radius-md)";
+
+                                // We carefully construct string to avoid JS syntax errors with unescaped HTML inside JS
+                                let html = '';
+                                html += '<div style="flex:1">';
+                                html += '   <label style="font-size:0.8rem; font-weight:600;">Group Name</label>';
+                                html += '   <input type="text" name="groupName_' + groupCounter + '" class="grp-name" placeholder="e.g. Color">';
+                                html += '</div>';
+                                html += '<div style="flex:2">';
+                                html += '   <label style="font-size:0.8rem; font-weight:600;">Options</label>';
+                                html += '   <input type="text" name="groupOptions_' + groupCounter + '" class="grp-opts" placeholder="e.g. Red, Blue">';
+                                html += '</div>';
+                                html += '<button type="button" class="remove-btn" onclick="this.parentElement.remove()" style="margin-top:20px;">X</button>';
+
+                                div.innerHTML = html;
+
+                                document.getElementById("variation-groups-list").appendChild(div);
+                                groupCounter++;
+                                document.getElementById("groupCount").value = groupCounter;
+                            }
+
+                            function generateVariations() {
+                                const container = document.getElementById("variation-groups-list");
+                                const rows = container.getElementsByClassName("dynamic-row");
+
+                                let groups = [];
+                                for (let row of rows) {
+                                    const nameEl = row.querySelector(".grp-name");
+                                    const optsEl = row.querySelector(".grp-opts");
+                                    if (nameEl && optsEl) {
+                                        const name = nameEl.value.trim();
+                                        const optsStr = optsEl.value;
+                                        if (name && optsStr) {
+                                            const opts = optsStr.split(",").map(s => s.trim()).filter(s => s !== "");
+                                            if (opts.length > 0) {
+                                                groups.push({ name: name, options: opts });
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (groups.length === 0) {
+                                    // alert("No variation groups detected."); // Optional alert
+                                    return;
+                                }
+
+                                const combinations = cartesian(groups.map(g => g.options));
+                                const tbody = document.getElementById("variations-tbody");
+                                tbody.innerHTML = "";
+
+                                combinations.forEach((combo, idx) => {
+                                    const comboStr = combo.join(", ");
+                                    const mappingStr = combo.join(",");
+
+                                    const tr = document.createElement("tr");
+                                    let rowHtml = '';
+                                    rowHtml += '<td>';
+                                    rowHtml += '    <strong>' + comboStr + '</strong>';
+                                    rowHtml += '    <input type="hidden" name="varMapping" value="' + mappingStr + '">';
+                                    rowHtml += '</td>';
+                                    rowHtml += '<td><input type="text" name="varSku" placeholder="SKU-' + (idx + 1) + '"></td>';
+                                    rowHtml += '<td><input type="number" step="0.01" name="varPrice" placeholder="Override Base"></td>';
+                                    rowHtml += '<td><input type="number" name="varStock" value="0"></td>';
+
+                                    tr.innerHTML = rowHtml;
+                                    tbody.appendChild(tr);
+                                });
+                                document.getElementById("variations-output").style.display = "block";
+                            }
+
+                            function cartesian(arrays) {
+                                return arrays.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())), [[]]);
+                            }
+
+                            window.addEventListener('load', () => {
+                                // Only generate if groups exist
+                                if (document.getElementsByClassName("grp-name").length > 0) {
+                                    generateVariations();
+                                }
+                            });
+                        </script>
+
+                    </body>
+
+                    </html>
