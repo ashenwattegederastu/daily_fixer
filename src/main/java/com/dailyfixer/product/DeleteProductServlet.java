@@ -11,7 +11,10 @@ public class DeleteProductServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(request.getParameter("productId"));
             new ProductDAO().deleteProduct(id);
-            response.sendRedirect("ListProductsServlet");
+                response.sendRedirect(request.getContextPath() + "/ListProductsServlet?deleted=success");
+
+//            response.sendRedirect("ListProductsServlet");
+
         } catch (Exception e) { e.printStackTrace(); }
     }
 }

@@ -5,9 +5,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/dailyfixer?useSSL=false&serverTimezone=UTC";
+    private static final String URL =
+            "jdbc:mysql://localhost:3306/dailyfixer?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static final String USER = "root"; // change if needed
-    private static final String PASS = "admin";
+    private static final String PASS = "Poojani@123";
 
     public static Connection getConnection() throws SQLException, ClassNotFoundException {
         Class.forName("com.mysql.cj.jdbc.Driver");

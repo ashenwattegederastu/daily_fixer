@@ -16,9 +16,10 @@ public class EditProductServlet extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("productId"));
             String name = request.getParameter("name");
             String type = request.getParameter("type");
-            double quantity = Double.parseDouble(request.getParameter("quantity"));
+            int quantity = Integer.parseInt(request.getParameter("quantity"));
             String quantityUnit = request.getParameter("quantityUnit");
             double price = Double.parseDouble(request.getParameter("price"));
+            String description = request.getParameter("description");
             Part filePart = request.getPart("image");
             byte[] image = null;
             if(filePart != null && filePart.getSize() > 0) {
@@ -35,6 +36,7 @@ public class EditProductServlet extends HttpServlet {
             p.setQuantityUnit(quantityUnit);
             p.setPrice(price);
             p.setImage(image);
+            p.setDescription(description);
 
             new ProductDAO().updateProduct(p);
             response.sendRedirect("ListProductsServlet");
