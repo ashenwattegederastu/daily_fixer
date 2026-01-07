@@ -81,7 +81,7 @@
                     <div class="hero-content">
                         <h1>Master Repairs with Our Guides</h1>
                         <p>Access thousands of step-by-step repair guides created by experts and community members.</p>
-                        <a href="${pageContext.request.contextPath}/listguides.jsp" class="hero-cta">Explore Guides</a>
+                        <a href="${pageContext.request.contextPath}/guides" class="hero-cta">Explore Guides</a>
                     </div>
                     <div class="scroll-indicator">
                         <div class="chevron"></div>
