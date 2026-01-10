@@ -364,6 +364,10 @@
                             onclick="rateGuide('DOWN')">
                             👎 <span id="downCount">${downCount}</span>
                         </button>
+                        <div
+                            style="margin-left: auto; display: flex; align-items: center; gap: 5px; color: var(--muted-foreground);">
+                            <span>👁️ ${guide.viewCount} views</span>
+                        </div>
                     </div>
                 </div>
 

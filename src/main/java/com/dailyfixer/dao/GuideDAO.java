@@ -303,6 +303,20 @@ public class GuideDAO {
     }
 
     /**
+     * Increment the view count of a guide.
+     */
+    public void incrementViewCount(int guideId) {
+        String sql = "UPDATE guides SET view_count = view_count + 1 WHERE guide_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, guideId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Update requirements for a guide (delete existing, add new).
      */
     public void updateRequirements(int guideId, List<String> requirements) {
@@ -487,6 +501,7 @@ public class GuideDAO {
         g.setCreatedRole(rs.getString("created_role"));
         g.setCreatedAt(rs.getTimestamp("created_at"));
         g.setUpdatedAt(rs.getTimestamp("updated_at"));
+        g.setViewCount(rs.getInt("view_count"));
         return g;
     }
 }

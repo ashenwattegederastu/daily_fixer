@@ -257,6 +257,9 @@
                                         <div class="guide-card-meta">
                                             <span class="guide-card-badge">${guide.mainCategory}</span>
                                             <span class="guide-card-badge">${guide.subCategory}</span>
+                                            <span class="guide-card-badge"
+                                                style="background: var(--muted); color: var(--foreground);">👁️
+                                                ${guide.viewCount}</span>
                                         </div>
                                         <p class="guide-card-author">By ${guide.creatorName}</p>
                                     </div>

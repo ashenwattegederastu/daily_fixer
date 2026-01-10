@@ -197,6 +197,7 @@
                                                         <th>Image</th>
                                                         <th>Title</th>
                                                         <th>Category</th>
+                                                        <th>Views</th>
                                                         <th>Author</th>
                                                         <th>Created</th>
                                                         <th>Actions</th>
@@ -223,6 +224,8 @@
                                                                 <span
                                                                     class="guide-category">${guide.mainCategory}</span><br>
                                                                 <span class="guide-category">${guide.subCategory}</span>
+                                                            </td>
+                                                            <td><span class="guide-category">${guide.viewCount}</span>
                                                             </td>
                                                             <td>
                                                                 <span

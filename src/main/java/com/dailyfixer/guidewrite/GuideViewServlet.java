@@ -51,6 +51,11 @@ public class GuideViewServlet extends HttpServlet {
             return;
         }
 
+        // Increment view count
+        guideDAO.incrementViewCount(guideId);
+        // Reload guide to get updated view count or manually update it
+        guide.setViewCount(guide.getViewCount() + 1);
+
         // Get ratings
         int[] ratingCounts = ratingDAO.getRatingCounts(guideId);
 

@@ -14,6 +14,7 @@ public class Guide {
     private String createdRole;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private int viewCount;
 
     // Associated data (loaded separately)
     private List<String> requirements;
@@ -113,6 +114,14 @@ public class Guide {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public int getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
     }
 
     public List<String> getRequirements() {
