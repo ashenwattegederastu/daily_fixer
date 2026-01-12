@@ -201,13 +201,13 @@
     function renderCategories(categories) {
         const container = document.getElementById('category-grid');
         
-        container.innerHTML = categories.map(cat => `
-            <div class="category-card" onclick="selectCategory(${cat.categoryId}, '${escapeHtml(cat.name)}')">
-                <div class="category-icon">${categoryIcons[cat.name] || '📋'}</div>
-                <h3>${escapeHtml(cat.name)}</h3>
-                <p>${categoryDescriptions[cat.name] || 'Various diagnostic trees available'}</p>
-            </div>
-        `).join('');
+        container.innerHTML = categories.map(cat => 
+            '<div class="category-card" onclick="selectCategory(' + cat.categoryId + ', \'' + escapeHtml(cat.name) + '\')">' +
+                '<div class="category-icon">' + (categoryIcons[cat.name] || '📋') + '</div>' +
+                '<h3>' + escapeHtml(cat.name) + '</h3>' +
+                '<p>' + (categoryDescriptions[cat.name] || 'Various diagnostic trees available') + '</p>' +
+            '</div>'
+        ).join('');
     }
     
     async function selectCategory(categoryId, categoryName) {
@@ -241,11 +241,11 @@
             return;
         }
         
-        container.innerHTML = subcategories.map(sub => `
-            <div class="subcategory-card" onclick="goToTrees(${sub.subcategoryId}, '${escapeHtml(sub.name)}')">
-                <h4>${escapeHtml(sub.name)}</h4>
-            </div>
-        `).join('');
+        container.innerHTML = subcategories.map(sub => 
+            '<div class="subcategory-card" onclick="goToTrees(' + sub.subcategoryId + ', \'' + escapeHtml(sub.name) + '\')">' +
+                '<h4>' + escapeHtml(sub.name) + '</h4>' +
+            '</div>'
+        ).join('');
     }
     
     function showCategories() {

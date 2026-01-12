@@ -207,33 +207,32 @@
         const container = document.getElementById('trees-container');
         
         if (trees.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>No Diagnostic Trees Available</h3>
-                    <p>There are no diagnostic trees available for this category yet.</p>
-                </div>
-            `;
+            container.innerHTML = 
+                '<div class="empty-state">' +
+                    '<h3>No Diagnostic Trees Available</h3>' +
+                    '<p>There are no diagnostic trees available for this category yet.</p>' +
+                '</div>';
             return;
         }
         
-        container.innerHTML = trees.map(tree => `
-            <div class="tree-card">
-                <h3>${escapeHtml(tree.treeName)}</h3>
-                <div class="tree-meta">
-                    By: <strong>${escapeHtml(tree.creatorUsername)}</strong>
-                </div>
-                <p class="tree-description">${escapeHtml(tree.description) || 'No description available'}</p>
-                <div class="tree-rating">
-                    <span class="stars">${'★'.repeat(Math.round(tree.avgRating))}${'☆'.repeat(5 - Math.round(tree.avgRating))}</span>
-                    <span class="rating-text">${tree.avgRating.toFixed(1)} (${tree.ratingCount} ratings)</span>
-                </div>
-                <div class="tree-actions">
-                    <a href="${contextPath}/diagnostic_runner.jsp?treeId=${tree.treeId}" class="start-btn">
-                        Start Diagnostic
-                    </a>
-                </div>
-            </div>
-        `).join('');
+        container.innerHTML = trees.map(tree => 
+            '<div class="tree-card">' +
+                '<h3>' + escapeHtml(tree.treeName) + '</h3>' +
+                '<div class="tree-meta">' +
+                    'By: <strong>' + escapeHtml(tree.creatorUsername) + '</strong>' +
+                '</div>' +
+                '<p class="tree-description">' + (escapeHtml(tree.description) || 'No description available') + '</p>' +
+                '<div class="tree-rating">' +
+                    '<span class="stars">' + '★'.repeat(Math.round(tree.avgRating)) + '☆'.repeat(5 - Math.round(tree.avgRating)) + '</span>' +
+                    '<span class="rating-text">' + tree.avgRating.toFixed(1) + ' (' + tree.ratingCount + ' ratings)</span>' +
+                '</div>' +
+                '<div class="tree-actions">' +
+                    '<a href="' + contextPath + '/diagnostic_runner.jsp?treeId=' + tree.treeId + '" class="start-btn">' +
+                        'Start Diagnostic' +
+                    '</a>' +
+                '</div>' +
+            '</div>'
+        ).join('');
     }
     
     function escapeHtml(text) {

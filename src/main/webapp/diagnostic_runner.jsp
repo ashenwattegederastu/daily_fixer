@@ -284,84 +284,81 @@
         const isResult = currentNode.nodeType === 'RESULT';
         const stepNumber = history.length + 1;
         
-        let progressHtml = '';
+        var progressHtml = '';
         if (history.length > 0) {
             progressHtml = '<div class="progress-indicator">';
-            for (let i = 0; i < history.length; i++) {
-                progressHtml += `<div class="progress-step completed">${i + 1}</div>`;
+            for (var i = 0; i < history.length; i++) {
+                progressHtml += '<div class="progress-step completed">' + (i + 1) + '</div>';
                 progressHtml += '<div class="progress-line"></div>';
             }
-            progressHtml += `<div class="progress-step current">${stepNumber}</div>`;
+            progressHtml += '<div class="progress-step current">' + stepNumber + '</div>';
             progressHtml += '</div>';
         }
         
-        let optionsHtml = '';
+        var optionsHtml = '';
         if (!isResult && currentNode.children && currentNode.children.length > 0) {
             optionsHtml = '<div class="options-container">';
-            for (const child of currentNode.children) {
-                optionsHtml += `
-                    <button class="option-btn" onclick="selectOption(${child.nodeId})">
-                        ${escapeHtml(child.optionLabel || 'Continue')}
-                    </button>
-                `;
+            for (var j = 0; j < currentNode.children.length; j++) {
+                var child = currentNode.children[j];
+                optionsHtml += 
+                    '<button class="option-btn" onclick="selectOption(' + child.nodeId + ')">' +
+                        escapeHtml(child.optionLabel || 'Continue') +
+                    '</button>';
             }
             optionsHtml += '</div>';
         }
         
-        let ratingHtml = '';
+        var ratingHtml = '';
         if (isResult && isLoggedIn) {
-            ratingHtml = `
-                <div class="rating-section">
-                    <h4>Rate this diagnostic</h4>
-                    <div class="star-rating">
-                        <button onclick="submitRating(1)">★</button>
-                        <button onclick="submitRating(2)">★</button>
-                        <button onclick="submitRating(3)">★</button>
-                        <button onclick="submitRating(4)">★</button>
-                        <button onclick="submitRating(5)">★</button>
-                    </div>
-                    <p class="rating-message" id="rating-message">Click to rate</p>
-                </div>
-            `;
+            ratingHtml = 
+                '<div class="rating-section">' +
+                    '<h4>Rate this diagnostic</h4>' +
+                    '<div class="star-rating">' +
+                        '<button onclick="submitRating(1)">★</button>' +
+                        '<button onclick="submitRating(2)">★</button>' +
+                        '<button onclick="submitRating(3)">★</button>' +
+                        '<button onclick="submitRating(4)">★</button>' +
+                        '<button onclick="submitRating(5)">★</button>' +
+                    '</div>' +
+                    '<p class="rating-message" id="rating-message">Click to rate</p>' +
+                '</div>';
         } else if (isResult && !isLoggedIn) {
-            ratingHtml = `
-                <div class="rating-section">
-                    <p class="rating-message">
-                        <a href="${contextPath}/login.jsp">Log in</a> to rate this diagnostic
-                    </p>
-                </div>
-            `;
+            ratingHtml = 
+                '<div class="rating-section">' +
+                    '<p class="rating-message">' +
+                        '<a href="' + contextPath + '/login.jsp">Log in</a> to rate this diagnostic' +
+                    '</p>' +
+                '</div>';
         }
         
-        container.innerHTML = `
-            <h2 class="tree-title">${escapeHtml(treeData.treeName)}</h2>
-            <div class="tree-meta">
-                ${escapeHtml(treeData.categoryName)} → ${escapeHtml(treeData.subcategoryName)} | 
-                By: ${escapeHtml(treeData.creatorUsername)}
-            </div>
+        container.innerHTML = 
+            '<h2 class="tree-title">' + escapeHtml(treeData.treeName) + '</h2>' +
+            '<div class="tree-meta">' +
+                escapeHtml(treeData.categoryName) + ' → ' + escapeHtml(treeData.subcategoryName) + ' | ' +
+                'By: ' + escapeHtml(treeData.creatorUsername) +
+            '</div>' +
             
-            ${progressHtml}
+            progressHtml +
             
-            ${isResult ? `
-                <div class="result-badge">Diagnosis Result</div>
-                <div class="result-text">${escapeHtml(currentNode.nodeText)}</div>
-            ` : `
-                <div class="question-text">${escapeHtml(currentNode.nodeText)}</div>
-                ${optionsHtml}
-            `}
+            (isResult ? 
+                '<div class="result-badge">Diagnosis Result</div>' +
+                '<div class="result-text">' + escapeHtml(currentNode.nodeText) + '</div>'
+            : 
+                '<div class="question-text">' + escapeHtml(currentNode.nodeText) + '</div>' +
+                optionsHtml
+            ) +
             
-            <div class="nav-buttons">
-                ${history.length > 0 ? `
-                    <button class="back-btn" onclick="goBack()">← Previous</button>
-                ` : ''}
-                ${isResult ? `
-                    <button class="restart-btn" onclick="restart()">Start Over</button>
-                ` : ''}
-                <a href="${contextPath}/diagnostic_categories.jsp" class="back-btn">Exit</a>
-            </div>
+            '<div class="nav-buttons">' +
+                (history.length > 0 ? 
+                    '<button class="back-btn" onclick="goBack()">← Previous</button>'
+                : '') +
+                (isResult ? 
+                    '<button class="restart-btn" onclick="restart()">Start Over</button>'
+                : '') +
+                '<a href="' + contextPath + '/diagnostic_categories.jsp" class="back-btn">Exit</a>' +
+            '</div>' +
             
-            ${ratingHtml}
-        `;
+            ratingHtml;
         
         // Load user's current rating if logged in
         if (isResult && isLoggedIn) {
@@ -442,15 +439,14 @@
     
     function showError(message) {
         const container = document.getElementById('diagnostic-card');
-        container.innerHTML = `
-            <div class="error-state">
-                <h3>Error</h3>
-                <p>${escapeHtml(message)}</p>
-                <div class="nav-buttons">
-                    <a href="${contextPath}/diagnostic_categories.jsp" class="back-btn">Back to Categories</a>
-                </div>
-            </div>
-        `;
+        container.innerHTML = 
+            '<div class="error-state">' +
+                '<h3>Error</h3>' +
+                '<p>' + escapeHtml(message) + '</p>' +
+                '<div class="nav-buttons">' +
+                    '<a href="' + contextPath + '/diagnostic_categories.jsp" class="back-btn">Back to Categories</a>' +
+                '</div>' +
+            '</div>';
     }
     
     function escapeHtml(text) {

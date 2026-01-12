@@ -515,30 +515,30 @@
             return;
         }
         
-        container.innerHTML = trees.map(tree => `
-            <div class="tree-card">
-                <h4>${escapeHtml(tree.treeName)}</h4>
-                <div class="meta">
-                    <strong>By:</strong> ${escapeHtml(tree.creatorUsername)}<br>
-                    <strong>Category:</strong> ${escapeHtml(tree.categoryName)} → ${escapeHtml(tree.subcategoryName)}
-                </div>
-                <div class="rating">
-                    ${'★'.repeat(Math.round(tree.avgRating))}${'☆'.repeat(5 - Math.round(tree.avgRating))}
-                    (${tree.avgRating.toFixed(1)} - ${tree.ratingCount} ratings)
-                </div>
-                <p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted-foreground);">
-                    ${escapeHtml(tree.description || 'No description')}
-                </p>
-                <div class="tree-card-actions">
-                    ${canEdit ? `
-                        <button class="btn-primary" onclick="editTree(${tree.treeId})">Edit Tree</button>
-                        <button class="btn-danger" onclick="confirmDeleteTree(${tree.treeId}, '${escapeHtml(tree.treeName)}')">Delete</button>
-                    ` : `
-                        <button class="btn-secondary" onclick="viewTree(${tree.treeId})">View Tree</button>
-                    `}
-                </div>
-            </div>
-        `).join('');
+        container.innerHTML = trees.map(tree => 
+            '<div class="tree-card">' +
+                '<h4>' + escapeHtml(tree.treeName) + '</h4>' +
+                '<div class="meta">' +
+                    '<strong>By:</strong> ' + escapeHtml(tree.creatorUsername) + '<br>' +
+                    '<strong>Category:</strong> ' + escapeHtml(tree.categoryName) + ' → ' + escapeHtml(tree.subcategoryName) +
+                '</div>' +
+                '<div class="rating">' +
+                    '★'.repeat(Math.round(tree.avgRating)) + '☆'.repeat(5 - Math.round(tree.avgRating)) +
+                    ' (' + tree.avgRating.toFixed(1) + ' - ' + tree.ratingCount + ' ratings)' +
+                '</div>' +
+                '<p style="margin-top: 10px; font-size: 0.9rem; color: var(--muted-foreground);">' +
+                    escapeHtml(tree.description || 'No description') +
+                '</p>' +
+                '<div class="tree-card-actions">' +
+                    (canEdit ? 
+                        '<button class="btn-primary" onclick="editTree(' + tree.treeId + ')">Edit Tree</button>' +
+                        '<button class="btn-danger" onclick="confirmDeleteTree(' + tree.treeId + ', \'' + escapeHtml(tree.treeName) + '\')">Delete</button>'
+                    : 
+                        '<button class="btn-secondary" onclick="viewTree(' + tree.treeId + ')">View Tree</button>'
+                    ) +
+                '</div>' +
+            '</div>'
+        ).join('');
     }
     
     // Category Management
@@ -550,11 +550,11 @@
     async function loadCategoriesForSelection() {
         const categories = await loadCategories();
         const container = document.getElementById('category-selection');
-        container.innerHTML = categories.map(cat => `
-            <div class="category-item" onclick="selectCategory(${cat.categoryId}, this)">
-                ${escapeHtml(cat.name)}
-            </div>
-        `).join('');
+        container.innerHTML = categories.map(cat => 
+            '<div class="category-item" onclick="selectCategory(' + cat.categoryId + ', this)">' +
+                escapeHtml(cat.name) +
+            '</div>'
+        ).join('');
         
         document.getElementById('subcategory-group').style.display = 'none';
         document.getElementById('tree-form-fields').style.display = 'none';
@@ -566,7 +566,7 @@
         const categories = await loadCategories();
         const select = document.getElementById('parent-category');
         select.innerHTML = '<option value="">Select Category</option>' +
-            categories.map(cat => `<option value="${cat.categoryId}">${escapeHtml(cat.name)}</option>`).join('');
+            categories.map(cat => '<option value="' + cat.categoryId + '">' + escapeHtml(cat.name) + '</option>').join('');
     }
     
     async function selectCategory(categoryId, element) {
@@ -577,11 +577,11 @@
         const data = await apiGet('/api/category/subcategories/' + categoryId);
         if (data.success) {
             const container = document.getElementById('subcategory-selection');
-            container.innerHTML = data.subcategories.map(sub => `
-                <div class="category-item" onclick="selectSubcategory(${sub.subcategoryId}, this)">
-                    ${escapeHtml(sub.name)}
-                </div>
-            `).join('');
+            container.innerHTML = data.subcategories.map(sub => 
+                '<div class="category-item" onclick="selectSubcategory(' + sub.subcategoryId + ', this)">' +
+                    escapeHtml(sub.name) +
+                '</div>'
+            ).join('');
             document.getElementById('subcategory-group').style.display = 'block';
         }
     }
@@ -697,7 +697,7 @@
     }
     
     function confirmDeleteTree(treeId, treeName) {
-        document.getElementById('delete-message').textContent = `Are you sure you want to delete the tree "${treeName}"? This will also delete all nodes.`;
+        document.getElementById('delete-message').textContent = 'Are you sure you want to delete the tree "' + treeName + '"? This will also delete all nodes.';
         document.getElementById('confirm-delete-btn').onclick = async function() {
             const data = await apiDelete('/api/tree/' + treeId);
             if (data.success) {
@@ -711,16 +711,16 @@
     }
     
     // Node Rendering
-    function renderTreeNodes(rootNode, canEdit = true) {
+    function renderTreeNodes(rootNode, canEdit) {
+        if (canEdit === undefined) canEdit = true;
         const container = document.getElementById('tree-container');
         
         if (!rootNode) {
-            container.innerHTML = `
-                <div class="empty-tree-state">
-                    <p>This tree has no nodes yet.</p>
-                    ${canEdit ? '<button class="btn-primary" onclick="addRootNode()">Add Root Node</button>' : ''}
-                </div>
-            `;
+            container.innerHTML = 
+                '<div class="empty-tree-state">' +
+                    '<p>This tree has no nodes yet.</p>' +
+                    (canEdit ? '<button class="btn-primary" onclick="addRootNode()">Add Root Node</button>' : '') +
+                '</div>';
             return;
         }
         
@@ -728,28 +728,27 @@
     }
     
     function renderNode(node, canEdit) {
-        const nodeClass = node.nodeType === 'RESULT' ? 'result' : 'question';
+        var nodeClass = node.nodeType === 'RESULT' ? 'result' : 'question';
         
-        let html = `
-            <div class="tree-node-wrapper">
-                <div class="tree-node ${nodeClass}" onclick="event.stopPropagation()">
-                    <span class="node-type-badge">${node.nodeType}</span>
-                    ${node.optionLabel ? `<div class="node-label">↳ ${escapeHtml(node.optionLabel)}</div>` : ''}
-                    <div class="node-text">${escapeHtml(node.nodeText)}</div>
-                    ${canEdit ? `
-                        <div class="node-actions">
-                            <button class="node-action-btn add" onclick="openAddChildDialog(${node.nodeId})">+ Add Child</button>
-                            <button class="node-action-btn edit" onclick="openEditNodeDialog(${node.nodeId})">Edit</button>
-                            <button class="node-action-btn delete" onclick="confirmDeleteNode(${node.nodeId})">Delete</button>
-                        </div>
-                    ` : ''}
-                </div>
-        `;
+        var html = 
+            '<div class="tree-node-wrapper">' +
+                '<div class="tree-node ' + nodeClass + '" onclick="event.stopPropagation()">' +
+                    '<span class="node-type-badge">' + node.nodeType + '</span>' +
+                    (node.optionLabel ? '<div class="node-label">↳ ' + escapeHtml(node.optionLabel) + '</div>' : '') +
+                    '<div class="node-text">' + escapeHtml(node.nodeText) + '</div>' +
+                    (canEdit ? 
+                        '<div class="node-actions">' +
+                            '<button class="node-action-btn add" onclick="openAddChildDialog(' + node.nodeId + ')">+ Add Child</button>' +
+                            '<button class="node-action-btn edit" onclick="openEditNodeDialog(' + node.nodeId + ')">Edit</button>' +
+                            '<button class="node-action-btn delete" onclick="confirmDeleteNode(' + node.nodeId + ')">Delete</button>' +
+                        '</div>'
+                    : '') +
+                '</div>';
         
         if (node.children && node.children.length > 0) {
             html += '<div class="node-children">';
-            for (const child of node.children) {
-                html += renderNode(child, canEdit);
+            for (var i = 0; i < node.children.length; i++) {
+                html += renderNode(node.children[i], canEdit);
             }
             html += '</div>';
         }
