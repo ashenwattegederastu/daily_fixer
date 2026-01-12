@@ -11,7 +11,7 @@
         <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
 
         <ul class="nav-links">
-            <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
+            <li><a href="${pageContext.request.contextPath}/diagnostic_categories.jsp">View Diagnostic</a></li>
             <li><a href="${pageContext.request.contextPath}/listguides.jsp">View Repair Guides</a></li>
             <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
             <li><a href="${pageContext.request.contextPath}/store_main.jsp">Store</a></li>
