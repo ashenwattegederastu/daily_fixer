@@ -12,6 +12,7 @@ public class GuideComment {
     // For display purposes
     private String username;
     private String userFirstName;
+    private String guideTitle;
 
     public GuideComment() {
     }
@@ -77,5 +78,13 @@ public class GuideComment {
 
     public void setUserFirstName(String userFirstName) {
         this.userFirstName = userFirstName;
+    }
+
+    public String getGuideTitle() {
+        return guideTitle;
+    }
+
+    public void setGuideTitle(String guideTitle) {
+        this.guideTitle = guideTitle;
     }
 }

@@ -9,7 +9,8 @@ import java.io.IOException;
 
 @WebServlet("/ViewGuideServlet")
 public class ViewGuideServlet extends HttpServlet {
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr == null) {
             response.sendRedirect(request.getContextPath() + "/ViewGuidesServlet");
@@ -24,7 +25,7 @@ public class ViewGuideServlet extends HttpServlet {
         }
 
         request.setAttribute("guide", guide);
-        RequestDispatcher rd = request.getRequestDispatcher("/pages/guides/viewguide.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("/pages/guides/view.jsp");
         rd.forward(request, response);
     }
 }

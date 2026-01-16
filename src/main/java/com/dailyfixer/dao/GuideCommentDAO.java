@@ -100,4 +100,38 @@ public class GuideCommentDAO {
         }
         return 0;
     }
+
+    /**
+     * Get all comments for all guides created by a specific user (e.g. volunteer).
+     * Ordered by creation date (newest first).
+     */
+    public List<GuideComment> getCommentsByGuideOwner(int ownerId) {
+        List<GuideComment> comments = new ArrayList<>();
+        String sql = "SELECT c.*, u.username, u.first_name, g.title as guide_title FROM guide_comments c " +
+                "JOIN users u ON c.user_id = u.user_id " +
+                "JOIN guides g ON c.guide_id = g.guide_id " +
+                "WHERE g.created_by = ? ORDER BY c.created_at DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ownerId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                GuideComment comment = new GuideComment();
+                comment.setCommentId(rs.getInt("comment_id"));
+                comment.setGuideId(rs.getInt("guide_id"));
+                comment.setUserId(rs.getInt("user_id"));
+                comment.setComment(rs.getString("comment"));
+                comment.setCreatedAt(rs.getTimestamp("created_at"));
+                comment.setUsername(rs.getString("username"));
+                comment.setUserFirstName(rs.getString("first_name"));
+                comment.setGuideTitle(rs.getString("guide_title"));
+                comments.add(comment);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return comments;
+    }
 }
