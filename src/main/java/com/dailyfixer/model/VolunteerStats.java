@@ -46,7 +46,44 @@ public class VolunteerStats {
         return approvalRating;
     }
 
+    private double reputationScore;
+    private double qualityScore;
+    private double engagementScore;
+    private double contributionScore;
+
     public void setApprovalRating(double approvalRating) {
         this.approvalRating = approvalRating;
+    }
+
+    public double getReputationScore() {
+        return reputationScore;
+    }
+
+    public void setReputationScore(double reputationScore) {
+        this.reputationScore = reputationScore;
+    }
+
+    public double getQualityScore() {
+        return qualityScore;
+    }
+
+    public void setQualityScore(double qualityScore) {
+        this.qualityScore = qualityScore;
+    }
+
+    public double getEngagementScore() {
+        return engagementScore;
+    }
+
+    public void setEngagementScore(double engagementScore) {
+        this.engagementScore = engagementScore;
+    }
+
+    public double getContributionScore() {
+        return contributionScore;
+    }
+
+    public void setContributionScore(double contributionScore) {
+        this.contributionScore = contributionScore;
     }
 }

@@ -79,3 +79,6 @@ CREATE TABLE guide_comments (
 -- Index for performance
 CREATE INDEX idx_guides_category ON guides(main_category, sub_category);
 CREATE INDEX idx_guides_created_by ON guides(created_by);
+
+ALTER TABLE guides ADD COLUMN view_count INT DEFAULT 0;
+

@@ -5,6 +5,7 @@ import java.util.*;
 import com.dailyfixer.model.Guide;
 import com.dailyfixer.model.VolunteerStats;
 import com.dailyfixer.util.DBConnection;
+import com.dailyfixer.util.ReputationUtils;
 
 public class VolunteerStatsDAO {
 
@@ -59,7 +60,74 @@ public class VolunteerStatsDAO {
             stats.setApprovalRating(0.0);
         }
 
+        // 4. Calculate Reputation Score
+        ReputationUtils.calculateReputation(stats);
+
+        // Update DB with new score
+        updateReputation(volunteerId, stats.getReputationScore());
+
+        // Check and award badges
+        checkAndAwardBadges(volunteerId, stats.getReputationScore());
+
         return stats;
+    }
+
+    private void updateReputation(int volunteerId, double score) {
+        String sql = "UPDATE volunteers SET reputation_score = ? WHERE user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDouble(1, score);
+            ps.setInt(2, volunteerId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void checkAndAwardBadges(int volunteerId, double score) {
+        String badgeName = ReputationUtils.getBadgeForScore(score);
+        if ("New Volunteer".equals(badgeName))
+            return;
+
+        // Get badge_id
+        String getBadgeIdSql = "SELECT badge_id FROM badges WHERE name = ?";
+        // Insert if not exists
+        String insertBadgeSql = "INSERT IGNORE INTO volunteer_badges (volunteer_id, badge_id) VALUES (?, ?)";
+
+        int realVolunteerId = getVolunteerIdFromUserId(volunteerId);
+        if (realVolunteerId == -1)
+            return;
+
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement psGet = conn.prepareStatement(getBadgeIdSql);
+                PreparedStatement psInsert = conn.prepareStatement(insertBadgeSql)) {
+
+            psGet.setString(1, badgeName);
+            ResultSet rs = psGet.executeQuery();
+            if (rs.next()) {
+                int badgeId = rs.getInt("badge_id");
+
+                psInsert.setInt(1, realVolunteerId);
+                psInsert.setInt(2, badgeId);
+                psInsert.executeUpdate();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getVolunteerIdFromUserId(int userId) {
+        String sql = "SELECT volunteer_id FROM volunteers WHERE user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next())
+                return rs.getInt("volunteer_id");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public List<Guide> getTopRatedGuides(int volunteerId, int limit) {
