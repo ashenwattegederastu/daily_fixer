@@ -12,7 +12,13 @@
                 <div class="nav-container">
                     <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
 
-                    <ul class="nav-links">
+            <div class="hamburger" id="hamburger-btn">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                    <ul class="nav-links" id="nav-links">
                         <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
                         <li><a href="${pageContext.request.contextPath}/guides">View Repair Guides</a></li>
                         <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
@@ -52,6 +58,15 @@
                     } else {
                         navbar.classList.remove('scrolled');
                     }
+                });
+
+                // Mobile Menu Toggle
+                const hamburger = document.getElementById('hamburger-btn');
+                const navLinks = document.getElementById('nav-links');
+
+                hamburger.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                    hamburger.classList.toggle('active');
                 });
             </script>
             <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
