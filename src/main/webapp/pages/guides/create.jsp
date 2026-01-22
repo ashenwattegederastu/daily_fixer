@@ -174,6 +174,54 @@
                             margin-bottom: 20px;
                         }
 
+                        /* Add New Category Styles */
+                        .add-new-container {
+                            display: none;
+                            margin-top: 10px;
+                            padding: 15px;
+                            background: var(--muted);
+                            border-radius: var(--radius-md);
+                            border: 1px solid var(--border);
+                        }
+
+                        .add-new-container.active {
+                            display: block;
+                        }
+
+                        .add-new-input-row {
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        }
+
+                        .add-new-input-row input {
+                            flex: 1;
+                            padding: 10px 12px;
+                            border: 2px solid var(--border);
+                            border-radius: var(--radius-md);
+                            background: var(--input);
+                            color: var(--foreground);
+                        }
+
+                        .add-new-input-row button {
+                            padding: 10px 16px;
+                            border: none;
+                            border-radius: var(--radius-md);
+                            cursor: pointer;
+                            font-weight: 500;
+                        }
+
+                        .save-new-btn {
+                            background: var(--primary);
+                            color: var(--primary-foreground);
+                        }
+
+                        .cancel-new-btn {
+                            background: var(--secondary);
+                            color: var(--secondary-foreground);
+                            border: 1px solid var(--border);
+                        }
+
                         @media (max-width: 600px) {
                             .category-row {
                                 grid-template-columns: 1fr;
@@ -232,19 +280,35 @@
                                     <div class="form-group">
                                         <label for="mainCategory">Main Category *</label>
                                         <select id="mainCategory" name="mainCategory" required
-                                            onchange="updateSubCategories()">
-                                            <option value="">Select Category</option>
-                                            <option value="Home Repair">Home Repair</option>
-                                            <option value="Home Electronics / Appliance Repair">Home Electronics /
-                                                Appliances</option>
-                                            <option value="Vehicle Repair">Vehicle Repair</option>
+                                            onchange="handleMainCategoryChange()">
+                                            <option value="">Loading categories...</option>
                                         </select>
+                                        <div id="addNewMainCategoryContainer" class="add-new-container">
+                                            <div class="add-new-input-row">
+                                                <input type="text" id="newMainCategoryInput"
+                                                    placeholder="Enter new category name">
+                                                <button type="button" class="save-new-btn"
+                                                    onclick="saveNewMainCategory()">Save</button>
+                                                <button type="button" class="cancel-new-btn"
+                                                    onclick="cancelNewMainCategory()">Cancel</button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="subCategory">Sub-Category *</label>
                                         <select id="subCategory" name="subCategory" required>
-                                            <option value="">Select Sub-Category</option>
+                                            <option value="">Select Main Category First</option>
                                         </select>
+                                        <div id="addNewSubCategoryContainer" class="add-new-container">
+                                            <div class="add-new-input-row">
+                                                <input type="text" id="newSubCategoryInput"
+                                                    placeholder="Enter new sub-category name">
+                                                <button type="button" class="save-new-btn"
+                                                    onclick="saveNewSubCategory()">Save</button>
+                                                <button type="button" class="cancel-new-btn"
+                                                    onclick="cancelNewSubCategory()">Cancel</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -310,32 +374,227 @@
 
                     <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
                     <script>
-                        const subCategories = {
-                            'Home Repair': ['Plumbing', 'Electrical', 'Masonry', 'Painting & Finishing', 'Carpentry', 'Roofing',
-                                'Flooring & Tiling', 'Doors & Windows', 'Ceiling & False Ceiling', 'Waterproofing',
-                                'Glass & Mirrors', 'Locks & Hardware'],
-                            'Home Electronics / Appliance Repair': ['Refrigerator', 'Washing Machine', 'Microwave Oven', 'Electric Kettle',
-                                'Rice Cooker', 'Mixer / Blender', 'Air Conditioner', 'Water Heater',
-                                'Fans', 'Television', 'Home Theatre / Speakers', 'Inverter / UPS',
-                                'Voltage Stabilizer'],
-                            'Vehicle Repair': ['Engine System', 'Fuel System', 'Electrical System', 'Battery & Charging', 'Transmission',
-                                'Clutch System', 'Brake System', 'Steering System', 'Suspension System', 'Tyres & Wheels',
-                                'Cooling System', 'Exhaust System', 'Body & Interior']
-                        };
+                        // Dynamic category data loaded from server
+                        let categoriesData = [];
+                        let selectedCategoryId = null;
+                        const contextPath = '${pageContext.request.contextPath}';
 
+                        // Load categories on page load
+                        document.addEventListener('DOMContentLoaded', function () {
+                            loadCategories();
+                        });
+
+                        // Fetch categories from the server
+                        async function loadCategories() {
+                            try {
+                                const response = await fetch(contextPath + '/guides/categories');
+                                const data = await response.json();
+                                categoriesData = data.categories || [];
+                                populateMainCategories();
+                            } catch (error) {
+                                console.error('Failed to load categories:', error);
+                                document.getElementById('mainCategory').innerHTML =
+                                    '<option value="">Failed to load categories</option>';
+                            }
+                        }
+
+                        // Populate main category dropdown
+                        function populateMainCategories() {
+                            const mainSelect = document.getElementById('mainCategory');
+                            mainSelect.innerHTML = '<option value="">Select Category</option>';
+
+                            categoriesData.forEach(cat => {
+                                const option = document.createElement('option');
+                                option.value = cat.name;
+                                option.dataset.categoryId = cat.categoryId;
+                                option.textContent = cat.name;
+                                mainSelect.appendChild(option);
+                            });
+
+                            // Add "Add New Category" option
+                            const addNewOption = document.createElement('option');
+                            addNewOption.value = '__ADD_NEW__';
+                            addNewOption.textContent = '➕ Add New Category...';
+                            addNewOption.style.fontWeight = 'bold';
+                            mainSelect.appendChild(addNewOption);
+                        }
+
+                        // Handle main category selection
+                        function handleMainCategoryChange() {
+                            const mainSelect = document.getElementById('mainCategory');
+                            const selectedValue = mainSelect.value;
+
+                            if (selectedValue === '__ADD_NEW__') {
+                                // Show add new main category input
+                                document.getElementById('addNewMainCategoryContainer').classList.add('active');
+                                mainSelect.value = ''; // Reset select
+                                return;
+                            }
+
+                            // Hide add new containers
+                            document.getElementById('addNewMainCategoryContainer').classList.remove('active');
+                            document.getElementById('addNewSubCategoryContainer').classList.remove('active');
+
+                            // Find the selected category
+                            const selectedOption = mainSelect.options[mainSelect.selectedIndex];
+                            const categoryId = selectedOption ? selectedOption.dataset.categoryId : null;
+                            selectedCategoryId = categoryId ? parseInt(categoryId) : null;
+
+                            updateSubCategories();
+                        }
+
+                        // Update sub-category dropdown based on selected main category
                         function updateSubCategories() {
-                            const mainCat = document.getElementById('mainCategory').value;
+                            const mainSelect = document.getElementById('mainCategory');
                             const subSelect = document.getElementById('subCategory');
                             subSelect.innerHTML = '<option value="">Select Sub-Category</option>';
 
-                            if (mainCat && subCategories[mainCat]) {
-                                subCategories[mainCat].forEach(sub => {
+                            const selectedOption = mainSelect.options[mainSelect.selectedIndex];
+                            if (!selectedOption || !selectedOption.dataset.categoryId) {
+                                subSelect.innerHTML = '<option value="">Select Main Category First</option>';
+                                return;
+                            }
+
+                            const categoryId = parseInt(selectedOption.dataset.categoryId);
+                            const category = categoriesData.find(c => c.categoryId === categoryId);
+
+                            if (category && category.subCategories) {
+                                category.subCategories.forEach(sub => {
                                     const option = document.createElement('option');
-                                    option.value = sub;
-                                    option.textContent = sub;
+                                    option.value = sub.name;
+                                    option.textContent = sub.name;
                                     subSelect.appendChild(option);
                                 });
                             }
+
+                            // Add "Add New Sub-Category" option
+                            const addNewOption = document.createElement('option');
+                            addNewOption.value = '__ADD_NEW__';
+                            addNewOption.textContent = '➕ Add New Sub-Category...';
+                            addNewOption.style.fontWeight = 'bold';
+                            subSelect.appendChild(addNewOption);
+
+                            // Handle sub-category "Add New" selection
+                            subSelect.onchange = function () {
+                                if (this.value === '__ADD_NEW__') {
+                                    document.getElementById('addNewSubCategoryContainer').classList.add('active');
+                                    this.value = '';
+                                } else {
+                                    document.getElementById('addNewSubCategoryContainer').classList.remove('active');
+                                }
+                            };
+                        }
+
+                        // Save new main category
+                        async function saveNewMainCategory() {
+                            const input = document.getElementById('newMainCategoryInput');
+                            const name = input.value.trim();
+
+                            if (!name) {
+                                alert('Please enter a category name');
+                                return;
+                            }
+
+                            try {
+                                const response = await fetch(contextPath + '/guides/categories', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ type: 'main', name: name })
+                                });
+
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    // Add to local data
+                                    categoriesData.push({
+                                        categoryId: result.categoryId,
+                                        name: result.name,
+                                        subCategories: []
+                                    });
+
+                                    // Refresh dropdown and select the new category
+                                    populateMainCategories();
+                                    document.getElementById('mainCategory').value = result.name;
+                                    selectedCategoryId = result.categoryId;
+                                    updateSubCategories();
+
+                                    // Clear and hide input
+                                    input.value = '';
+                                    document.getElementById('addNewMainCategoryContainer').classList.remove('active');
+                                } else {
+                                    alert('Error: ' + (result.error || 'Failed to create category'));
+                                }
+                            } catch (error) {
+                                console.error('Error creating category:', error);
+                                alert('Failed to create category. Please try again.');
+                            }
+                        }
+
+                        // Cancel adding new main category
+                        function cancelNewMainCategory() {
+                            document.getElementById('newMainCategoryInput').value = '';
+                            document.getElementById('addNewMainCategoryContainer').classList.remove('active');
+                        }
+
+                        // Save new sub-category
+                        async function saveNewSubCategory() {
+                            const input = document.getElementById('newSubCategoryInput');
+                            const name = input.value.trim();
+
+                            if (!name) {
+                                alert('Please enter a sub-category name');
+                                return;
+                            }
+
+                            if (!selectedCategoryId) {
+                                alert('Please select a main category first');
+                                return;
+                            }
+
+                            try {
+                                const response = await fetch(contextPath + '/guides/categories', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        type: 'sub',
+                                        categoryId: selectedCategoryId,
+                                        name: name
+                                    })
+                                });
+
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    // Add to local data
+                                    const category = categoriesData.find(c => c.categoryId === selectedCategoryId);
+                                    if (category) {
+                                        if (!category.subCategories) category.subCategories = [];
+                                        category.subCategories.push({
+                                            subCategoryId: result.subCategoryId,
+                                            name: result.name
+                                        });
+                                    }
+
+                                    // Refresh sub-category dropdown and select the new one
+                                    updateSubCategories();
+                                    document.getElementById('subCategory').value = result.name;
+
+                                    // Clear and hide input
+                                    input.value = '';
+                                    document.getElementById('addNewSubCategoryContainer').classList.remove('active');
+                                } else {
+                                    alert('Error: ' + (result.error || 'Failed to create sub-category'));
+                                }
+                            } catch (error) {
+                                console.error('Error creating sub-category:', error);
+                                alert('Failed to create sub-category. Please try again.');
+                            }
+                        }
+
+                        // Cancel adding new sub-category
+                        function cancelNewSubCategory() {
+                            document.getElementById('newSubCategoryInput').value = '';
+                            document.getElementById('addNewSubCategoryContainer').classList.remove('active');
                         }
 
                         function previewMainImage(input) {

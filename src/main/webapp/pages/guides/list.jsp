@@ -211,14 +211,7 @@
                         <div class="filter-group">
                             <label for="mainCategory">Category</label>
                             <select id="mainCategory" name="mainCategory" onchange="updateSubCategories()">
-                                <option value="">All Categories</option>
-                                <option value="Home Repair" ${mainCategory=='Home Repair' ? 'selected' : '' }>Home
-                                    Repair</option>
-                                <option value="Home Electronics / Appliance Repair"
-                                    ${mainCategory=='Home Electronics / Appliance Repair' ? 'selected' : '' }>Home
-                                    Electronics / Appliances</option>
-                                <option value="Vehicle Repair" ${mainCategory=='Vehicle Repair' ? 'selected' : '' }>
-                                    Vehicle Repair</option>
+                                <option value="">Loading categories...</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -278,39 +271,75 @@
 
             <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
             <script>
-                const subCategories = {
-                    'Home Repair': ['Plumbing', 'Electrical', 'Masonry', 'Painting & Finishing', 'Carpentry', 'Roofing',
-                        'Flooring & Tiling', 'Doors & Windows', 'Ceiling & False Ceiling', 'Waterproofing',
-                        'Glass & Mirrors', 'Locks & Hardware'],
-                    'Home Electronics / Appliance Repair': ['Refrigerator', 'Washing Machine', 'Microwave Oven', 'Electric Kettle',
-                        'Rice Cooker', 'Mixer / Blender', 'Air Conditioner', 'Water Heater',
-                        'Fans', 'Television', 'Home Theatre / Speakers', 'Inverter / UPS',
-                        'Voltage Stabilizer'],
-                    'Vehicle Repair': ['Engine System', 'Fuel System', 'Electrical System', 'Battery & Charging', 'Transmission',
-                        'Clutch System', 'Brake System', 'Steering System', 'Suspension System', 'Tyres & Wheels',
-                        'Cooling System', 'Exhaust System', 'Body & Interior']
-                };
+                // Dynamic category data loaded from server
+                let categoriesData = [];
+                const contextPath = '${pageContext.request.contextPath}';
+                const currentMainCategory = '${mainCategory}';
+                const currentSubCategory = '${subCategory}';
 
+                // Load categories on page load
+                document.addEventListener('DOMContentLoaded', function () {
+                    loadCategories();
+                });
+
+                // Fetch categories from the server
+                async function loadCategories() {
+                    try {
+                        const response = await fetch(contextPath + '/guides/categories');
+                        const data = await response.json();
+                        categoriesData = data.categories || [];
+                        populateMainCategories();
+                        updateSubCategories();
+                    } catch (error) {
+                        console.error('Failed to load categories:', error);
+                        document.getElementById('mainCategory').innerHTML =
+                            '<option value="">Failed to load categories</option>';
+                    }
+                }
+
+                // Populate main category dropdown
+                function populateMainCategories() {
+                    const mainSelect = document.getElementById('mainCategory');
+                    mainSelect.innerHTML = '<option value="">All Categories</option>';
+
+                    categoriesData.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.name;
+                        option.dataset.categoryId = cat.categoryId;
+                        option.textContent = cat.name;
+                        if (cat.name === currentMainCategory) {
+                            option.selected = true;
+                        }
+                        mainSelect.appendChild(option);
+                    });
+                }
+
+                // Update sub-category dropdown based on selected main category
                 function updateSubCategories() {
-                    const mainCat = document.getElementById('mainCategory').value;
+                    const mainSelect = document.getElementById('mainCategory');
                     const subSelect = document.getElementById('subCategory');
-                    const currentSub = '${subCategory}';
-
                     subSelect.innerHTML = '<option value="">All Sub-Categories</option>';
 
-                    if (mainCat && subCategories[mainCat]) {
-                        subCategories[mainCat].forEach(sub => {
+                    const selectedOption = mainSelect.options[mainSelect.selectedIndex];
+                    if (!selectedOption || !selectedOption.dataset.categoryId) {
+                        return;
+                    }
+
+                    const categoryId = parseInt(selectedOption.dataset.categoryId);
+                    const category = categoriesData.find(c => c.categoryId === categoryId);
+
+                    if (category && category.subCategories) {
+                        category.subCategories.forEach(sub => {
                             const option = document.createElement('option');
-                            option.value = sub;
-                            option.textContent = sub;
-                            if (sub === currentSub) option.selected = true;
+                            option.value = sub.name;
+                            option.textContent = sub.name;
+                            if (sub.name === currentSubCategory) {
+                                option.selected = true;
+                            }
                             subSelect.appendChild(option);
                         });
                     }
                 }
-
-                // Initialize on page load
-                updateSubCategories();
             </script>
         </body>
 
