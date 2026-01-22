@@ -271,9 +271,13 @@
                                         placeholder="e.g., How to Fix a Leaking Faucet">
                                 </div>
                                 <div class="form-group">
-                                    <label for="mainImage">Main Image</label>
+                                    <label for="mainImage">Main Image <small
+                                            style="color: var(--muted-foreground);">(Max 10 MB)</small></label>
                                     <input type="file" id="mainImage" name="mainImage" accept="image/*"
-                                        onchange="previewMainImage(this)">
+                                        onchange="validateAndPreviewMainImage(this)">
+                                    <div id="mainImageError"
+                                        style="color: var(--destructive); font-size: 0.85rem; margin-top: 5px; display: none;">
+                                    </div>
                                     <img id="mainImagePreview" class="image-preview" style="display:none;">
                                 </div>
                                 <div class="category-row">
@@ -595,6 +599,40 @@
                         function cancelNewSubCategory() {
                             document.getElementById('newSubCategoryInput').value = '';
                             document.getElementById('addNewSubCategoryContainer').classList.remove('active');
+                        }
+
+                        const MAX_FILE_SIZE_MB = 10;
+                        const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+                        function validateAndPreviewMainImage(input) {
+                            const errorDiv = document.getElementById('mainImageError');
+                            const preview = document.getElementById('mainImagePreview');
+
+                            // Reset error
+                            errorDiv.style.display = 'none';
+                            errorDiv.textContent = '';
+                            preview.style.display = 'none';
+
+                            if (input.files && input.files[0]) {
+                                const file = input.files[0];
+
+                                // Check file size
+                                if (file.size > MAX_FILE_SIZE_BYTES) {
+                                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+                                    errorDiv.textContent = '⚠️ File is too large (' + fileSizeMB + ' MB). Maximum size is ' + MAX_FILE_SIZE_MB + ' MB. Please choose a smaller image.';
+                                    errorDiv.style.display = 'block';
+                                    input.value = ''; // Clear the input
+                                    return;
+                                }
+
+                                // Preview the image
+                                const reader = new FileReader();
+                                reader.onload = function (e) {
+                                    preview.src = e.target.result;
+                                    preview.style.display = 'block';
+                                };
+                                reader.readAsDataURL(file);
+                            }
                         }
 
                         function previewMainImage(input) {

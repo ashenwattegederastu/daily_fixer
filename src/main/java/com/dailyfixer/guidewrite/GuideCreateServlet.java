@@ -23,7 +23,7 @@ import java.util.List;
  */
 @WebServlet("/guides/create")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, // 1 MB
-        maxFileSize = 1024 * 1024 * 10, // 10 MB
+        maxFileSize = 1024 * 1024 * 10, // 10 MB per file
         maxRequestSize = 1024 * 1024 * 50 // 50 MB total
 )
 public class GuideCreateServlet extends HttpServlet {
