@@ -23,7 +23,8 @@
                     </div>--%>
                     <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
                     <ul class="nav-links">
-                        <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
+                        <li><a href="${pageContext.request.contextPath}/pages/diagnostic/diagnostic-browse.jsp">Diagnostic
+                                Tool</a></li>
                         <li><a href="${pageContext.request.contextPath}/guides">View Repair Guides</a></li>
                         <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
                         <li><a href="${pageContext.request.contextPath}/store_main.jsp">Store</a></li>
@@ -62,7 +63,8 @@
                         <p>Connect with thousands of people who share your passion for fixing and learning.</p>
                         <c:choose>
                             <c:when test="${not empty sessionScope.currentUser}">
-                                <a href="${pageContext.request.contextPath}/diagnostic.jsp" class="hero-cta">Start
+                                <a href="${pageContext.request.contextPath}/pages/diagnostic/diagnostic-browse.jsp"
+                                    class="hero-cta">Start
                                     Diagnosing</a>
                             </c:when>
                             <c:otherwise>

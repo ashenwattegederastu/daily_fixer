@@ -978,7 +978,8 @@ nav.public-nav .logo {
   align-items: center;
 }
 
-.btn-login, .btn-logout {
+.btn-login,
+.btn-logout {
   padding: 0.6rem 1.2rem;
   background: transparent;
   border: 1.5px solid var(--primary);
@@ -992,7 +993,8 @@ nav.public-nav .logo {
   display: inline-block;
 }
 
-.btn-login:hover, .btn-logout:hover {
+.btn-login:hover,
+.btn-logout:hover {
   background: var(--accent);
   color: var(--accent-foreground);
 }
@@ -1156,9 +1158,12 @@ nav.public-nav .logo {
 }
 
 @keyframes bounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(-50%) translateY(0);
   }
+
   50% {
     transform: translateX(-50%) translateY(10px);
   }
@@ -1353,13 +1358,105 @@ nav.public-nav .logo {
   color: var(--destructive-foreground);
 }
 
+/* Base Hamburger Style (Hidden on Desktop) */
+.hamburger {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
+  .nav-container {
+    padding: 1rem;
+    position: relative;
+  }
+
+  /* Hamburger Menu Button */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .hamburger span {
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
+
+  /* Hamburger Aninmation */
+  .hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 6px);
+  }
+
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -6px);
+  }
+
+  /* Mobile Nav Links */
   .nav-links {
-    gap: 1rem;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background-color: var(--card);
+    /* Solid background for visibility */
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 0;
+    gap: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    border-bottom: 1px solid var(--border);
+    transform: translateY(-150%);
+    /* Hidden by default */
+    transition: transform 0.4s ease;
+    z-index: 999;
+  }
+
+  .dark .nav-links {
+    background-color: var(--background);
+  }
+
+  .nav-links.active {
+    transform: translateY(0);
+  }
+
+  .nav-links a {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  /* Adjust Nav Buttons */
+  .nav-buttons {
+    margin-left: auto;
+    /* Push to right */
+    margin-right: 1rem;
+    /* Space between buttons and hamburger */
+    gap: 0.5rem;
+  }
+
+  .btn-login,
+  .btn-logout,
+  .btn-signup {
+    padding: 0.5rem 0.8rem;
     font-size: 0.85rem;
   }
 
+  .theme-toggle {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  /* Other Mobile Adjustments */
   .hero-content h1 {
     font-size: 2rem;
   }
@@ -1370,10 +1467,6 @@ nav.public-nav .logo {
 
   .section-title {
     font-size: 1.8rem;
-  }
-
-  .nav-container {
-    padding: 1rem;
   }
 
   .main-content {

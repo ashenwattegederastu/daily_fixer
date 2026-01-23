@@ -44,6 +44,8 @@
                                     Transactions</a></li>
                             <li><a href="${pageContext.request.contextPath}/pages/guides/admin-list.jsp"> Manage
                                     Guides</a></li>
+                            <li><a href="${pageContext.request.contextPath}/pages/dashboards/admindash/diagnostic-trees.jsp">
+                                    Diagnostic Trees</a></li>
                         </ul>
                     </aside>
 
