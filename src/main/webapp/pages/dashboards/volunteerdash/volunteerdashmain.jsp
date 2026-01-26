@@ -175,6 +175,43 @@
                                 font-size: 0.85em;
                                 color: var(--muted-foreground);
                             }
+
+                            /* Charts Container */
+                            .charts-container {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 30px;
+                                margin-top: 20px;
+                            }
+
+                            @media (max-width: 768px) {
+                                .charts-container {
+                                    grid-template-columns: 1fr;
+                                }
+                            }
+
+                            .chart-wrapper {
+                                background: var(--card);
+                                border: 1px solid var(--border);
+                                border-radius: var(--radius-md);
+                                padding: 20px;
+                                text-align: center;
+                            }
+
+                            .chart-wrapper h5 {
+                                margin-bottom: 15px;
+                                color: var(--foreground);
+                                font-size: 0.95em;
+                                font-weight: 600;
+                            }
+
+                            .chart-wrapper canvas {
+                                width: 100% !important;
+                                max-width: 350px;
+                                height: auto !important;
+                                margin: 0 auto;
+                                display: block;
+                            }
                         </style>
                     </head>
 
@@ -267,11 +304,18 @@
                                     </div>
                                 </div>
 
-                                <div style="margin-top: 20px; text-align: center;">
-                                    <h4 style="margin-bottom: 15px; color: var(--muted-foreground);">Score Breakdown
-                                    </h4>
-                                    <canvas id="reputationChart" width="400" height="200"
-                                        style="width: 100%; max-width: 400px; margin: 0 auto;"></canvas>
+                                <div style="margin-top: 20px;">
+                                    <h4 style="margin-bottom: 15px; color: var(--muted-foreground); text-align: center;">Score Breakdown</h4>
+                                    <div class="charts-container">
+                                        <div class="chart-wrapper">
+                                            <h5>📊 Bar Chart View</h5>
+                                            <canvas id="reputationChart" width="350" height="220"></canvas>
+                                        </div>
+                                        <div class="chart-wrapper">
+                                            <h5>📈 Radar Chart View</h5>
+                                            <canvas id="reputationRadarChart" width="350" height="280"></canvas>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Next Tier Progress -->
@@ -396,63 +440,26 @@
                         </main>
 
                         <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
+                        <script src="${pageContext.request.contextPath}/assets/js/volunteer-dashboard-charts.js"></script>
 
                         <script>
-                            // Simple Canvas Bar Chart Implementation
+                            // Initialize Dashboard Animations with data from JSP
                             document.addEventListener("DOMContentLoaded", function () {
-                                const canvas = document.getElementById('reputationChart');
-                                if (!canvas) return;
-
-                                const ctx = canvas.getContext('2d');
-                                // Data from JSP
-                                const data = {
+                                // Chart data from server
+                                const chartData = {
                                     labels: ['Quality', 'Engagement', 'Contribution', 'Approval'],
                                     values: [
-                    <%= stats.getQualityScore() %>, 
-                    <%= stats.getEngagementScore() %>, 
-                    <%= stats.getContributionScore() %>, 
-                    <%= stats.getApprovalRating() %> // Using approval rating raw % for visibility
-                ],
-                                    maxValue: 100 // Normalize to 100 roughly
+                                        <%= stats.getQualityScore() %>,
+                                        <%= stats.getEngagementScore() %>,
+                                        <%= stats.getContributionScore() %>,
+                                        <%= stats.getApprovalRating() %>
+                                    ]
                                 };
 
-                                const chartWidth = canvas.width;
-                                const chartHeight = canvas.height;
-                                const padding = 40;
-                                const barWidth = (chartWidth - (padding * 2)) / data.values.length - 20;
-                                const maxVal = 100; // Fixed max for consistency
-
-                                // Clear
-                                ctx.clearRect(0, 0, chartWidth, chartHeight);
-
-                                // Draw Bars
-                                data.values.forEach((value, index) => {
-                                    const x = padding + (index * (barWidth + 20));
-                                    const barHeight = (value / maxVal) * (chartHeight - padding - 30);
-                                    const y = chartHeight - padding - barHeight;
-
-                                    // Bar
-                                    ctx.fillStyle = '#10b981'; // Primary color (Green-ish)
-                                    ctx.fillRect(x, y, barWidth, barHeight);
-
-                                    // Text (Value)
-                                    ctx.fillStyle = '#000000'; // Default text (will fix for dark mode later via CSS vars if needed, but canvas is raw)
-                                    // For simplicity/academic demo, standard colors:
-                                    ctx.font = '14px sans-serif';
-                                    ctx.textAlign = 'center';
-                                    ctx.fillText(value, x + barWidth / 2, y - 5);
-
-                                    // Label
-                                    ctx.fillStyle = '#666666';
-                                    ctx.fillText(data.labels[index], x + barWidth / 2, chartHeight - 10);
-                                });
-
-                                // Draw Axis Line
-                                ctx.beginPath();
-                                ctx.moveTo(padding - 10, chartHeight - padding);
-                                ctx.lineTo(chartWidth - padding + 10, chartHeight - padding);
-                                ctx.strokeStyle = '#ccc';
-                                ctx.stroke();
+                                // Initialize all dashboard animations
+                                if (window.VolunteerDashboardCharts) {
+                                    window.VolunteerDashboardCharts.init(chartData);
+                                }
                             });
                         </script>
                     </body>
