@@ -240,6 +240,9 @@
                                         href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/guideComments.jsp">Guide
                                         Comments</a></li>
                                 <li><a
+                                        href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/diagnostic-trees.jsp">Diagnostic
+                                        Trees</a></li>
+                                <li><a
                                         href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/myProfile.jsp">My
                                         Profile</a></li>
                             </ul>
@@ -305,7 +308,9 @@
                                 </div>
 
                                 <div style="margin-top: 20px;">
-                                    <h4 style="margin-bottom: 15px; color: var(--muted-foreground); text-align: center;">Score Breakdown</h4>
+                                    <h4
+                                        style="margin-bottom: 15px; color: var(--muted-foreground); text-align: center;">
+                                        Score Breakdown</h4>
                                     <div class="charts-container">
                                         <div class="chart-wrapper">
                                             <h5>📊 Bar Chart View</h5>
@@ -440,7 +445,8 @@
                         </main>
 
                         <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
-                        <script src="${pageContext.request.contextPath}/assets/js/volunteer-dashboard-charts.js"></script>
+                        <script
+                            src="${pageContext.request.contextPath}/assets/js/volunteer-dashboard-charts.js"></script>
 
                         <script>
                             // Initialize Dashboard Animations with data from JSP

@@ -89,10 +89,10 @@
                     <a href="${pageContext.request.contextPath}/"
                         style="color: var(--foreground); text-decoration: none; margin-right: 20px;">Home</a>
                     <c:if test="${sessionScope.currentUser != null}">
-                        <a href="${pageContext.request.contextPath}/home" class="btn-primary">Dashboard</a>
+                        <a href="${pageContext.request.contextPath}/pages/dashboards/volunteerdash/volunteerdashmain.jsp" class="btn-primary">Return to Dashboard</a>
                     </c:if>
                     <c:if test="${sessionScope.currentUser == null}">
-                        <a href="${pageContext.request.contextPath}/pages/shared/login.jsp"
+                        <a href="${pageContext.request.contextPath}/login.jsp"
                             class="btn-primary">Login</a>
                     </c:if>
                 </div>
