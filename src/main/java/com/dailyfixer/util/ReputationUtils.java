@@ -15,6 +15,17 @@ public class ReputationUtils {
     // private static final int MAX_CONTRIBUTION_GUIDES = 20; // Removed per user
     // request
 
+    // Tier thresholds
+    private static final double DIAGNOSTIC_CONTRIBUTOR_THRESHOLD = 31.0;
+
+    /**
+     * Check if a volunteer's reputation score qualifies for diagnostic tree access.
+     * Requires "Diagnostic Contributor" tier (150+ reputation points).
+     */
+    public static boolean isDiagnosticContributor(double score) {
+        return score >= DIAGNOSTIC_CONTRIBUTOR_THRESHOLD;
+    }
+
     public static void calculateReputation(VolunteerStats stats) {
         if (stats == null)
             return;
