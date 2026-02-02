@@ -7,6 +7,8 @@ public class Store {
     private String storeAddress;
     private String storeCity;
     private String storeType;
+    private double latitude;   // NEW
+    private double longitude;  // NEW
 
     public int getStoreId() { return storeId; }
     public void setStoreId(int storeId) { this.storeId = storeId; }
@@ -25,4 +27,10 @@ public class Store {
 
     public String getStoreType() { return storeType; }
     public void setStoreType(String storeType) { this.storeType = storeType; }
+
+    public double getLatitude() { return latitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
+
+    public double getLongitude() { return longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
 }

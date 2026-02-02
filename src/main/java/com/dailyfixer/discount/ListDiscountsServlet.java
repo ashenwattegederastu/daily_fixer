@@ -1,15 +1,17 @@
-package com.dailyfixer.product;
+package com.dailyfixer.discount;
 
-import com.dailyfixer.dao.ProductDAO;
-import com.dailyfixer.model.Product;
+import com.dailyfixer.dao.DiscountDAO;
+import com.dailyfixer.model.Discount;
 import com.dailyfixer.model.User;
-import jakarta.servlet.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-public class ListProductsServlet extends HttpServlet {
+@WebServlet("/ListDiscountsServlet")
+public class ListDiscountsServlet extends HttpServlet {
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -26,15 +28,14 @@ public class ListProductsServlet extends HttpServlet {
         }
 
         String storeUsername = user.getUsername();
-
-        List<Product> products = new ArrayList<>();
+        List<Discount> discounts = null;
         try {
-            products = new ProductDAO().getAllProducts(storeUsername);
+            discounts = new DiscountDAO().getAllDiscounts(storeUsername);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        request.setAttribute("products", products);
-        request.getRequestDispatcher("/pages/dashboards/storedash/productList.jsp").forward(request, response);
+
+        request.setAttribute("discounts", discounts);
+        request.getRequestDispatcher("/pages/dashboards/storedash/discountList.jsp").forward(request, response);
     }
 }

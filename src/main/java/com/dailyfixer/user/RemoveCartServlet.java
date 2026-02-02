@@ -20,6 +20,9 @@ public class RemoveCartServlet extends HttpServlet {
 
         try {
             String productIdStr = request.getParameter("productId");
+            String variantIdStr = request.getParameter("variantId");
+            String cartKeyStr = request.getParameter("cartKey");
+
             if (productIdStr == null || productIdStr.isEmpty()) {
                 out.print("{\"error\":\"Missing productId\"}");
                 return;
@@ -30,21 +33,46 @@ public class RemoveCartServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
 
-            if (cart != null && cart.containsKey(productId)) {
-                cart.remove(productId);
+            if (cart == null || cart.isEmpty()) {
+                out.print("{\"cartCount\":0}");
+                return;
+            }
+
+            // Determine the cart key: use cartKey parameter if provided, otherwise use variantId if exists, else productId
+            Integer cartKey;
+            if (cartKeyStr != null && !cartKeyStr.isBlank()) {
+                cartKey = Integer.parseInt(cartKeyStr);
+            } else if (variantIdStr != null && !variantIdStr.isBlank()) {
+                cartKey = Integer.parseInt(variantIdStr);
+            } else {
+                cartKey = productId;
+            }
+
+            if (cart.containsKey(cartKey)) {
+                cart.remove(cartKey);
             }
 
             session.setAttribute("cart", cart);
 
             // Calculate updated cart count
+            // Calculate updated cart count
             int cartCount = 0;
             if (cart != null) {
-                for (CartItem ci : cart.values()) cartCount += ci.getQuantity();
+                for (CartItem ci : cart.values()) {
+                     if (ci != null) {
+                        cartCount += ci.getQuantity();
+                     }
+                }
             }
 
             out.print("{\"cartCount\":" + cartCount + "}");
         } catch (Exception e) {
-            out.print("{\"error\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
+            e.printStackTrace();
+            String errorMessage = e.getMessage();
+            if (errorMessage == null) {
+                errorMessage = "Error: " + e.getClass().getSimpleName();
+            }
+            out.print("{\"error\":\"" + errorMessage.replace("\"", "\\\"") + "\"}");
         }
     }
 }

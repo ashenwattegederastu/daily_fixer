@@ -1,29 +1,29 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="com.dailyfixer.model.User" %>
-
+<%@ page import="com.dailyfixer.model.Discount" %>
+<%@ page import="com.dailyfixer.dao.DiscountDAO" %>
+<%@ page import="com.dailyfixer.dao.ProductDAO" %>
+<%@ page import="com.dailyfixer.dao.ProductVariantDAO" %>
+<%@ page import="com.dailyfixer.model.Product" %>
+<%@ page import="com.dailyfixer.model.ProductVariant" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%
-    // Correctly get the user from session
     User user = (User) session.getAttribute("currentUser");
-
-    if (user == null || user.getRole() == null) {
+    if (user == null || !"store".equals(user.getRole())) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
 
-    String role = user.getRole().trim().toLowerCase();
-    if (!("admin".equals(role) || "store".equals(role))) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
-    }
+    List<Discount> discounts = (List<Discount>) request.getAttribute("discounts");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 %>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Up for Delivery | Daily Fixer</title>
+<title>Discount Management | Daily Fixer</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -308,10 +308,33 @@ body.dashboard-layout {
   min-height: 100vh;
 }
 
-.container h2 {
-  font-size: 1.6em;
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+}
+
+.top-bar h2 {
+  font-size: 1.6em;
   color: var(--foreground);
+}
+
+.btn-add {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  opacity: 0.9;
 }
 
 /* Table Styles */
@@ -350,90 +373,96 @@ table tr:hover {
   color: var(--accent-foreground);
 }
 
-td .status {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-.status.out-delivery {
-  background-color: oklch(0.5828 0.1809 259.7276);
-}
-
-/* Action Buttons */
-.action-btn,
-.btn {
-  padding: 6px 12px;
-  border: none;
+.badge {
+  padding: 4px 12px;
   border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  text-decoration: none;
-  display: inline-block;
-  margin: 2px;
-  white-space: nowrap;
+  font-size: 0.85em;
+  font-weight: 600;
 }
 
-.btn-view,
-.view-btn {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-}
-
-.btn-track,
-.track-btn {
+.badge-active {
   background-color: oklch(0.6290 0.1902 156.4499);
   color: white;
 }
 
-.btn-update,
-.update-btn {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+.badge-inactive {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
 }
 
-.btn:hover {
+.badge-expired {
+  background-color: oklch(0.7336 0.1758 50.5517);
+  color: white;
+}
+
+.btn-delete {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
   opacity: 0.8;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-/* Vehicle Type Badge */
-.vehicle-badge {
-  display: inline-block;
-  padding: 4px 8px;
+.btn-edit {
+  background: oklch(0.7336 0.1758 50.5517);
+  color: white;
+  padding: 6px 12px;
+  border: none;
   border-radius: var(--radius-md);
-  font-size: 0.75em;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.value-display {
   font-weight: 600;
-  text-transform: uppercase;
-}
-
-.vehicle-bike {
-  background: var(--muted);
-  color: oklch(0.6290 0.1902 156.4499);
-  border: 1px solid oklch(0.6290 0.1902 156.4499 / 0.3);
-}
-
-.vehicle-threewheel {
-  background: var(--muted);
   color: var(--primary);
-  border: 1px solid var(--primary) / 0.3;
 }
 
-.vehicle-van {
-  background: var(--muted);
-  color: oklch(0.7336 0.1758 50.5517);
-  border: 1px solid oklch(0.7336 0.1758 50.5517 / 0.3);
+.applied-to-cell {
+  max-width: 300px;
+  word-wrap: break-word;
 }
 
-.vehicle-lorry {
+.product-tag {
+  display: inline-block;
+  background: var(--secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  margin: 2px;
+  font-size: 0.85em;
+  border: 1px solid var(--border);
+  color: var(--secondary-foreground);
+}
+
+.variant-tag {
+  display: inline-block;
   background: var(--muted);
-  color: var(--destructive);
-  border: 1px solid var(--destructive) / 0.3;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  margin: 2px;
+  font-size: 0.85em;
+  border: 1px solid var(--border);
+  color: var(--foreground);
 }
 </style>
 </head>
@@ -450,102 +479,148 @@ td .status {
     <ul>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/storedashmain.jsp">Dashboard</a></li>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/orders.jsp">Orders</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/upfordelivery.jsp" class="active">Up for Delivery</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/upfordelivery.jsp">Up for Delivery</a></li>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/completedorders.jsp">Completed Orders</a></li>
         <li><a href="${pageContext.request.contextPath}/ListProductsServlet">Catalogue</a></li>
-        <li><a href="${pageContext.request.contextPath}/ListDiscountsServlet">Discounts</a></li>
+        <li><a href="${pageContext.request.contextPath}/ListDiscountsServlet" class="active">Discounts</a></li>
         <li><a href="${pageContext.request.contextPath}/StoreReviewsServlet">Customer Reviews</a></li>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
     </ul>
 </aside>
 
 <main class="container">
-    <h2>Orders Up for Delivery</h2>
-    
+    <div class="top-bar">
+        <h2>Discount Management</h2>
+        <a class="btn-add" href="${pageContext.request.contextPath}/pages/dashboards/storedash/addDiscount.jsp">+ Create Discount</a>
+    </div>
+
     <table>
         <thead>
             <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Vehicle Type</th>
-                <th>Driver</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Applied To</th>
+                <th>Start Date</th>
+                <th>End Date</th>
                 <th>Status</th>
-                <th>Total</th>
-                <th>Action</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
+            <% if (discounts == null || discounts.isEmpty()) { %>
             <tr>
-                <td>001</td>
-                <td>Kamal Silva</td>
-                <td>2025-07-20</td>
-                <td><span class="vehicle-badge vehicle-bike">Bike</span></td>
-                <td>Rajesh Kumar</td>
-                <td><span class="status out-delivery"></span>Out for Delivery</td>
-                <td>LKR 1,100</td>
-                <td>
-                    <button class="btn view-btn">View Details</button>
-                    <button class="btn track-btn">Track Order</button>
-                    <button class="btn update-btn">Update Status</button>
+                <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    No discounts created yet. <a href="${pageContext.request.contextPath}/pages/dashboards/storedash/addDiscount.jsp" style="color: var(--accent);">Create one now</a>
                 </td>
             </tr>
-            <tr>
-                <td>003</td>
-                <td>Nimal Perera</td>
-                <td>2025-07-19</td>
-                <td><span class="vehicle-badge vehicle-van">Van</span></td>
-                <td>Suresh Fernando</td>
-                <td><span class="status out-delivery"></span>Out for Delivery</td>
-                <td>LKR 2,500</td>
-                <td>
-                    <button class="btn view-btn">View Details</button>
-                    <button class="btn track-btn">Track Order</button>
-                    <button class="btn update-btn">Update Status</button>
-                </td>
-            </tr>
-            <tr>
-                <td>004</td>
-                <td>Priya Jayawardena</td>
-                <td>2025-07-21</td>
-                <td><span class="vehicle-badge vehicle-threewheel">Three Wheel</span></td>
-                <td>Anil Perera</td>
-                <td><span class="status out-delivery"></span>Out for Delivery</td>
-                <td>LKR 850</td>
-                <td>
-                    <button class="btn view-btn">View Details</button>
-                    <button class="btn track-btn">Track Order</button>
-                    <button class="btn update-btn">Update Status</button>
-                </td>
-            </tr>
-            <tr>
-                <td>005</td>
-                <td>Dinesh Wickramasinghe</td>
-                <td>2025-07-21</td>
-                <td><span class="vehicle-badge vehicle-lorry">Lorry</span></td>
-                <td>Chaminda Silva</td>
-                <td><span class="status out-delivery"></span>Out for Delivery</td>
-                <td>LKR 4,200</td>
-                <td>
-                    <button class="btn view-btn">View Details</button>
-                    <button class="btn track-btn">Track Order</button>
-                    <button class="btn update-btn">Update Status</button>
-                </td>
-            </tr>
-            <tr>
-                <td>006</td>
-                <td>Sanduni Rathnayake</td>
-                <td>2025-07-22</td>
-                <td><span class="vehicle-badge vehicle-bike">Bike</span></td>
-                <td>Nuwan Bandara</td>
-                <td><span class="status out-delivery"></span>Out for Delivery</td>
-                <td>LKR 1,800</td>
-                <td>
-                    <button class="btn view-btn">View Details</button>
-                    <button class="btn track-btn">Track Order</button>
-                    <button class="btn update-btn">Update Status</button>
-                </td>
-            </tr>
+            <% } else { 
+                DiscountDAO discountDAO = new DiscountDAO();
+                ProductDAO productDAO = new ProductDAO();
+                ProductVariantDAO variantDAO = new ProductVariantDAO();
+                
+                for (Discount discount : discounts) {
+                    long currentTime = System.currentTimeMillis();
+                    boolean isExpired = discount.getEndDate() != null && currentTime > discount.getEndDate().getTime();
+                    boolean isActive = discount.isActive() && !isExpired;
+                    boolean isValid = discount.isValid();
+                    
+                    // Get linked products and variants
+                    List<Integer> productIds = null;
+                    List<Integer> variantIds = null;
+                    List<String> productNames = new java.util.ArrayList<>();
+                    List<String> variantNames = new java.util.ArrayList<>();
+                    
+                    try {
+                        productIds = discountDAO.getProductIdsForDiscount(discount.getDiscountId());
+                        variantIds = discountDAO.getVariantIdsForDiscount(discount.getDiscountId());
+                        
+                        // Get product names
+                        for (Integer productId : productIds) {
+                            try {
+                                Product product = productDAO.getProductById(productId);
+                                if (product != null) {
+                                    productNames.add(product.getName());
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        
+                        // Get variant details
+                        for (Integer variantId : variantIds) {
+                            try {
+                                ProductVariant variant = variantDAO.getVariantById(variantId);
+                                if (variant != null) {
+                                    Product parentProduct = productDAO.getProductById(variant.getProductId());
+                                    String variantInfo = (parentProduct != null ? parentProduct.getName() : "Product") + " - ";
+                                    if (variant.getColor() != null && !variant.getColor().isEmpty()) {
+                                        variantInfo += "Color: " + variant.getColor();
+                                    }
+                                    if (variant.getSize() != null && !variant.getSize().isEmpty()) {
+                                        variantInfo += (variantInfo.endsWith(" - ") ? "" : ", ") + "Size: " + variant.getSize();
+                                    }
+                                    if (variant.getPower() != null && !variant.getPower().isEmpty()) {
+                                        variantInfo += (variantInfo.endsWith(" - ") ? "" : ", ") + "Power: " + variant.getPower();
+                                    }
+                                    variantNames.add(variantInfo);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                %>
+                <tr>
+                    <td><strong><%= discount.getDiscountName() %></strong></td>
+                    <td><%= discount.getDiscountType() %></td>
+                    <td class="value-display">
+                        <% if ("PERCENTAGE".equalsIgnoreCase(discount.getDiscountType())) { %>
+                            <%= discount.getDiscountValue() %>%
+                        <% } else { %>
+                            Rs <%= discount.getDiscountValue() %>
+                        <% } %>
+                    </td>
+                    <td class="applied-to-cell">
+                        <% if (productNames.isEmpty() && variantNames.isEmpty()) { %>
+                            <span style="color: #999; font-style: italic;">No products/variants assigned</span>
+                        <% } else { %>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                <% for (int i = 0; i < productNames.size(); i++) { %>
+                                    <span class="product-tag"><%= productNames.get(i) %></span>
+                                <% } %>
+                                <% for (int i = 0; i < variantNames.size(); i++) { %>
+                                    <span class="variant-tag"><%= variantNames.get(i) %></span>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </td>
+                    <td><%= discount.getStartDate() != null ? dateFormat.format(discount.getStartDate()) : "Immediate" %></td>
+                    <td><%= discount.getEndDate() != null ? dateFormat.format(discount.getEndDate()) : "No expiry" %></td>
+                    <td>
+                        <% if (isExpired) { %>
+                            <span class="badge badge-expired">Expired</span>
+                        <% } else if (isValid) { %>
+                            <span class="badge badge-active">Active</span>
+                        <% } else { %>
+                            <span class="badge badge-inactive">Inactive</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <a href="${pageContext.request.contextPath}/pages/dashboards/storedash/editDiscount.jsp?discountId=<%= discount.getDiscountId() %>" 
+                           class="btn-edit">
+                            Edit
+                        </a>
+                        <form method="post" action="${pageContext.request.contextPath}/DeleteDiscountServlet" style="display: inline;">
+                            <input type="hidden" name="discountId" value="<%= discount.getDiscountId() %>">
+                            <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this discount?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <% } %>
+            <% } %>
         </tbody>
     </table>
 </main>

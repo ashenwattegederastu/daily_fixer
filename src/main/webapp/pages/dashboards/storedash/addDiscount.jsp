@@ -1,29 +1,32 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ page import="com.dailyfixer.model.User" %>
-
+<%@ page import="com.dailyfixer.dao.ProductDAO" %>
+<%@ page import="com.dailyfixer.dao.ProductVariantDAO" %>
+<%@ page import="com.dailyfixer.model.Product" %>
+<%@ page import="com.dailyfixer.model.ProductVariant" %>
+<%@ page import="java.util.List" %>
 <%
-    // Correctly get the user from session
     User user = (User) session.getAttribute("currentUser");
-
-    if (user == null || user.getRole() == null) {
+    if (user == null || !"store".equals(user.getRole())) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
 
-    String role = user.getRole().trim().toLowerCase();
-    if (!("admin".equals(role) || "store".equals(role))) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
+    String storeUsername = user.getUsername();
+    List<Product> products = null;
+    try {
+        ProductDAO productDAO = new ProductDAO();
+        products = productDAO.getAllProducts(storeUsername);
+    } catch (Exception e) {
+        e.printStackTrace();
     }
 %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Profile | Daily Fixer</title>
+<title>Create Discount | Daily Fixer</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -34,7 +37,7 @@
   --card-foreground: oklch(0 0 0);
   --popover: oklch(0.9911 0 0);
   --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0.5393 0.2713 286.7462);
+  --primary: rgb(112, 51, 255);
   --primary-foreground: oklch(1.0000 0 0);
   --secondary: oklch(0.9540 0.0063 255.4755);
   --secondary-foreground: oklch(0.1344 0 0);
@@ -301,6 +304,9 @@ body {
   padding: 30px;
   background-color: var(--background);
   transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 body.dashboard-layout {
@@ -308,118 +314,172 @@ body.dashboard-layout {
   min-height: 100vh;
 }
 
-.container h2 {
-  font-size: 1.6em;
-  margin-bottom: 20px;
-  color: var(--foreground);
-}
-
-/* Profile Card */
-.profile-card {
-  background: var(--card);
+/* Form Styles */
+.form-container,
+.form-card {
+  background-color: var(--card);
   color: var(--card-foreground);
   border-radius: var(--radius-lg);
   padding: 30px;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.profile-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2em;
+.form-card h2 {
   color: var(--primary);
-  font-weight: bold;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.5em;
 }
 
-.profile-info h3 {
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-card label,
+.form-group label {
+  display: block;
+  font-weight: 600;
   color: var(--foreground);
-  font-size: 1.5em;
+  margin-top: 15px;
   margin-bottom: 5px;
 }
 
-.profile-info .role {
-  color: var(--primary);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.9em;
-}
-
-/* Profile Details */
-.profile-details table {
+.form-card input,
+.form-card select,
+.form-card textarea,
+.form-group input[type="text"],
+.form-group input[type="file"],
+.form-group textarea,
+.form-group select {
   width: 100%;
-  border-collapse: collapse;
-}
-
-.profile-details th,
-.profile-details td {
-  padding: 12px 0;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-.profile-details th {
-  color: var(--muted-foreground);
-  font-weight: 600;
-  width: 150px;
-}
-
-.profile-details td {
+  padding: 10px 15px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  background-color: var(--input);
   color: var(--foreground);
-  font-weight: 500;
+  transition: border-color 0.2s, background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-sans);
+  margin-bottom: 5px;
 }
 
-/* Profile Buttons */
-.profile-buttons {
-  display: flex;
-  gap: 15px;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
+.form-card input:focus,
+.form-card select:focus,
+.form-card textarea:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--ring);
 }
 
-.profile-buttons .btn {
-  padding: 12px 24px;
+.form-card button,
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  width: 100%;
+  padding: 12px;
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
+  margin-top: 20px;
   font-weight: 600;
-  font-size: 0.9em;
-  text-decoration: none;
-  display: inline-block;
-  transition: all 0.3s ease;
+  font-size: 1em;
   box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
 }
 
-.profile-buttons .btn:hover {
+.form-card button:hover,
+.btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   opacity: 0.9;
 }
 
-.profile-buttons .reset-btn {
-  background: oklch(0.7336 0.1758 50.5517);
-  color: white;
+.back-btn,
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 15px;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
-.profile-buttons .edit-btn {
-  background: var(--primary);
-  color: var(--primary-foreground);
+.back-btn:hover,
+.btn-secondary:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.product-selection {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  margin-top: 10px;
+  background: var(--muted);
+}
+
+.product-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.product-checkbox:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.product-checkbox input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+  margin-bottom: 0;
+}
+
+.error-message,
+.error-msg {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
+  padding: 15px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 0.85em;
+  margin-top: 5px;
+}
+
+.discount-value-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.discount-value-container input {
+  flex: 1;
+}
+
+.discount-value-container span {
+  font-weight: 600;
+  color: var(--muted-foreground);
 }
 </style>
 </head>
@@ -439,73 +499,149 @@ body.dashboard-layout {
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/upfordelivery.jsp">Up for Delivery</a></li>
         <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/completedorders.jsp">Completed Orders</a></li>
         <li><a href="${pageContext.request.contextPath}/ListProductsServlet">Catalogue</a></li>
-        <li><a href="${pageContext.request.contextPath}/ListDiscountsServlet">Discounts</a></li>
+        <li><a href="${pageContext.request.contextPath}/ListDiscountsServlet" class="active">Discounts</a></li>
         <li><a href="${pageContext.request.contextPath}/StoreReviewsServlet">Customer Reviews</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp" class="active">Profile</a></li>
+        <li><a href="${pageContext.request.contextPath}/pages/dashboards/storedash/myProfile.jsp">Profile</a></li>
     </ul>
 </aside>
 
 <main class="container">
-    <h2>My Profile</h2>
-    
-    <div class="profile-card">
-        <div class="profile-header">
-            <div class="profile-image">
-                ${sessionScope.currentUser.firstName.charAt(0)}${sessionScope.currentUser.lastName.charAt(0)}
-            </div>
-            <div class="profile-info">
-                <h3>${sessionScope.currentUser.firstName} ${sessionScope.currentUser.lastName}</h3>
-                <div class="role">${sessionScope.currentUser.role}</div>
-            </div>
-        </div>
+    <div class="form-card">
+        <h2>Create Discount</h2>
+        
+        <% if (request.getAttribute("error") != null) { %>
+        <div class="error-msg"><%= request.getAttribute("error") %></div>
+        <% } %>
 
-        <div class="profile-details">
-            <table>
-                <tr>
-                    <th>Store ID:</th>
-                    <td>${sessionScope.currentUser.userId}</td>
-                </tr>
-                <tr>
-                    <th>First Name:</th>
-                    <td>${sessionScope.currentUser.firstName}</td>
-                </tr>
-                <tr>
-                    <th>Last Name:</th>
-                    <td>${sessionScope.currentUser.lastName}</td>
-                </tr>
-                <tr>
-                    <th>Username:</th>
-                    <td>${sessionScope.currentUser.username}</td>
-                </tr>
-                <tr>
-                    <th>Email:</th>
-                    <td>${sessionScope.currentUser.email}</td>
-                </tr>
-                <tr>
-                    <th>Phone:</th>
-                    <td>${sessionScope.currentUser.phoneNumber}</td>
-                </tr>
-                <tr>
-                    <th>City:</th>
-                    <td>${sessionScope.currentUser.city}</td>
-                </tr>
-                <tr>
-                    <th>Role:</th>
-                    <td>${sessionScope.currentUser.role}</td>
-                </tr>
-            </table>
-        </div>
+        <form action="${pageContext.request.contextPath}/CreateDiscountServlet" method="post">
 
-        <div class="profile-buttons">
-            <form action="${pageContext.request.contextPath}/resetPassword.jsp" method="get">
-                <button type="submit" class="btn reset-btn">Reset Password</button>
-            </form>
-            <form action="${pageContext.request.contextPath}/editProfile.jsp" method="get">
-                <button type="submit" class="btn edit-btn">Edit Account Info</button>
-            </form>
-        </div>
+            <label for="discountName">Discount Name *</label>
+            <input type="text" name="discountName" placeholder="e.g., Summer Sale, 20% Off" required>
+
+            <label for="discountType">Discount Type *</label>
+            <select name="discountType" id="discountType" required onchange="updateDiscountValueLabel()">
+                <option value="">-- Select Type --</option>
+                <option value="PERCENTAGE">Percentage (%)</option>
+                <option value="FIXED">Fixed Amount (Rs)</option>
+            </select>
+
+            <label for="discountValue">Discount Value *</label>
+            <div class="discount-value-container">
+                <input type="number" name="discountValue" id="discountValue" step="0.01" min="0" placeholder="Enter value" required>
+                <span id="discountValueLabel">-</span>
+            </div>
+
+            <label for="startDate">Start Date (Optional)</label>
+            <input type="datetime-local" name="startDate" id="startDate">
+
+            <label for="endDate">End Date (Optional)</label>
+            <input type="datetime-local" name="endDate" id="endDate">
+
+            <label>Select Products to Apply Discount *</label>
+            <div class="product-selection">
+                <% if (products == null || products.isEmpty()) { %>
+                    <p style="color: var(--text-secondary); padding: 10px;">No products available. Please add products first.</p>
+                <% } else { 
+                    ProductVariantDAO variantDAO = new ProductVariantDAO();
+                    for (Product product : products) {
+                        String priceDisplay = "";
+                        try {
+                            List<ProductVariant> variants = variantDAO.getVariantsByProductId(product.getProductId());
+                            if (variants != null && !variants.isEmpty() && product.getPrice() == 0.00) {
+                                // Calculate price range from variants
+                                double minPrice = Double.MAX_VALUE;
+                                double maxPrice = 0.0;
+                                boolean hasValidPrice = false;
+                                
+                                for (ProductVariant v : variants) {
+                                    if (v.getPrice() != null) {
+                                        double vPrice = v.getPrice().doubleValue();
+                                        if (vPrice > 0) {
+                                            hasValidPrice = true;
+                                            if (vPrice < minPrice) minPrice = vPrice;
+                                            if (vPrice > maxPrice) maxPrice = vPrice;
+                                        }
+                                    }
+                                }
+                                
+                                if (hasValidPrice) {
+                                    if (minPrice == maxPrice) {
+                                        priceDisplay = String.format("Rs %.2f", minPrice);
+                                    } else {
+                                        priceDisplay = String.format("Rs %.2f - Rs %.2f", minPrice, maxPrice);
+                                    }
+                                } else {
+                                    priceDisplay = "Rs 0.00";
+                                }
+                            } else {
+                                priceDisplay = String.format("Rs %.2f", product.getPrice());
+                            }
+                        } catch (Exception e) {
+                            priceDisplay = String.format("Rs %.2f", product.getPrice());
+                        }
+                %>
+                    <div class="product-checkbox">
+                        <input type="checkbox" name="productIds" value="<%= product.getProductId() %>" id="product_<%= product.getProductId() %>">
+                        <label for="product_<%= product.getProductId() %>" style="margin: 0; font-weight: normal; cursor: pointer;">
+                            <%= product.getName() %> - <%= priceDisplay %>
+                        </label>
+                    </div>
+                    <% } %>
+                <% } %>
+            </div>
+            <small style="color: oklch(0.5393 0.2713 286.7462); display: block; margin-top: 5px;">
+                Select at least one product to apply the discount
+            </small>
+
+            <button type="submit">Create Discount</button>
+            <a href="${pageContext.request.contextPath}/ListDiscountsServlet" class="back-btn" style="width: 100%; text-align: center; display: block;">Cancel</a>
+        </form>
     </div>
 </main>
+
+<script>
+function updateDiscountValueLabel() {
+    const discountType = document.getElementById('discountType').value;
+    const label = document.getElementById('discountValueLabel');
+    
+    if (discountType === 'PERCENTAGE') {
+        label.textContent = '%';
+        document.getElementById('discountValue').setAttribute('max', '100');
+    } else if (discountType === 'FIXED') {
+        label.textContent = 'Rs';
+        document.getElementById('discountValue').removeAttribute('max');
+    } else {
+        label.textContent = '-';
+    }
+}
+
+// Validate form before submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const productCheckboxes = document.querySelectorAll('input[name="productIds"]:checked');
+    if (productCheckboxes.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one product to apply the discount.');
+        return false;
+    }
+    
+    const discountType = document.getElementById('discountType').value;
+    const discountValue = parseFloat(document.getElementById('discountValue').value);
+    
+    if (discountType === 'PERCENTAGE' && (discountValue <= 0 || discountValue > 100)) {
+        e.preventDefault();
+        alert('Percentage discount must be between 1 and 100.');
+        return false;
+    }
+    
+    if (discountType === 'FIXED' && discountValue <= 0) {
+        e.preventDefault();
+        alert('Fixed discount amount must be greater than 0.');
+        return false;
+    }
+    
+    return true;
+});
+</script>
 
 </body>
 </html>

@@ -1,266 +1,427 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-  <%@ page import="java.util.*" %>
-    <!DOCTYPE html>
-    <html>
+    <%@ page import="java.util.*" %>
+        <!DOCTYPE html>
+        <html>
 
-    <head>
-      <meta charset="UTF-8">
-      <title>Register Store - DailyFixer</title>
-      <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
-      <style>
-        body {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
-          background-color: var(--background);
-          padding: 40px 20px;
-        }
+        <head>
+            <meta charset="UTF-8">
+            <title>Register Store - DailyFixer</title>
+            <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+            <style>
+                .signup-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    padding: 60px 20px;
+                }
 
-        .signup-wrapper {
-          display: flex;
-          gap: 30px;
-          max-width: 1000px;
-          width: 100%;
-        }
+                .card {
+                    width: 1100px;
+                    max-width: 1200px;
+                    display: flex;
+                    gap: 30px;
+                }
 
-        .left-panel {
-          flex: 1;
-        }
+                .left,
+                .right {
+                    background: #fff;
+                    padding: 30px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                }
 
-        .right-panel {
-          width: 320px;
-          background-color: var(--card);
-          color: var(--card-foreground);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-lg);
-          padding: 30px;
-          box-shadow: var(--shadow-md);
-          height: fit-content;
-        }
+                .left {
+                    flex: 1;
+                }
 
-        .right-panel h3 {
-          color: var(--primary);
-          margin-bottom: 15px;
-        }
+                .right {
+                    width: 450px;
+                }
 
-        .right-panel p {
-          color: var(--muted-foreground);
-          font-size: 0.9rem;
-          line-height: 1.6;
-          margin-bottom: 15px;
-        }
+                .section-title {
+                    font-size: 18px;
+                    margin-bottom: 12px;
+                    font-weight: 600;
+                }
 
-        .right-panel hr {
-          border: none;
-          border-top: 1px solid var(--border);
-          margin: 20px 0;
-        }
+                .input-row {
+                    display: flex;
+                    gap: 12px;
+                }
 
-        .right-panel a {
-          color: var(--primary);
-          font-weight: 600;
-          text-decoration: none;
-        }
+                .input-row>div {
+                    flex: 1;
+                }
 
-        .right-panel a:hover {
-          text-decoration: underline;
-        }
+                .small {
+                    width: 100%;
+                    box-sizing: border-box;
+                    padding: 10px;
+                    border-radius: 8px;
+                    border: 1px solid #ccc;
+                }
 
-        .section-title {
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--primary);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-top: 24px;
-          margin-bottom: 16px;
-        }
+                .error {
+                    color: #b00020;
+                    margin-bottom: 12px;
+                }
 
-        .section-title:first-of-type {
-          margin-top: 0;
-        }
+                /* Map styles */
+                #store-map {
+                    width: 100%;
+                    height: 280px;
+                    border-radius: 10px;
+                    margin-top: 12px;
+                    border: 2px solid #e0e0e0;
+                }
 
-        .form-cols {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
+                .location-info {
+                    background: #f5f5f5;
+                    padding: 10px 14px;
+                    border-radius: 8px;
+                    margin-top: 10px;
+                    font-size: 13px;
+                }
 
-        .form-container h2 {
-          font-size: 2rem;
-          color: var(--primary);
-          margin-bottom: 10px;
-        }
+                .location-info.success {
+                    background: #e8f5e9;
+                    color: #2e7d32;
+                }
 
-        .error-text {
-          color: var(--destructive);
-          font-size: 0.85rem;
-          margin-bottom: 12px;
-          font-weight: 500;
-        }
+                .location-info.error {
+                    background: #ffebee;
+                    color: #c62828;
+                }
 
-        @media (max-width: 900px) {
-          .signup-wrapper {
-            flex-direction: column;
-          }
+                .location-coords {
+                    font-weight: 600;
+                }
 
-          .right-panel {
-            width: 100%;
-            order: -1;
-          }
+                .map-instructions {
+                    font-size: 12px;
+                    color: #666;
+                    margin-top: 8px;
+                    padding: 8px;
+                    background: #fff3e0;
+                    border-radius: 6px;
+                }
 
-          .form-cols {
-            grid-template-columns: 1fr;
-            gap: 0;
-          }
-        }
-      </style>
-    </head>
+                .search-box-container {
+                    margin-top: 12px;
+                }
 
-    <body>
+                .search-box-container label {
+                    font-weight: 500;
+                    margin-bottom: 4px;
+                    display: block;
+                }
+            </style>
+        </head>
 
-      <div class="signup-wrapper">
-        <div class="left-panel">
-          <div class="form-container">
-            <h2>Store Account</h2>
+        <body>
 
-            <c:if test="${not empty errorMsg}">
-              <div class="error-text">${errorMsg}</div>
-            </c:if>
+            <div class="signup-wrapper">
+                <div class="card">
+                    <div class="left">
+                        <h2>Store Account</h2>
 
-            <form method="post" action="registerStore" id="registerForm">
-              <div class="section-title">Owner Details</div>
-              <div class="form-cols">
-                <div class="form-group">
-                  <label for="firstName">First Name</label>
-                  <input type="text" name="firstName" id="firstName" placeholder="First Name" required>
+                        <c:if test="${not empty errorMsg}">
+                            <div class="error">${errorMsg}</div>
+                        </c:if>
+
+                        <form id="registerForm" method="post" action="registerStore"
+                            onsubmit="return submitForm(event);">
+                            <!-- Hidden fields for coordinates -->
+                            <input type="hidden" name="latitude" id="latitude">
+                            <input type="hidden" name="longitude" id="longitude">
+
+                            <!-- User fields -->
+                            <div class="section-title">Owner details</div>
+                            <div class="input-row">
+                                <div>
+                                    <label>First name</label>
+                                    <input class="small" type="text" name="firstName" id="firstName" required>
+                                </div>
+                                <div>
+                                    <label>Last name</label>
+                                    <input class="small" type="text" name="lastName" id="lastName" required>
+                                </div>
+                            </div>
+
+                            <div class="input-row" style="margin-top:12px;">
+                                <div>
+                                    <label>Username</label>
+                                    <input class="small" type="text" name="username" id="username" required>
+                                </div>
+                                <div>
+                                    <label>Password</label>
+                                    <input class="small" type="password" name="password" id="password" required>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:12px;">
+                                <label>Email</label>
+                                <input class="small" type="email" name="email" id="email" required>
+                            </div>
+
+                            <div style="margin-top:12px;">
+                                <label>Phone number</label>
+                                <input class="small" type="text" name="phone" id="phone">
+                            </div>
+
+                            <div style="margin-top:12px;">
+                                <label>Your City (optional)</label>
+                                <select class="small" name="city">
+                                    <option value="">-- Select city --</option>
+                                    <% String[]
+                                        cities={"Colombo","Kandy","Galle","Jaffna","Kurunegala","Matara","Trincomalee","Batticaloa","Negombo","Anuradhapura","Polonnaruwa","Badulla","Ratnapura","Puttalam","Kilinochchi","Mannar","Hambantota"};
+                                        for (String c : cities) { %>
+                                        <option value="<%=c%>">
+                                            <%=c%>
+                                        </option>
+                                        <% } %>
+                                </select>
+                            </div>
+
+                            <!-- Store fields -->
+                            <div class="section-title" style="margin-top:18px;">Store details</div>
+
+                            <div style="margin-top:6px;">
+                                <label>Store name</label>
+                                <input class="small" type="text" name="storeName" id="storeName" required>
+                            </div>
+
+                            <!-- Store address (Hidden, populated by map) -->
+                            <input type="hidden" name="storeAddress" id="storeAddress">
+
+
+                            <div class="input-row" style="margin-top:12px;">
+                                <div>
+                                    <label>Store city</label>
+                                    <select class="small" name="storeCity" id="storeCity" required>
+                                        <option value="">-- Select city --</option>
+                                        <% for (String c : cities) { %>
+                                            <option value="<%=c%>">
+                                                <%=c%>
+                                            </option>
+                                            <% } %>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Store type</label>
+                                    <select class="small" name="storeType" id="storeType" required>
+                                        <option value="">-- Select type --</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="hardware">Hardware</option>
+                                        <option value="vehicle repair">Vehicle Repair</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:18px;">
+                                <button type="submit" class="login-btn" id="submitBtn">Register Store</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="right">
+                        <h3>📍 Store Location</h3>
+                        <p style="font-size:13px;color:#666;">Set your store location using the search box or by
+                            clicking on the map.</p>
+
+                        <!-- Search Box for Places Autocomplete -->
+                        <div class="search-box-container">
+                            <label>Search for location:</label>
+                            <input class="small" type="text" id="map-search-input"
+                                placeholder="Type address or place name...">
+                        </div>
+
+                        <!-- Interactive Map -->
+                        <div id="store-map"></div>
+
+                        <div class="map-instructions">
+                            <strong>💡 Tips:</strong><br>
+                            • Type an address in the search box above, OR<br>
+                            • Click directly on the map to pin your store location
+                        </div>
+
+                        <!-- Location Status -->
+                        <div id="locationInfo" class="location-info">
+                            Location not set. Please select your store location on the map.
+                        </div>
+
+                        <hr style="margin-top:20px;">
+
+                        <p>Already have an account? <a href="login.jsp">Log in</a></p>
+                        <p>Or go back <a href="index.jsp">Home</a></p>
+
+                        <p style="font-size:12px;color:#888;margin-top:12px;">By registering you agree to our terms and
+                            that information you provide is accurate.</p>
+                    </div>
                 </div>
-                <div class="form-group">
-                  <label for="lastName">Last Name</label>
-                  <input type="text" name="lastName" id="lastName" placeholder="Last Name" required>
-                </div>
-              </div>
+            </div>
 
-              <div class="form-cols">
-                <div class="form-group">
-                  <label for="username">Username</label>
-                  <input type="text" name="username" id="username" placeholder="Username" required>
-                </div>
-                <div class="form-group">
-                  <label for="password">Password</label>
-                  <input type="password" name="password" id="password" placeholder="Password (min 6 chars)" required>
-                </div>
-              </div>
+            <!-- Google Maps API with Places library -->
+            <script
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8zSes6UGbYKIHNzCp3tny5RgccFruILI&libraries=places&callback=initMap"
+                async defer></script>
 
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" placeholder="Email" required>
-              </div>
+            <script>
+                var map;
+                var marker;
+                var geocoder;
+                var autocomplete;
+                var selectedLat = null;
+                var selectedLng = null;
 
-              <div class="form-cols">
-                <div class="form-group">
-                  <label for="phone">Phone Number</label>
-                  <input type="text" name="phone" id="phone" placeholder="Phone Number">
-                </div>
-                <div class="form-group">
-                  <label for="city">Your City (optional)</label>
-                  <select name="city" id="city" class="filter-select" style="width: 100%;">
-                    <option value="">-- Select city --</option>
-                    <% String[]
-                      cities={"Colombo","Kandy","Galle","Jaffna","Kurunegala","Matara","Trincomalee","Batticaloa","Negombo","Anuradhapura","Polonnaruwa","Badulla","Ratnapura","Puttalam","Kilinochchi","Mannar","Hambantota"};
-                      for (String c : cities) { %>
-                      <option value="<%=c%>">
-                        <%=c%>
-                      </option>
-                      <% } %>
-                  </select>
-                </div>
-              </div>
+                // Initialize the map
+                function initMap() {
+                    // Default center: Sri Lanka
+                    var sriLanka = { lat: 7.8731, lng: 80.7718 };
 
-              <div class="section-title">Store Details</div>
+                    map = new google.maps.Map(document.getElementById('store-map'), {
+                        center: sriLanka,
+                        zoom: 8,
+                        mapTypeControl: false,
+                        streetViewControl: false,
+                        fullscreenControl: true
+                    });
 
-              <div class="form-group">
-                <label for="storeName">Store Name</label>
-                <input type="text" name="storeName" id="storeName" placeholder="Store Name" required>
-              </div>
+                    geocoder = new google.maps.Geocoder();
 
-              <div class="form-group">
-                <label for="storeAddress">Store Address</label>
-                <textarea name="storeAddress" id="storeAddress" rows="3" placeholder="Full Store Address"
-                  required></textarea>
-              </div>
+                    // Create a draggable marker
+                    marker = new google.maps.Marker({
+                        map: map,
+                        draggable: true,
+                        visible: false,
+                        animation: google.maps.Animation.DROP
+                    });
 
-              <div class="form-cols">
-                <div class="form-group">
-                  <label for="storeCity">Store City</label>
-                  <select name="storeCity" id="storeCity" class="filter-select" style="width: 100%;" required>
-                    <option value="">-- Select city --</option>
-                    <% for (String c : cities) { %>
-                      <option value="<%=c%>">
-                        <%=c%>
-                      </option>
-                      <% } %>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="storeType">Store Type</label>
-                  <select name="storeType" id="storeType" class="filter-select" style="width: 100%;" required>
-                    <option value="">-- Select type --</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="hardware">Hardware</option>
-                    <option value="vehicle repair">Vehicle Repair</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              </div>
+                    // Click on map to set location
+                    map.addListener('click', function (e) {
+                        setLocation(e.latLng.lat(), e.latLng.lng());
+                        reverseGeocode(e.latLng);
+                    });
 
-              <button type="submit" class="btn-primary" style="width: 100%; margin-top: 24px;">Register Store</button>
-            </form>
-          </div>
-        </div>
+                    // Drag marker to set location
+                    marker.addListener('dragend', function (e) {
+                        setLocation(e.latLng.lat(), e.latLng.lng());
+                        reverseGeocode(e.latLng);
+                    });
 
-        <div class="right-panel">
-          <h3>Why register a store?</h3>
-          <p>Registering as a store lets you list products, accept repair requests, and manage orders.</p>
+                    // Initialize Places Autocomplete
+                    var searchInput = document.getElementById('map-search-input');
+                    autocomplete = new google.maps.places.Autocomplete(searchInput, {
+                        componentRestrictions: { country: 'lk' }, // Restrict to Sri Lanka
+                        fields: ['geometry', 'formatted_address', 'name']
+                    });
 
-          <hr>
+                    autocomplete.addListener('place_changed', function () {
+                        var place = autocomplete.getPlace();
 
-          <p>Already have an account? <a href="login.jsp">Log in</a></p>
-          <p>Or go back <a href="index.jsp">Home</a></p>
+                        if (place.geometry && place.geometry.location) {
+                            var lat = place.geometry.location.lat();
+                            var lng = place.geometry.location.lng();
 
-          <hr>
+                            setLocation(lat, lng);
+                            map.setCenter(place.geometry.location);
+                            map.setZoom(15);
 
-          <p style="font-size: 0.8rem; color: var(--muted-foreground);">By registering you agree to our terms and that
-            information you provide is accurate.</p>
-        </div>
-      </div>
+                            updateLocationInfo(place.formatted_address || place.name, lat, lng);
+                        } else {
+                            showLocationError('Could not find that location. Please try again.');
+                        }
+                    });
+                }
 
-      <script>
-        document.getElementById('registerForm').addEventListener('submit', function (e) {
-          var u = document.getElementById('username').value.trim();
-          var em = document.getElementById('email').value.trim();
-          var pw = document.getElementById('password').value;
-          var sn = document.getElementById('storeName').value.trim();
-          var sa = document.getElementById('storeAddress').value.trim();
-          var sc = document.getElementById('storeCity').value;
+                // Set the location coordinates
+                function setLocation(lat, lng) {
+                    selectedLat = lat;
+                    selectedLng = lng;
 
-          var err = [];
-          if (!u) err.push("Username required");
-          if (!em) err.push("Email required");
-          if (!pw || pw.length < 6) err.push("Password required (min 6 chars)");
-          if (!sn) err.push("Store name required");
-          if (!sa) err.push("Store address required");
-          if (!sc) err.push("Store city required");
+                    // Update hidden form fields
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lng;
 
-          if (err.length) {
-            alert(err.join("\\n"));
-            e.preventDefault();
-          }
-        });
-      </script>
-      <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
+                    // Update marker position
+                    var position = new google.maps.LatLng(lat, lng);
+                    marker.setPosition(position);
+                    marker.setVisible(true);
+                }
 
-    </body>
+                // Reverse geocode to get address from coordinates
+                function reverseGeocode(latLng) {
+                    geocoder.geocode({ location: latLng }, function (results, status) {
+                        if (status === 'OK' && results[0]) {
+                            updateLocationInfo(results[0].formatted_address, latLng.lat(), latLng.lng());
+                        } else {
+                            updateLocationInfo('Location selected', latLng.lat(), latLng.lng());
+                        }
+                    });
+                }
 
-    </html>
+                // Update the location info display
+                function updateLocationInfo(address, lat, lng) {
+                    var infoDiv = document.getElementById('locationInfo');
+                    infoDiv.className = 'location-info success';
+                    infoDiv.innerHTML = '<strong>✓ Location Set:</strong><br>' +
+                        '<span style="font-size:12px;">' + address + '</span><br>' +
+                        '<span class="location-coords">Lat: ' + lat.toFixed(6) + ', Lng: ' + lng.toFixed(6) + '</span>';
+
+                    // Auto-fill the hidden store address field
+                    document.getElementById('storeAddress').value = address;
+                }
+
+                // Show location error
+                function showLocationError(message) {
+                    var infoDiv = document.getElementById('locationInfo');
+                    infoDiv.className = 'location-info error';
+                    infoDiv.innerHTML = '<strong>⚠ Error:</strong> ' + message;
+                }
+
+                // Client-side validation
+                function validateForm() {
+                    var u = document.getElementById('username').value.trim();
+                    var em = document.getElementById('email').value.trim();
+                    var pw = document.getElementById('password').value;
+                    var sn = document.getElementById('storeName').value.trim();
+                    var lat = document.getElementById('latitude').value;
+                    var lng = document.getElementById('longitude').value;
+                    var sc = document.getElementById('storeCity').value;
+
+                    var err = [];
+                    if (!u) err.push("Username required");
+                    if (!em) err.push("Email required");
+                    if (!pw || pw.length < 6) err.push("Password required (min 6 chars)");
+                    if (!sn) err.push("Store name required");
+                    if (!lat || !lng || lat === '' || lng === '') err.push("Please select a store location on the map.");
+                    if (!sc) err.push("Store city required");
+
+                    if (err.length) {
+                        alert(err.join("\n"));
+                        return false;
+                    }
+                    return true;
+                }
+
+                // Submit form - geocode if no map selection, else use selected coords
+                function submitForm(event) {
+                    event.preventDefault();
+
+                    if (!validateForm()) {
+                        return false;
+                    }
+
+                    var submitBtn = document.getElementById('submitBtn');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Registering...';
+
+                    // Submit the form - validation already checked that location is set
+                    document.getElementById('registerForm').submit();
+                    return false;
+                }
+            </script>
+
+        </body>
+
+        </html>

@@ -11,11 +11,12 @@ import java.sql.Statement;
 public class StoreDAO {
 
     /**
-     * Insert store record that references an existing users.user_id.
-     * Returns true if insert succeeded and sets the generated storeId on the Store object.
+     * Add a new store to the database.
+     * Returns true if successful and sets the generated storeId in the Store object.
      */
     public boolean addStore(Store store) {
-        String sql = "INSERT INTO stores (user_id, store_name, store_address, store_city, store_type) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO stores (user_id, store_name, store_address, store_city, store_type, latitude, longitude) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -24,6 +25,8 @@ public class StoreDAO {
             ps.setString(3, store.getStoreAddress());
             ps.setString(4, store.getStoreCity());
             ps.setString(5, store.getStoreType());
+            ps.setDouble(6, store.getLatitude());
+            ps.setDouble(7, store.getLongitude());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -34,10 +37,87 @@ public class StoreDAO {
                 }
                 return true;
             }
-            return false;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
+    }
+
+    /**
+     * Get a store by its ID, including latitude and longitude
+     */
+    public Store getStoreById(int storeId) {
+        String sql = "SELECT * FROM stores WHERE store_id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, storeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Store store = new Store();
+                store.setStoreId(rs.getInt("store_id"));
+                store.setUserId(rs.getInt("user_id"));
+                store.setStoreName(rs.getString("store_name"));
+                store.setStoreAddress(rs.getString("store_address"));
+                store.setStoreCity(rs.getString("store_city"));
+                store.setStoreType(rs.getString("store_type"));
+                store.setLatitude(rs.getDouble("latitude"));
+                store.setLongitude(rs.getDouble("longitude"));
+                return store;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Optional: update store's latitude/longitude
+     */
+    public boolean updateStoreCoordinates(int storeId, double latitude, double longitude) {
+        String sql = "UPDATE stores SET latitude = ?, longitude = ? WHERE store_id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setDouble(1, latitude);
+            ps.setDouble(2, longitude);
+            ps.setInt(3, storeId);
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Get a store by the owner's username
+     */
+    public Store getStoreByUsername(String username) {
+        String sql = "SELECT s.* FROM stores s " +
+                     "JOIN users u ON s.user_id = u.user_id " +
+                     "WHERE u.username = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Store store = new Store();
+                store.setStoreId(rs.getInt("store_id"));
+                store.setUserId(rs.getInt("user_id"));
+                store.setStoreName(rs.getString("store_name"));
+                store.setStoreAddress(rs.getString("store_address"));
+                store.setStoreCity(rs.getString("store_city"));
+                store.setStoreType(rs.getString("store_type"));
+                store.setLatitude(rs.getDouble("latitude"));
+                store.setLongitude(rs.getDouble("longitude"));
+                return store;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
