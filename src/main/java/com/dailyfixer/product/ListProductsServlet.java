@@ -6,6 +6,7 @@ import com.dailyfixer.model.User;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListProductsServlet extends HttpServlet {
@@ -26,12 +27,14 @@ public class ListProductsServlet extends HttpServlet {
 
         String storeUsername = user.getUsername();
 
+        List<Product> products = new ArrayList<>();
         try {
-            List<Product> products = new ProductDAO().getAllProducts(storeUsername);
-            request.setAttribute("products", products);
-            request.getRequestDispatcher("/pages/dashboards/storedash/productList.jsp").forward(request, response);
+            products = new ProductDAO().getAllProducts(storeUsername);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        request.setAttribute("products", products);
+        request.getRequestDispatcher("/pages/dashboards/storedash/productList.jsp").forward(request, response);
     }
 }

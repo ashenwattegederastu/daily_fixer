@@ -14,4 +14,11 @@ public class LogoutServlet extends HttpServlet {
         if (session != null) session.invalidate();
         resp.sendRedirect("index.jsp");
     }
+    
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session != null) session.invalidate();
+        resp.sendRedirect("index.jsp");
+    }
 }

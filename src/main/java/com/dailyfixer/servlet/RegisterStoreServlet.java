@@ -11,7 +11,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -44,6 +49,17 @@ public class RegisterStoreServlet extends HttpServlet {
         String storeAddress = req.getParameter("storeAddress");
         String storeCity = req.getParameter("storeCity");
         String storeType = req.getParameter("storeType");
+
+        String latStr = req.getParameter("latitude");
+        String lngStr = req.getParameter("longitude");
+        double latitude = 0;
+        double longitude = 0;
+        try {
+            if (latStr != null && !latStr.isEmpty()) latitude = Double.parseDouble(latStr);
+            if (lngStr != null && !lngStr.isEmpty()) longitude = Double.parseDouble(lngStr);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
 
         StringBuilder errors = new StringBuilder();
 
@@ -79,8 +95,7 @@ public class RegisterStoreServlet extends HttpServlet {
             user.setCity(city);
             user.setRole("store");
 
-            int userId = userDAO.saveUser(user); // ✅ get generated ID
-
+            int userId = userDAO.saveUser(user);
             if (userId <= 0) {
                 req.setAttribute("errorMsg", "Failed to create user account.");
                 req.getRequestDispatcher("registerStore.jsp").forward(req, resp);
@@ -94,9 +109,10 @@ public class RegisterStoreServlet extends HttpServlet {
             store.setStoreAddress(storeAddress);
             store.setStoreCity(storeCity);
             store.setStoreType(storeType);
+            store.setLatitude(latitude);
+            store.setLongitude(longitude);
 
             boolean storeSaved = storeDAO.addStore(store);
-
             if (!storeSaved) {
                 // rollback user if store creation failed
                 try (Connection con = DBConnection.getConnection();
@@ -104,7 +120,6 @@ public class RegisterStoreServlet extends HttpServlet {
                     ps.setInt(1, userId);
                     ps.executeUpdate();
                 } catch (Exception ignored) {}
-
                 req.setAttribute("errorMsg", "Failed to create store record. Please try again.");
                 req.getRequestDispatcher("registerStore.jsp").forward(req, resp);
                 return;

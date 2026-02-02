@@ -12,6 +12,7 @@ public class Product {
     private byte[] image;
     private String storeUsername;
     private String description;
+    private int storeId;
 
     // Getters and Setters
     public int getProductId() { return productId; }
@@ -46,4 +47,7 @@ public class Product {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public int getStoreId() { return storeId; }
+    public void setStoreId(int storeId) { this.storeId = storeId; }
 }

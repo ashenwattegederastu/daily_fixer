@@ -46,7 +46,7 @@ public class ResetPasswordServlet extends HttpServlet {
             // Hash the provided current password
             String hashedCurrent = HashUtil.sha256(currentPassword);
 
-            // Fetch latest user from DB to verify password accurately
+            // Fetch latest com.dailyfixer.user from DB to verify password accurately
             User dbUser = userDAO.getUserById(currentUser.getUserId());
             if (dbUser == null || !dbUser.getPassword().equals(hashedCurrent)) {
                 req.setAttribute("errorMsg", "Current password is incorrect.");
