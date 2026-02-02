@@ -1,5 +1,7 @@
-<%@ page import="java.util.*,com.dailyfixer.model.Product" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="com.dailyfixer.model.User" %>
+<%@ page import="com.dailyfixer.model.Product" %>
+<%@ page import="java.util.List" %>
 <%
     User user = (User) session.getAttribute("currentUser");
     if (user == null || !"store".equals(user.getRole())) {
@@ -287,6 +289,7 @@ img.service-thumb {
                 <th>Name</th>
                 <th>Type</th>
                 <th>Quantity</th>
+                <th>Description</th>
                 <th>Price</th>
                 <th>Actions</th>
             </tr>
@@ -305,6 +308,7 @@ img.service-thumb {
                 <td><%=p.getName()%></td>
                 <td><%=p.getType()%></td>
                 <td><%=p.getQuantity()%> <%=p.getQuantityUnit()%></td>
+                <td><%=p.getDescription()%></td>
                 <td>Rs. <%=p.getPrice()%></td>
                 <td>
                     <a href="${pageContext.request.contextPath}/pages/dashboards/storedash/editProduct.jsp?productId=<%=p.getProductId()%>" class="btn edit-btn">Edit</a>

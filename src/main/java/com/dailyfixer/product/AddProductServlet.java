@@ -31,9 +31,10 @@ public class AddProductServlet extends HttpServlet {
         // 2. Get form parameters
         String name = request.getParameter("name");
         String type = request.getParameter("type");
-        double quantity = Double.parseDouble(request.getParameter("quantity"));
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
         String quantityUnit = request.getParameter("quantityUnit");
         double price = Double.parseDouble(request.getParameter("price"));
+        String description = request.getParameter("description");
 
         // 3. Get uploaded image
         InputStream inputStream = null;
@@ -51,6 +52,7 @@ public class AddProductServlet extends HttpServlet {
             p.setQuantityUnit(quantityUnit);
             p.setPrice(price);
             p.setStoreUsername(storeUsername);
+            p.setDescription(description);
             if (inputStream != null) p.setImage(inputStream.readAllBytes());
 
             // 5. Save to database

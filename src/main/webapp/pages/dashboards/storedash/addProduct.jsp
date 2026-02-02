@@ -1,14 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.*,com.dailyfixer.model.Product" %>
 <%@ page import="com.dailyfixer.model.User" %>
 <%
-  User user = (User) session.getAttribute("currentUser");
-  if (user == null || !"store".equals(user.getRole())) {
-    response.sendRedirect(request.getContextPath() + "/login.jsp");
-    return;
-  }
-
-//  List<Product> products = (List<Product>) request.getAttribute("products");
+    User user = (User) session.getAttribute("currentUser");
+    if (user == null || !"store".equals(user.getRole())) {
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -141,7 +138,8 @@ body {
 }
 
 .form-card input,
-.form-card select {
+.form-card select,
+.form-card textarea{
     width: 100%;
     padding: 12px;
     border: 2px solid #e0e0e0;
@@ -153,7 +151,8 @@ body {
 }
 
 .form-card input:focus,
-.form-card select:focus {
+.form-card select:focus,
+.form-card textarea:focus{
     outline: none;
     border-color: var(--accent);
     background: white;
@@ -263,6 +262,10 @@ body {
 
             <label for="price">Price (Rs.)</label>
             <input type="number" step="0.01" name="price" placeholder="Enter price" required>
+
+            <label for="description">Description</label>
+            <textarea name="description" id="description" rows="4" placeholder="Enter product description" required></textarea>
+
 
             <label for="image">Product Image</label>
             <input type="file" name="image" accept="image/*" required>

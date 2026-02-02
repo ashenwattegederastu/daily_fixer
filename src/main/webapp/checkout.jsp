@@ -1,98 +1,135 @@
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.HashMap" %>
+<%@ page import="com.dailyfixer.model.CartItem" %>
+<%@ page import="com.dailyfixer.dao.ProductDAO" %>
+<%@ page import="com.dailyfixer.model.Product" %>
+
+<%
+    // Get cart from session
+    Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+
+    // Prepare items to checkout (cart or direct Buy Now)
+    Map<Integer, CartItem> itemsToCheckout = new HashMap<>();
+
+    if (cart != null && !cart.isEmpty()) {
+        itemsToCheckout.putAll(cart);
+    } else {
+        String productIdParam = request.getParameter("productId");
+        String quantityParam = request.getParameter("quantity");
+
+        if (productIdParam != null && quantityParam != null && !productIdParam.isEmpty()) {
+            int productId = Integer.parseInt(productIdParam);
+            int quantity = Integer.parseInt(quantityParam);
+
+            ProductDAO dao = new ProductDAO();
+            Product product = dao.getProductById(productId);
+            if (product != null) {
+                CartItem item = new CartItem(
+                        product.getProductId(),
+                        product.getName(),
+                        product.getPrice(),
+                        quantity,
+                        product.getImageBase64()
+                );
+                itemsToCheckout.put(productId, item);
+            }
+        }
+    }
+
+    // If no items, show message and return
+    if (itemsToCheckout.isEmpty()) {
+%>
+<p>No products to checkout.</p>
+<a href="store_main.jsp">Back to Store</a>
+<%
+        return;
+    }
+
+    // Store cart items in session for post-payment order processing
+    session.setAttribute("itemsToCheckout", itemsToCheckout);
+
+    double total = 0; // Initialize total for order summary
+%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Fixer - Fix, Learn, Restore</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/checkout.css">
+    <title>Checkout - Daily Fixer</title>
+    <link rel="stylesheet" href="assets/css/checkout.css">
 </head>
-    <body>
-    <!-- Navigation -->
-    <nav id="navbar">
-        <div class="nav-container">
-            <div class="logo">Daily Fixer</div>
-            <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
-                <li><a href="${pageContext.request.contextPath}/listguides.jsp">View Repair Guides</a></li>
-                <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
-                <li><a href="${pageContext.request.contextPath}/store_main.jsp">Store</a></li>
-            </ul>
-            <div class="nav-buttons">
-                <button class="btn-login">Login</button>
-                <button class="btn-signup">Sign Up</button>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">Daily Fixer</div>
+        <ul class="nav-links">
+            <li><a href="diagnostic.jsp">Diagnostic Tool</a></li>
+            <li><a href="listguides.jsp">Repair Guides</a></li>
+            <li><a href="findtech.jsp">Technicians</a></li>
+            <li><a href="store_main.jsp">Store</a></li>
+        </ul>
+    </div>
+</nav>
+
+
+<!-- Entire form wraps shipping + order summary -->
+<form method="post" action="redirectToPayment">
+
+    <div class="checkout-container">
+        <!-- Left: Shipping Details -->
+        <div class="shipping">
+            <h2>Shipping Details</h2>
+            <label>Name</label><input type="text" name="name" required>
+            <label>Address</label><input type="text" name="address" required>
+            <label>Phone</label><input type="text" name="phone" required>
+            <div class="address-row">
+                <div>
+                    <label>Province</label>
+                    <select name="province"><option>Select Province</option></select>
+                </div>
+                <div>
+                    <label>District</label>
+                    <select name="district"><option>Select District</option></select>
+                </div>
+                <div>
+                    <label>City</label>
+                    <select name="city"><option>Select City</option></select>
+                </div>
             </div>
         </div>
-    </nav>
-    
-    
- <div class="page-title">
-        <h1>Checkout</h1>
-    </div>
-<div class="checkout-container">
-   
 
-  <!-- Left: Shipping Address -->
-  <div class="shipping">
-    <h2>Shipping Address</h2>
-    <form id="shippingForm">
-      <label for="name">Name</label>
-      <input type="text" id="name" placeholder="Name">
+        <!-- Right: Order Summary -->
+        <div class="order-summary">
+            <h2>Order Summary</h2>
 
-      <label for="phone">Phone Number</label>
-      <input type="text" id="phone" placeholder="Phone Number">
+            <% for(CartItem item : itemsToCheckout.values()) {
+                double subtotal = item.getQuantity() * item.getPrice();
+                total += subtotal;
+            %>
+            <div class="checkout-item">
+                <img src="data:image/jpeg;base64,<%=item.getImageBase64()%>" alt="<%=item.getName()%>" width="100">
+                <div class="item-details">
+                    <p><strong><%=item.getName()%></strong></p>
+                    <p>Qty: <%=item.getQuantity()%></p>
+                    <p>Price: Rs <%=String.format("%.2f", item.getPrice()) %></p>
+                    <p>Subtotal: Rs <%=String.format("%.2f", subtotal) %></p>
+                </div>
+            </div>
+            <% } %>
 
-      <div class="address-row">
-        <div>
-          <label for="province">Province</label>
-          <select id="province">
-            <option>Select Province</option>
-          </select>
+            <div class="totals">
+                <div>Subtotal <span>Rs <%=String.format("%.2f", total)%></span></div>
+                <div>Discount <span>Rs 0.00</span></div>
+                <div>Shipping <span>Rs 0.00</span></div>
+                <div class="total">Total <span>Rs <%=String.format("%.2f", total)%></span></div>
+            </div>
+
+            <!-- Place Order button -->
+            <button type="submit" class="place-order">Place Order</button>
         </div>
-        <div>
-          <label for="district">District</label>
-          <select id="district">
-            <option>Select District</option>
-          </select>
-        </div>
-        <div>
-          <label for="city">City</label>
-          <select id="city">
-            <option>Select City</option>
-          </select>
-        </div>
-      </div>
-
-      <label for="address">Address</label>
-      <textarea id="address" placeholder="Address"></textarea>
-
-    </form>
-  </div>
-
-  
-
-  <!-- Right: Order Summary -->
-  <div class="order-summary">
-    <h2>Order Summary</h2>
-    <div class="cart-item">
-      <img src="${pageContext.request.contextPath}/assets/images/glass_cutter.jpg" alt="Product">
-      <div class="item-details">
-        <p class="item-name">Glass Cutter</p>
-        <p class="item-qty">Qty: 1</p>
-        <p class="item-price">Rs 1,200.00</p>
-      </div>
     </div>
-
-    <div class="totals">
-      <div>Subtotal <span>Rs 1,200.00</span></div>
-      <div>Discount <span>Rs 0.00</span></div>
-      <div>Shipping <span>Rs 0.00</span></div>
-      <div class="total">Total <span>Rs 1,200.00</span></div>
-    </div>
-
-
-    <button class="place-order">Proceed to Pay</button>
-  </div>
-</div>
+</form>
 
 </body>
 </html>

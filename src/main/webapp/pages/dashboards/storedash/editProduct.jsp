@@ -5,19 +5,17 @@
 
 <%
     User user = (User) session.getAttribute("currentUser");
-    if (user == null || user.getRole() == null) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
-    }
-
-    String role = user.getRole().trim().toLowerCase();
-    if (!("admin".equals(role) || "store".equals(role))) {
+    if (user == null || !"store".equals(user.getRole())) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
 
     int id = Integer.parseInt(request.getParameter("productId"));
     Product product = new ProductDAO().getProductById(id);
+    if (product == null) {
+        response.sendRedirect(request.getContextPath() + "/ListProductsServlet");
+        return;
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -272,6 +270,10 @@ body {
 
             <label>Price (Rs.)</label>
             <input type="number" step="0.01" name="price" value="<%=product.getPrice()%>" placeholder="Enter price" required>
+
+            <label>Description</label>
+            <textarea name="description" rows="4" placeholder="Enter product description" required><%=product.getDescription()%></textarea>
+
 
             <label>Product Image</label>
             <input type="file" name="image" accept="image/*">

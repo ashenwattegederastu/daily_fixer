@@ -2,18 +2,23 @@
 <%@ page import="com.dailyfixer.model.User" %>
 
 <%
+    // Get the currently logged-in user from session
     User user = (User) session.getAttribute("currentUser");
+
+    // Redirect to login if no user or role is set
     if (user == null || user.getRole() == null) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
 
+    // Check role: allow only admin or store
     String role = user.getRole().trim().toLowerCase();
     if (!("admin".equals(role) || "store".equals(role))) {
         response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
 %>
+
 
 <!DOCTYPE html>
 <html lang="en">
