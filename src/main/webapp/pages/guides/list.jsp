@@ -167,7 +167,7 @@
                 <div class="nav-container">
                     <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
                     <ul class="nav-links">
-                        <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
+                        <li><a href="${pageContext.request.contextPath}/pages/diagnostic/diagnostic-browse.jsp">Diagnostic Tool</a></li>
                         <li><a href="${pageContext.request.contextPath}/guides" class="active">View Repair Guides</a>
                         </li>
                         <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>

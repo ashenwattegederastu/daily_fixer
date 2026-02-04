@@ -353,8 +353,8 @@ nav.public-nav .logo {
         <div class="nav-container">
             <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
             <ul class="nav-links">
-                <li><a href="${pageContext.request.contextPath}/diagnostic.jsp">Diagnostic Tool</a></li>
-                <li><a href="${pageContext.request.contextPath}/listguides.jsp">View Repair Guides</a></li>
+                <li><a href="${pageContext.request.contextPath}/pages/diagnostic/diagnostic-browse.jsp">Diagnostic Tool</a></li>
+                <li><a href="${pageContext.request.contextPath}/guides">View Repair Guides</a></li>
                 <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
                 <li><a href="${pageContext.request.contextPath}/store_main.jsp">Store</a></li>
             </ul>
@@ -366,7 +366,7 @@ nav.public-nav .logo {
                     </form>
                 <% } else { %>
                     <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login">Login</a>
-                    <a href="${pageContext.request.contextPath}/registerUser.jsp" class="btn-signup">Sign Up</a>
+                    <a href="${pageContext.request.contextPath}/preliminarySignup.jsp" class="btn-signup">Sign Up</a>
                 <% } %>
             </div>
         </div>
