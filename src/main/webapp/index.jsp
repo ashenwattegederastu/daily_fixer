@@ -10,51 +10,14 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Daily Fixer - Fix, Learn, Restore</title>
                 <link
-                    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-                    rel="stylesheet">
+                        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+                        rel="stylesheet">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
             </head>
 
             <body>
-                <!-- Navigation -->
-                <nav id="navbar" class="public-nav">
-                    <div class="nav-container">
-                        <%-- <div class="logo">Daily Fixer
-                    </div>--%>
-                    <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
-                    <ul class="nav-links">
-                        <li><a href="${pageContext.request.contextPath}/pages/diagnostic/diagnostic-browse.jsp">Diagnostic
-                                Tool</a></li>
-                        <li><a href="${pageContext.request.contextPath}/guides">View Repair Guides</a></li>
-                        <li><a href="${pageContext.request.contextPath}/findtech.jsp">Book a Technician</a></li>
-                        <li><a href="${pageContext.request.contextPath}/store_main.jsp">Store</a></li>
-                    </ul>
-
-                    <!-- Dynamic Login/Logout -->
-                    <div class="nav-buttons">
-                        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()"
-                            aria-label="Toggle dark mode">🌙 Dark</button>
-                        <c:choose>
-                            <c:when test="${not empty sessionScope.currentUser}">
-                                <!-- User is logged in -->
-                                <a href="${pageContext.request.contextPath}/pages/dashboards/${sessionScope.currentUser.role}dash/${sessionScope.currentUser.role}dashmain.jsp"
-                                    class="btn-login"
-                                    style="text-decoration: none; padding: 0.6rem 1.2rem; display: inline-block;">
-                                    Hi, ${sessionScope.currentUser.firstName}
-                                </a>
-                                <a href="${pageContext.request.contextPath}/logout" class="btn-logout"
-                                    style="text-decoration: none;">Logout</a>
-                            </c:when>
-                            <c:otherwise>
-                                <!-- Guest -->
-                                <a href="${pageContext.request.contextPath}/login.jsp" class="btn-login">Login</a>
-                                <a href="${pageContext.request.contextPath}/preliminarySignup.jsp"
-                                    class="btn-signup">Sign Up</a>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                    </div>
-                </nav>
+                <!-- Shared Header/Navigation -->
+                <jsp:include page="/pages/shared/header.jsp" />
 
                 <!-- Hero Section 1: Community -->
                 <section class="hero-section active" id="hero1">
@@ -150,17 +113,8 @@
                     </div>
                 </section>
 
+                <!-- Page-specific Scripts -->
                 <script>
-                    // Navbar scroll effect
-                    const navbar = document.getElementById('navbar');
-                    window.addEventListener('scroll', () => {
-                        if (window.scrollY > 50) {
-                            navbar.classList.add('scrolled');
-                        } else {
-                            navbar.classList.remove('scrolled');
-                        }
-                    });
-
                     // Hero section visibility on scroll
                     const heroSections = document.querySelectorAll('.hero-section');
                     const observerOptions = {
@@ -181,7 +135,7 @@
                         observer.observe(section);
                     });
 
-                    // Smooth scroll for internal links (optional: you can keep or remove if using full paths)
+                    // Smooth scroll for internal links
                     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                         anchor.addEventListener('click', function (e) {
                             e.preventDefault();
@@ -195,7 +149,6 @@
                         });
                     });
                 </script>
-                <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
             </body>
 
             </html>

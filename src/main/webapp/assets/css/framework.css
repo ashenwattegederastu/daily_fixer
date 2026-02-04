@@ -1027,7 +1027,7 @@ nav.public-nav .logo {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  margin-top: 60px;
+  /*margin-top: 60px;*/
   opacity: 0;
   transition: opacity 0.8s ease;
   position: relative;
