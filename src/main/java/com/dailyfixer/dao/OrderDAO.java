@@ -5,7 +5,6 @@ import com.dailyfixer.model.OrderItem;
 import com.dailyfixer.model.ProductSales;
 import com.dailyfixer.util.DBConnection;
 
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +18,15 @@ public class OrderDAO {
     // SQL Statements
     private static final String INSERT_ORDER = "INSERT INTO orders (order_id, customer_name, email, phone, address, city, "
             +
-            "total_amount, currency, status, store_username, product_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+            "total_amount, currency, status, store_username, product_name, buyer_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
     // Fallback INSERT without store_username (if column doesn't exist)
     private static final String INSERT_ORDER_FALLBACK = "INSERT INTO orders (order_id, customer_name, email, phone, address, city, "
             +
-            "total_amount, currency, status, product_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
-    // Fallback INSERT without store_username and product_name (if columns don't exist)
+            "total_amount, currency, status, product_name, buyer_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    // Fallback INSERT without store_username and product_name (if columns don't
+    // exist)
     private static final String INSERT_ORDER_MINIMAL = "INSERT INTO orders (order_id, customer_name, email, phone, address, city, "
             +
             "total_amount, currency, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -38,37 +38,40 @@ public class OrderDAO {
     private static final String UPDATE_STATUS_ONLY = "UPDATE orders SET status = ? WHERE order_id = ?";
 
     private static final String SELECT_ORDERS_BY_STATUS = "SELECT * FROM orders WHERE UPPER(TRIM(status)) = UPPER(TRIM(?)) ORDER BY created_at DESC";
-    
-    // Try to use store_username if column exists, otherwise filter by product_name pattern
-    private static final String SELECT_ORDERS_BY_STORE = 
-        "SELECT * FROM orders WHERE UPPER(TRIM(status)) = UPPER(TRIM(?)) AND store_username = ? ORDER BY created_at DESC";
 
-    private static final String SELECT_ALL_ORDERS_BY_STORE =
-        "SELECT * FROM orders WHERE store_username = ? AND UPPER(TRIM(status)) IN ('PAID','PENDING','PROCESSING','OUT_FOR_DELIVERY','DELIVERED') ORDER BY created_at DESC";
-    
+    // Try to use store_username if column exists, otherwise filter by product_name
+    // pattern
+    private static final String SELECT_ORDERS_BY_STORE = "SELECT * FROM orders WHERE UPPER(TRIM(status)) = UPPER(TRIM(?)) AND store_username = ? ORDER BY created_at DESC";
+
+    private static final String SELECT_ALL_ORDERS_BY_STORE = "SELECT * FROM orders WHERE store_username = ? AND UPPER(TRIM(status)) IN ('PAID','PENDING','PROCESSING','OUT_FOR_DELIVERY','DELIVERED') ORDER BY created_at DESC";
+
+    private static final String SELECT_ORDERS_BY_BUYER = "SELECT * FROM orders WHERE buyer_id = ? ORDER BY created_at DESC";
+
     // Order Items SQL
-    private static final String INSERT_ORDER_ITEM = "INSERT INTO order_items (order_id, store_id, product_id, variant_id, " +
+    private static final String INSERT_ORDER_ITEM = "INSERT INTO order_items (order_id, store_id, product_id, variant_id, "
+            +
             "product_name, quantity, unit_price, total_price, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
     private static final String SELECT_ORDER_ITEMS_BY_ORDER_ID = "SELECT * FROM order_items WHERE order_id = ? ORDER BY id";
-    
-    private static final String SELECT_ORDER_ITEMS_BY_STORE_AND_STATUS = 
-        "SELECT oi.* FROM order_items oi " +
-        "JOIN orders o ON oi.order_id = o.order_id " +
-        "WHERE oi.store_id = ? AND UPPER(TRIM(o.status)) = UPPER(TRIM(?)) " +
-        "ORDER BY o.created_at DESC, oi.id";
 
-    private static final String SELECT_PRODUCT_SALES_BY_STORE_ID =
-        "SELECT oi.product_name, SUM(oi.quantity) AS total_qty FROM order_items oi " +
-        "JOIN orders o ON oi.order_id = o.order_id " +
-        "WHERE oi.store_id = ? AND UPPER(TRIM(o.status)) IN ('PAID','PENDING','PROCESSING','OUT_FOR_DELIVERY','DELIVERED') " +
-        "GROUP BY oi.product_id, oi.product_name ORDER BY total_qty DESC";
+    private static final String SELECT_ORDER_ITEMS_BY_STORE_AND_STATUS = "SELECT oi.* FROM order_items oi " +
+            "JOIN orders o ON oi.order_id = o.order_id " +
+            "WHERE oi.store_id = ? AND UPPER(TRIM(o.status)) = UPPER(TRIM(?)) " +
+            "ORDER BY o.created_at DESC, oi.id";
 
-    private static final String SELECT_PRODUCT_SALES_BY_STORE_USERNAME =
-        "SELECT oi.product_id, oi.product_name, SUM(oi.quantity) AS total_qty FROM order_items oi " +
-        "JOIN orders o ON oi.order_id = o.order_id " +
-        "WHERE o.store_username = ? AND UPPER(TRIM(o.status)) IN ('PAID','PENDING','PROCESSING','OUT_FOR_DELIVERY','DELIVERED') " +
-        "GROUP BY oi.product_id, oi.product_name ORDER BY total_qty DESC";
+    private static final String SELECT_PRODUCT_SALES_BY_STORE_ID = "SELECT oi.product_name, SUM(oi.quantity) AS total_qty FROM order_items oi "
+            +
+            "JOIN orders o ON oi.order_id = o.order_id " +
+            "WHERE oi.store_id = ? AND UPPER(TRIM(o.status)) IN ('PAID','PENDING','PROCESSING','OUT_FOR_DELIVERY','DELIVERED') "
+            +
+            "GROUP BY oi.product_id, oi.product_name ORDER BY total_qty DESC";
+
+    private static final String SELECT_PRODUCT_SALES_BY_STORE_USERNAME = "SELECT oi.product_id, oi.product_name, SUM(oi.quantity) AS total_qty FROM order_items oi "
+            +
+            "JOIN orders o ON oi.order_id = o.order_id " +
+            "WHERE o.store_username = ? AND UPPER(TRIM(o.status)) IN ('PAID','PENDING','PROCESSING','OUT_FOR_DELIVERY','DELIVERED') "
+            +
+            "GROUP BY oi.product_id, oi.product_name ORDER BY total_qty DESC";
 
     /**
      * Create a new order in the database.
@@ -103,13 +106,19 @@ public class OrderDAO {
                 stmt.setString(9, order.getStatus());
                 stmt.setString(10, order.getStoreUsername()); // Store username
                 stmt.setString(11, order.getProductName()); // Product name
+                if (order.getBuyerId() != null) {
+                    stmt.setInt(12, order.getBuyerId());
+                } else {
+                    stmt.setNull(12, Types.INTEGER);
+                }
 
                 int rowsAffected = stmt.executeUpdate();
                 System.out.println("Order created: " + order.getOrderId() + " | Rows affected: " + rowsAffected);
                 return rowsAffected > 0;
             } catch (SQLException e) {
                 // If store_username or product_name column doesn't exist, try fallback
-                if (e.getMessage().contains("store_username") || e.getMessage().contains("product_name") || e.getMessage().contains("Unknown column")) {
+                if (e.getMessage().contains("store_username") || e.getMessage().contains("product_name")
+                        || e.getMessage().contains("Unknown column")) {
                     System.out.println("store_username or product_name column not found, using fallback INSERT");
                     try {
                         stmt = conn.prepareStatement(INSERT_ORDER_FALLBACK);
@@ -123,9 +132,15 @@ public class OrderDAO {
                         stmt.setString(8, order.getCurrency());
                         stmt.setString(9, order.getStatus());
                         stmt.setString(10, order.getProductName()); // Product name
+                        if (order.getBuyerId() != null) {
+                            stmt.setInt(11, order.getBuyerId());
+                        } else {
+                            stmt.setNull(11, Types.INTEGER);
+                        }
 
                         int rowsAffected = stmt.executeUpdate();
-                        System.out.println("Order created (fallback with product_name): " + order.getOrderId() + " | Rows affected: " + rowsAffected);
+                        System.out.println("Order created (fallback with product_name): " + order.getOrderId()
+                                + " | Rows affected: " + rowsAffected);
                         return rowsAffected > 0;
                     } catch (SQLException e2) {
                         // If product_name also doesn't exist, use minimal INSERT
@@ -143,7 +158,8 @@ public class OrderDAO {
                             stmt.setString(9, order.getStatus());
 
                             int rowsAffected = stmt.executeUpdate();
-                            System.out.println("Order created (minimal): " + order.getOrderId() + " | Rows affected: " + rowsAffected);
+                            System.out.println("Order created (minimal): " + order.getOrderId() + " | Rows affected: "
+                                    + rowsAffected);
                             return rowsAffected > 0;
                         } else {
                             throw e2; // Re-throw if it's a different error
@@ -293,7 +309,7 @@ public class OrderDAO {
     /**
      * Get orders by status and store username.
      *
-     * @param status The order status (e.g., "PAID", "PENDING")
+     * @param status        The order status (e.g., "PAID", "PENDING")
      * @param storeUsername The store username
      * @return List of orders for the store with the specified status
      */
@@ -305,7 +321,7 @@ public class OrderDAO {
 
         try {
             conn = DBConnection.getConnection();
-            
+
             // Try to use store-specific query
             try {
                 stmt = conn.prepareStatement(SELECT_ORDERS_BY_STORE);
@@ -344,7 +360,8 @@ public class OrderDAO {
     }
 
     /**
-     * Get all orders for a store (PAID, PENDING, PROCESSING, OUT_FOR_DELIVERY, DELIVERED) for charts and trends.
+     * Get all orders for a store (PAID, PENDING, PROCESSING, OUT_FOR_DELIVERY,
+     * DELIVERED) for charts and trends.
      */
     public java.util.List<Order> getAllOrdersByStore(String storeUsername) {
         Connection conn = null;
@@ -368,7 +385,35 @@ public class OrderDAO {
     }
 
     /**
-     * Get top selling products by quantity for a store (from PAID, PROCESSING, OUT_FOR_DELIVERY, DELIVERED orders).
+     * Get all orders for a specific buyer (user).
+     *
+     * @param buyerId The user ID of the buyer
+     * @return List of orders placed by the buyer
+     */
+    public java.util.List<Order> getOrdersByBuyerId(int buyerId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        java.util.List<Order> orders = new java.util.ArrayList<>();
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(SELECT_ORDERS_BY_BUYER);
+            stmt.setInt(1, buyerId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                orders.add(mapResultSetToOrder(rs));
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            System.err.println("Error getting orders by buyer ID: " + e.getMessage());
+        } finally {
+            closeResources(rs, stmt, conn);
+        }
+        return orders;
+    }
+
+    /**
+     * Get top selling products by quantity for a store (from PAID, PROCESSING,
+     * OUT_FOR_DELIVERY, DELIVERED orders).
      */
     public java.util.List<ProductSales> getProductSalesByStore(int storeId) {
         Connection conn = null;
@@ -404,7 +449,8 @@ public class OrderDAO {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         java.util.List<ProductSales> list = new java.util.ArrayList<>();
-        if (storeUsername == null || storeUsername.trim().isEmpty()) return list;
+        if (storeUsername == null || storeUsername.trim().isEmpty())
+            return list;
         try {
             conn = DBConnection.getConnection();
             stmt = conn.prepareStatement(SELECT_PRODUCT_SALES_BY_STORE_USERNAME);
@@ -431,7 +477,7 @@ public class OrderDAO {
     private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
         Order order = new Order();
         order.setOrderId(rs.getString("order_id"));
-        
+
         // Split customer_name into first_name and last_name
         String customerName = rs.getString("customer_name");
         if (customerName != null && !customerName.isEmpty()) {
@@ -447,7 +493,7 @@ public class OrderDAO {
             order.setFirstName("");
             order.setLastName("");
         }
-        
+
         order.setEmail(rs.getString("email"));
         order.setPhone(rs.getString("phone"));
         order.setAddress(rs.getString("address"));
@@ -473,6 +519,14 @@ public class OrderDAO {
         }
         order.setCreatedAt(rs.getTimestamp("created_at"));
         order.setUpdatedAt(rs.getTimestamp("updated_at"));
+        // Get buyer_id if column exists
+        try {
+            int buyerId = rs.getInt("buyer_id");
+            order.setBuyerId(rs.wasNull() ? null : buyerId);
+        } catch (SQLException e) {
+            // Column doesn't exist, set to null
+            order.setBuyerId(null);
+        }
         return order;
     }
 
@@ -505,7 +559,8 @@ public class OrderDAO {
             stmt.setString(9, orderItem.getStatus() != null ? orderItem.getStatus() : "PENDING");
 
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("Order item created for order: " + orderItem.getOrderId() + " | Rows affected: " + rowsAffected);
+            System.out.println(
+                    "Order item created for order: " + orderItem.getOrderId() + " | Rows affected: " + rowsAffected);
             return rowsAffected > 0;
 
         } catch (SQLException | ClassNotFoundException e) {
@@ -554,7 +609,7 @@ public class OrderDAO {
      * Get order items by store ID and order status.
      *
      * @param storeId The store ID
-     * @param status The order status
+     * @param status  The order status
      * @return List of order items grouped by order
      */
     public List<OrderItem> getOrderItemsByStoreAndStatus(int storeId, String status) {
@@ -629,17 +684,17 @@ public class OrderDAO {
         try {
             // Get all order items
             List<OrderItem> orderItems = getOrderItemsByOrderId(orderId);
-            
+
             if (orderItems == null || orderItems.isEmpty()) {
                 System.out.println("No order items found for order: " + orderId);
                 return false;
             }
-            
+
             com.dailyfixer.dao.ProductDAO productDAO = new com.dailyfixer.dao.ProductDAO();
             com.dailyfixer.dao.ProductVariantDAO variantDAO = new com.dailyfixer.dao.ProductVariantDAO();
-            
+
             boolean allSuccessful = true;
-            
+
             for (OrderItem item : orderItems) {
                 try {
                     if (item.getVariantId() != null) {
@@ -663,15 +718,15 @@ public class OrderDAO {
                     allSuccessful = false;
                 }
             }
-            
+
             if (allSuccessful) {
                 System.out.println("Successfully reduced stock for all items in order: " + orderId);
             } else {
                 System.err.println("Some stock reductions failed for order: " + orderId);
             }
-            
+
             return allSuccessful;
-            
+
         } catch (Exception e) {
             System.err.println("Error reducing stock for order: " + e.getMessage());
             e.printStackTrace();
@@ -697,4 +752,3 @@ public class OrderDAO {
         }
     }
 }
-

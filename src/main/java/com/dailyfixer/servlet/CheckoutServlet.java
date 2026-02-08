@@ -2,6 +2,7 @@ package com.dailyfixer.servlet;
 
 import com.dailyfixer.dao.OrderDAO;
 import com.dailyfixer.model.Order;
+import com.dailyfixer.model.User;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -87,6 +88,15 @@ public class CheckoutServlet extends HttpServlet {
             Order order = new Order(orderId, firstName, lastName, email,
                     phone, address, city, product, amount);
 
+            // Set buyer_id if user is logged in
+            User currentUser = (User) request.getSession().getAttribute("currentUser");
+            if (currentUser != null) {
+                order.setBuyerId(currentUser.getUserId());
+                System.out.println("Order linked to user ID: " + currentUser.getUserId());
+            } else {
+                System.out.println("Guest checkout - no buyer_id set");
+            }
+
             // Save order to database
             boolean saved = orderDAO.createOrder(order);
             if (!saved) {
@@ -133,4 +143,3 @@ public class CheckoutServlet extends HttpServlet {
         response.sendRedirect("checkout.html");
     }
 }
-

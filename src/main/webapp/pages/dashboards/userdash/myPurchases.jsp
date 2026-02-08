@@ -1,515 +1,592 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%@ page import="com.dailyfixer.model.User" %>
+    <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+        <%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
+            <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
+                <%@ page import="com.dailyfixer.model.User" %>
+                    <%@ page import="com.dailyfixer.model.Order" %>
+                        <%@ page import="com.dailyfixer.model.OrderItem" %>
+                            <%@ page import="com.dailyfixer.model.Product" %>
+                                <%@ page import="java.util.List" %>
+                                    <%@ page import="java.util.Map" %>
 
-<%
-    User user = (User) session.getAttribute("currentUser");
-    if (user == null || user.getRole() == null || !"user".equalsIgnoreCase(user.getRole().trim())) {
-        response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
-        return;
-    }
-%>
+                                        <% User user=(User) session.getAttribute("currentUser"); if (user==null ||
+                                            user.getRole()==null || !"user".equalsIgnoreCase(user.getRole().trim())) {
+                                            response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp"
+                                            ); return; } %>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Purchases | Daily Fixer</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                                            <!DOCTYPE html>
+                                            <html lang="en">
 
-<style>
-:root {
-    --panel-color: #dcdaff;
-    --accent: #8b95ff;
-    --text-dark: #000000;
-    --text-secondary: #333333;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.12);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.18);
-    --shadow-lg: 0 12px 36px rgba(0,0,0,0.22);
-}
+                                            <head>
+                                                <meta charset="UTF-8">
+                                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                                <title>My Purchases | Daily Fixer</title>
+                                                <link
+                                                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+                                                    rel="stylesheet">
 
-/* Reset */
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #ffffff;
-    color: var(--text-dark);
-    display: flex;
-    min-height: 100vh;
-}
+                                                <style>
+                                                    :root {
+                                                        --panel-color: #dcdaff;
+                                                        --accent: #8b95ff;
+                                                        --accent-dark: #6b75df;
+                                                        --text-dark: #000000;
+                                                        --text-secondary: #555555;
+                                                        --text-muted: #888888;
+                                                        --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+                                                        --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+                                                        --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.16);
+                                                        --gradient-primary: linear-gradient(135deg, #8b95ff 0%, #a8b4ff 100%);
+                                                        --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+                                                    }
 
-/* Top Navbar */
-.topbar {
-    position: fixed;
-    top:0; left:0; right:0;
-    height:76px;
-    background-color: var(--panel-color);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 30px;
-    z-index: 200;
-    box-shadow: var(--shadow-md);
-}
-.topbar .logo { font-size: 1.5em; font-weight: 700; color: var(--accent); }
-.topbar .panel-name { font-weight: 600; flex:1; text-align:center; color: var(--text-dark); }
-.topbar-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
+                                                    * {
+                                                        margin: 0;
+                                                        padding: 0;
+                                                        box-sizing: border-box;
+                                                    }
 
-.topbar .home-btn {
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, #10b981, #059669);
-    border: none;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.topbar .home-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
+                                                    body {
+                                                        font-family: 'Inter', sans-serif;
+                                                        background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+                                                        color: var(--text-dark);
+                                                        display: flex;
+                                                        min-height: 100vh;
+                                                    }
 
-.topbar .logout-btn {
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, var(--accent), #7ba3d4);
-    border: none;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.topbar .logout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
+                                                    /* Top Navbar */
+                                                    .topbar {
+                                                        position: fixed;
+                                                        top: 0;
+                                                        left: 0;
+                                                        right: 0;
+                                                        height: 76px;
+                                                        background: rgba(220, 218, 255, 0.95);
+                                                        backdrop-filter: blur(10px);
+                                                        border-bottom: 1px solid rgba(139, 149, 255, 0.2);
+                                                        display: flex;
+                                                        justify-content: space-between;
+                                                        align-items: center;
+                                                        padding: 0 30px;
+                                                        z-index: 200;
+                                                        box-shadow: var(--shadow-sm);
+                                                    }
 
-/* Sidebar */
-.sidebar {
-    width: 240px;
-    background-color: var(--panel-color);
-    height: 100vh;
-    position: fixed;
-    top:0;
-    left:0;
-    padding-top: 96px;
-    box-shadow: var(--shadow-md);
-    overflow-y: auto;
-    z-index: 100;
-}
-.sidebar h3 { padding: 0 20px 12px; font-size: 0.85em; color: var(--text-dark); text-transform: uppercase; }
-.sidebar ul { list-style:none; }
-.sidebar a {
-    display:block;
-    padding:12px 20px;
-    text-decoration:none;
-    color: var(--text-dark);
-    font-weight:500;
-    border-left:3px solid transparent;
-    border-radius:0 8px 8px 0;
-    margin-bottom:4px;
-    transition: all 0.2s;
-}
-.sidebar a:hover, .sidebar a.active {
-    background-color: #f0f0ff;
-    border-left-color: var(--accent);
-}
+                                                    .topbar .logo {
+                                                        font-size: 1.5em;
+                                                        font-weight: 700;
+                                                        background: var(--gradient-primary);
+                                                        -webkit-background-clip: text;
+                                                        -webkit-text-fill-color: transparent;
+                                                        background-clip: text;
+                                                    }
 
-/* Main Content */
-.container {
-    flex:1;
-    margin-left:240px;
-    margin-top:83px;
-    padding:30px;
-}
-.container h2 {
-    font-size:1.6em;
-    margin-bottom:20px;
-    color: #000000;
-}
+                                                    .topbar .panel-name {
+                                                        font-weight: 600;
+                                                        flex: 1;
+                                                        text-align: center;
+                                                        color: var(--text-dark);
+                                                    }
 
-/* Purchase Table */
-.purchase-table {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid rgba(0,0,0,0.1);
-    overflow: hidden;
-    margin-bottom: 30px;
-}
+                                                    .topbar-actions {
+                                                        display: flex;
+                                                        gap: 15px;
+                                                        align-items: center;
+                                                    }
 
-.purchase-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
+                                                    .topbar .home-btn,
+                                                    .topbar .logout-btn {
+                                                        padding: 0.6rem 1.2rem;
+                                                        border: none;
+                                                        border-radius: 10px;
+                                                        cursor: pointer;
+                                                        font-weight: 600;
+                                                        font-size: 0.9rem;
+                                                        text-decoration: none;
+                                                        transition: all 0.3s ease;
+                                                    }
 
-.purchase-table th {
-    background: var(--panel-color);
-    padding: 15px 20px;
-    text-align: left;
-    font-weight: 600;
-    color: var(--text-dark);
-    border-bottom: 2px solid var(--accent);
-}
+                                                    .topbar .home-btn {
+                                                        background: var(--gradient-success);
+                                                        color: #fff;
+                                                        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+                                                    }
 
-.purchase-table td {
-    padding: 15px 20px;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    vertical-align: middle;
-}
+                                                    .topbar .logout-btn {
+                                                        background: var(--gradient-primary);
+                                                        color: #fff;
+                                                        box-shadow: 0 4px 15px rgba(139, 149, 255, 0.3);
+                                                    }
 
-.purchase-table tr:hover {
-    background: #f8f9ff;
-}
+                                                    .topbar .home-btn:hover,
+                                                    .topbar .logout-btn:hover {
+                                                        transform: translateY(-2px);
+                                                        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+                                                    }
 
-/* Product Image */
-.product-image {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
-    border: 2px solid rgba(0,0,0,0.1);
-    object-fit: cover;
-}
+                                                    /* Sidebar */
+                                                    .sidebar {
+                                                        width: 240px;
+                                                        background: rgba(220, 218, 255, 0.95);
+                                                        backdrop-filter: blur(10px);
+                                                        height: 100vh;
+                                                        position: fixed;
+                                                        top: 0;
+                                                        left: 0;
+                                                        padding-top: 96px;
+                                                        box-shadow: var(--shadow-md);
+                                                        overflow-y: auto;
+                                                        z-index: 100;
+                                                    }
 
-/* Status Badges */
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8em;
-    font-weight: 600;
-    text-transform: uppercase;
-}
+                                                    .sidebar ul {
+                                                        list-style: none;
+                                                    }
 
-.status-packing {
-    background: #fef3c7;
-    color: #92400e;
-}
+                                                    .sidebar a {
+                                                        display: block;
+                                                        padding: 14px 24px;
+                                                        text-decoration: none;
+                                                        color: var(--text-dark);
+                                                        font-weight: 500;
+                                                        border-left: 4px solid transparent;
+                                                        margin: 4px 0;
+                                                        transition: all 0.3s ease;
+                                                    }
 
-.status-shipped {
-    background: #dbeafe;
-    color: #1e40af;
-}
+                                                    .sidebar a:hover,
+                                                    .sidebar a.active {
+                                                        background: linear-gradient(90deg, rgba(139, 149, 255, 0.2) 0%, transparent 100%);
+                                                        border-left-color: var(--accent);
+                                                        padding-left: 28px;
+                                                    }
 
-.status-delivered {
-    background: #d1fae5;
-    color: #065f46;
-}
+                                                    /* Main Content */
+                                                    .container {
+                                                        flex: 1;
+                                                        margin-left: 240px;
+                                                        margin-top: 76px;
+                                                        padding: 40px;
+                                                        background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+                                                        min-height: calc(100vh - 76px);
+                                                    }
 
-.status-out-for-delivery {
-    background: #e0e7ff;
-    color: #3730a3;
-}
+                                                    .page-header {
+                                                        margin-bottom: 30px;
+                                                    }
 
-/* Action Buttons */
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+                                                    .page-header h2 {
+                                                        font-size: 2em;
+                                                        font-weight: 700;
+                                                        background: var(--gradient-primary);
+                                                        -webkit-background-clip: text;
+                                                        -webkit-text-fill-color: transparent;
+                                                        background-clip: text;
+                                                    }
 
-.btn {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.8em;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-block;
-}
+                                                    .page-header p {
+                                                        color: var(--text-secondary);
+                                                        margin-top: 8px;
+                                                    }
 
-.btn-review {
-    background: #8b5cf6;
-    color: #ffffff;
-}
+                                                    /* Order Cards Grid */
+                                                    .orders-grid {
+                                                        display: grid;
+                                                        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                                                        gap: 24px;
+                                                    }
 
-.btn-review:hover {
-    background: #7c3aed;
-}
+                                                    /* Order Card */
+                                                    .order-card {
+                                                        background: #ffffff;
+                                                        border-radius: 20px;
+                                                        box-shadow: var(--shadow-md);
+                                                        overflow: hidden;
+                                                        transition: all 0.3s ease;
+                                                        border: 1px solid rgba(139, 149, 255, 0.1);
+                                                    }
 
-.btn-track {
-    background: #3b82f6;
-    color: #ffffff;
-}
+                                                    .order-card:hover {
+                                                        transform: translateY(-5px);
+                                                        box-shadow: var(--shadow-lg);
+                                                    }
 
-.btn-track:hover {
-    background: #2563eb;
-}
+                                                    .order-header {
+                                                        background: var(--gradient-primary);
+                                                        padding: 16px 20px;
+                                                        display: flex;
+                                                        justify-content: space-between;
+                                                        align-items: center;
+                                                    }
 
-.btn-details {
-    background: #10b981;
-    color: #ffffff;
-}
+                                                    .order-id {
+                                                        color: #ffffff;
+                                                        font-weight: 700;
+                                                        font-size: 1em;
+                                                    }
 
-.btn-details:hover {
-    background: #059669;
-}
+                                                    .order-date {
+                                                        color: rgba(255, 255, 255, 0.85);
+                                                        font-size: 0.85em;
+                                                    }
 
-/* Section Headers */
-.section-header {
-    font-size: 1.2em;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin: 30px 0 15px 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--panel-color);
-}
+                                                    .order-items {
+                                                        padding: 20px;
+                                                    }
 
-/* Star Rating */
-.star-rating {
-    color: #fbbf24;
-    font-size: 1.2em;
-}
+                                                    /* Product Item */
+                                                    .product-item {
+                                                        display: flex;
+                                                        gap: 16px;
+                                                        padding: 16px;
+                                                        background: #f8f9ff;
+                                                        border-radius: 14px;
+                                                        margin-bottom: 12px;
+                                                        transition: all 0.2s ease;
+                                                    }
 
-.star-rating .star {
-    margin-right: 2px;
-}
-</style>
-</head>
-<body>
+                                                    .product-item:last-child {
+                                                        margin-bottom: 0;
+                                                    }
 
-<header class="topbar">
-    <div class="logo">Daily Fixer</div>
-    <div class="panel-name">User Panel</div>
-    <div class="topbar-actions">
-        <a href="${pageContext.request.contextPath}" class="home-btn">Home</a>
-        <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
-    </div>
-</header>
+                                                    .product-item:hover {
+                                                        background: #f0f2ff;
+                                                    }
 
-<aside class="sidebar">
-<%--    <h3>Navigation</h3>--%>
-    <ul>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/userdashmain.jsp">Dashboard</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/notifications.jsp">Notifications</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/myBookings.jsp">My Bookings</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/myPurchases.jsp" class="active">My Purchases</a></li>
-        <li><a href="${pageContext.request.contextPath}/pages/dashboards/userdash/myProfile.jsp">My Profile</a></li>
-    </ul>
-</aside>
+                                                    .product-image {
+                                                        width: 80px;
+                                                        height: 80px;
+                                                        border-radius: 12px;
+                                                        object-fit: cover;
+                                                        background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+                                                        flex-shrink: 0;
+                                                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                                                    }
 
-<main class="container">
-    <h2>My Purchases</h2>
-    
-    <div class="section-header">Recent Orders</div>
-    
-    <div class="purchase-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Order Date</th>
-                    <th>Status</th>
-                    <th>Rating</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${pageContext.request.contextPath}/assets/images/hammer.png" alt="Hammer" class="product-image">
-                            <div>
-                                <strong>Heavy Duty Hammer</strong><br>
-                                <small>Order #12345</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Tools</td>
-                    <td>$25.00</td>
-                    <td>Oct 20, 2025</td>
-                    <td><span class="status-badge status-delivered">Delivered</span></td>
-                    <td>
-                        <div class="star-rating">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/writeReview.jsp?item=hammer" class="btn btn-review">Review</a>
-                            <a href="#" class="btn btn-details">Details</a>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${pageContext.request.contextPath}/assets/images/drill.png" alt="Drill" class="product-image">
-                            <div>
-                                <strong>Cordless Drill Machine</strong><br>
-                                <small>Order #12346</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Tools</td>
-                    <td>$85.00</td>
-                    <td>Oct 22, 2025</td>
-                    <td><span class="status-badge status-out-for-delivery">Out for Delivery</span></td>
-                    <td>-</td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="#" class="btn btn-track">Track</a>
-                            <a href="#" class="btn btn-details">Details</a>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${pageContext.request.contextPath}/assets/images/paintbrush.png" alt="Paint Brush" class="product-image">
-                            <div>
-                                <strong>Premium Paint Brush Set</strong><br>
-                                <small>Order #12347</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Painting</td>
-                    <td>$40.00</td>
-                    <td>Oct 15, 2025</td>
-                    <td><span class="status-badge status-delivered">Delivered</span></td>
-                    <td>
-                        <div class="star-rating">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">☆</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/writeReview.jsp?item=paintbrush" class="btn btn-review">Review</a>
-                            <a href="#" class="btn btn-details">Details</a>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${pageContext.request.contextPath}/assets/images/screwdriver.png" alt="Screwdriver" class="product-image">
-                            <div>
-                                <strong>Precision Screwdriver Set</strong><br>
-                                <small>Order #12348</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Tools</td>
-                    <td>$18.00</td>
-                    <td>Oct 24, 2025</td>
-                    <td><span class="status-badge status-packing">Packing</span></td>
-                    <td>-</td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="#" class="btn btn-details">Details</a>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                                                    .product-placeholder {
+                                                        width: 80px;
+                                                        height: 80px;
+                                                        border-radius: 12px;
+                                                        background: linear-gradient(135deg, var(--panel-color), #e8e6ff);
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        color: var(--accent);
+                                                        font-size: 2em;
+                                                        flex-shrink: 0;
+                                                    }
 
-    <div class="section-header">Order History</div>
-    
-    <div class="purchase-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Order Date</th>
-                    <th>Status</th>
-                    <th>Rating</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${pageContext.request.contextPath}/assets/images/wrench.png" alt="Wrench Set" class="product-image">
-                            <div>
-                                <strong>Professional Wrench Set</strong><br>
-                                <small>Order #12340</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Tools</td>
-                    <td>$65.00</td>
-                    <td>Sep 30, 2025</td>
-                    <td><span class="status-badge status-delivered">Delivered</span></td>
-                    <td>
-                        <div class="star-rating">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">☆</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/writeReview.jsp?item=wrench" class="btn btn-review">Review</a>
-                            <a href="#" class="btn btn-details">Details</a>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${pageContext.request.contextPath}/assets/images/level.png" alt="Level" class="product-image">
-                            <div>
-                                <strong>Digital Level Tool</strong><br>
-                                <small>Order #12339</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Tools</td>
-                    <td>$35.00</td>
-                    <td>Sep 25, 2025</td>
-                    <td><span class="status-badge status-delivered">Delivered</span></td>
-                    <td>
-                        <div class="star-rating">
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                            <span class="star">★</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/writeReview.jsp?item=level" class="btn btn-review">Review</a>
-                            <a href="#" class="btn btn-details">Details</a>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</main>
+                                                    .product-details {
+                                                        flex: 1;
+                                                        display: flex;
+                                                        flex-direction: column;
+                                                        justify-content: center;
+                                                    }
 
-</body>
-</html>
+                                                    .product-name {
+                                                        font-weight: 600;
+                                                        color: var(--text-dark);
+                                                        margin-bottom: 6px;
+                                                        font-size: 0.95em;
+                                                        line-height: 1.4;
+                                                    }
+
+                                                    .product-meta {
+                                                        display: flex;
+                                                        gap: 16px;
+                                                        color: var(--text-muted);
+                                                        font-size: 0.85em;
+                                                    }
+
+                                                    .product-qty {
+                                                        background: var(--panel-color);
+                                                        padding: 2px 10px;
+                                                        border-radius: 20px;
+                                                        font-weight: 500;
+                                                        color: var(--accent-dark);
+                                                    }
+
+                                                    .product-price {
+                                                        font-weight: 600;
+                                                        color: var(--accent-dark);
+                                                    }
+
+                                                    /* Order Footer */
+                                                    .order-footer {
+                                                        padding: 16px 20px;
+                                                        background: #fafbff;
+                                                        border-top: 1px solid rgba(139, 149, 255, 0.1);
+                                                        display: flex;
+                                                        justify-content: space-between;
+                                                        align-items: center;
+                                                    }
+
+                                                    .order-total {
+                                                        font-size: 1.1em;
+                                                    }
+
+                                                    .order-total span {
+                                                        color: var(--text-muted);
+                                                        font-size: 0.85em;
+                                                    }
+
+                                                    .order-total strong {
+                                                        color: var(--accent-dark);
+                                                        font-weight: 700;
+                                                    }
+
+                                                    /* Status Badges */
+                                                    .status-badge {
+                                                        padding: 8px 16px;
+                                                        border-radius: 25px;
+                                                        font-size: 0.75em;
+                                                        font-weight: 700;
+                                                        text-transform: uppercase;
+                                                        letter-spacing: 0.5px;
+                                                    }
+
+                                                    .status-pending {
+                                                        background: linear-gradient(135deg, #fef3c7, #fde68a);
+                                                        color: #92400e;
+                                                    }
+
+                                                    .status-paid {
+                                                        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+                                                        color: #1e40af;
+                                                    }
+
+                                                    .status-processing {
+                                                        background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+                                                        color: #3730a3;
+                                                    }
+
+                                                    .status-out_for_delivery {
+                                                        background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+                                                        color: #9d174d;
+                                                    }
+
+                                                    .status-delivered {
+                                                        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+                                                        color: #065f46;
+                                                    }
+
+                                                    .status-cancelled {
+                                                        background: linear-gradient(135deg, #fee2e2, #fecaca);
+                                                        color: #991b1b;
+                                                    }
+
+                                                    /* Empty State */
+                                                    .empty-state {
+                                                        text-align: center;
+                                                        padding: 80px 40px;
+                                                        background: #ffffff;
+                                                        border-radius: 24px;
+                                                        box-shadow: var(--shadow-md);
+                                                    }
+
+                                                    .empty-icon {
+                                                        width: 120px;
+                                                        height: 120px;
+                                                        background: var(--gradient-primary);
+                                                        border-radius: 50%;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        margin: 0 auto 24px;
+                                                        font-size: 3em;
+                                                        color: #ffffff;
+                                                    }
+
+                                                    .empty-state h3 {
+                                                        font-size: 1.5em;
+                                                        color: var(--text-dark);
+                                                        margin-bottom: 12px;
+                                                    }
+
+                                                    .empty-state p {
+                                                        color: var(--text-secondary);
+                                                        margin-bottom: 24px;
+                                                        max-width: 400px;
+                                                        margin-left: auto;
+                                                        margin-right: auto;
+                                                    }
+
+                                                    .btn-shop {
+                                                        padding: 14px 32px;
+                                                        background: var(--gradient-primary);
+                                                        color: #fff;
+                                                        border-radius: 12px;
+                                                        text-decoration: none;
+                                                        font-weight: 600;
+                                                        display: inline-block;
+                                                        box-shadow: 0 4px 15px rgba(139, 149, 255, 0.4);
+                                                        transition: all 0.3s ease;
+                                                    }
+
+                                                    .btn-shop:hover {
+                                                        transform: translateY(-2px);
+                                                        box-shadow: 0 6px 20px rgba(139, 149, 255, 0.5);
+                                                    }
+
+                                                    /* Responsive */
+                                                    @media (max-width: 768px) {
+                                                        .sidebar {
+                                                            display: none;
+                                                        }
+
+                                                        .container {
+                                                            margin-left: 0;
+                                                            padding: 20px;
+                                                        }
+
+                                                        .orders-grid {
+                                                            grid-template-columns: 1fr;
+                                                        }
+                                                    }
+                                                </style>
+                                            </head>
+
+                                            <body>
+
+                                                <header class="topbar">
+                                                    <div class="logo">Daily Fixer</div>
+                                                    <div class="panel-name">User Panel</div>
+                                                    <div class="topbar-actions">
+                                                        <a href="${pageContext.request.contextPath}"
+                                                            class="home-btn">Home</a>
+                                                        <a href="${pageContext.request.contextPath}/logout"
+                                                            class="logout-btn">Log Out</a>
+                                                    </div>
+                                                </header>
+
+                                                <aside class="sidebar">
+                                                    <ul>
+                                                        <li><a
+                                                                href="${pageContext.request.contextPath}/pages/dashboards/userdash/userdashmain.jsp">Dashboard</a>
+                                                        </li>
+                                                        <li><a
+                                                                href="${pageContext.request.contextPath}/pages/dashboards/userdash/notifications.jsp">Notifications</a>
+                                                        </li>
+                                                        <li><a
+                                                                href="${pageContext.request.contextPath}/pages/dashboards/userdash/myBookings.jsp">My
+                                                                Bookings</a></li>
+                                                        <li><a href="${pageContext.request.contextPath}/user/orders"
+                                                                class="active">My Purchases</a></li>
+                                                        <li><a
+                                                                href="${pageContext.request.contextPath}/pages/dashboards/userdash/myProfile.jsp">My
+                                                                Profile</a></li>
+                                                    </ul>
+                                                </aside>
+
+                                                <main class="container">
+                                                    <div class="page-header">
+                                                        <h2>My Purchases</h2>
+                                                        <p>Track your orders and view purchase history</p>
+                                                    </div>
+
+                                                    <c:choose>
+                                                        <c:when test="${not empty orders}">
+                                                            <div class="orders-grid">
+                                                                <c:forEach var="order" items="${orders}">
+                                                                    <div class="order-card">
+                                                                        <div class="order-header">
+                                                                            <span
+                                                                                class="order-id">${order.orderId}</span>
+                                                                            <span class="order-date">
+                                                                                <c:if test="${order.createdAt != null}">
+                                                                                    <fmt:formatDate
+                                                                                        value="${order.createdAt}"
+                                                                                        pattern="MMM dd, yyyy" />
+                                                                                </c:if>
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div class="order-items">
+                                                                            <c:choose>
+                                                                                <c:when
+                                                                                    test="${not empty orderItemsMap[order.orderId]}">
+                                                                                    <c:forEach var="item"
+                                                                                        items="${orderItemsMap[order.orderId]}">
+                                                                                        <div class="product-item">
+                                                                                            <c:choose>
+                                                                                                <c:when
+                                                                                                    test="${not empty productsMap[item.productId] and not empty productsMap[item.productId].imageBase64}">
+                                                                                                    <img src="data:image/jpeg;base64,${productsMap[item.productId].imageBase64}"
+                                                                                                        alt="${item.productName}"
+                                                                                                        class="product-image">
+                                                                                                </c:when>
+                                                                                                <c:otherwise>
+                                                                                                    <div
+                                                                                                        class="product-placeholder">
+                                                                                                        📦</div>
+                                                                                                </c:otherwise>
+                                                                                            </c:choose>
+                                                                                            <div
+                                                                                                class="product-details">
+                                                                                                <div
+                                                                                                    class="product-name">
+                                                                                                    ${item.productName}
+                                                                                                </div>
+                                                                                                <div
+                                                                                                    class="product-meta">
+                                                                                                    <span
+                                                                                                        class="product-qty">x${item.quantity}</span>
+                                                                                                    <span
+                                                                                                        class="product-price">LKR
+                                                                                                        ${item.unitPrice}</span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </c:forEach>
+                                                                                </c:when>
+                                                                                <c:otherwise>
+                                                                                    <div class="product-item">
+                                                                                        <div
+                                                                                            class="product-placeholder">
+                                                                                            📦</div>
+                                                                                        <div class="product-details">
+                                                                                            <div class="product-name">
+                                                                                                ${order.productName}
+                                                                                            </div>
+                                                                                            <div class="product-meta">
+                                                                                                <span
+                                                                                                    class="product-price">${order.currency}
+                                                                                                    ${order.formattedAmount}</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </c:otherwise>
+                                                                            </c:choose>
+                                                                        </div>
+
+                                                                        <div class="order-footer">
+                                                                            <div class="order-total">
+                                                                                <span>Total:</span>
+                                                                                <strong>${order.currency}
+                                                                                    ${order.formattedAmount}</strong>
+                                                                            </div>
+                                                                            <c:set var="statusClass"
+                                                                                value="status-${fn:toLowerCase(order.status)}" />
+                                                                            <span
+                                                                                class="status-badge ${statusClass}">${order.status}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </c:forEach>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <div class="empty-state">
+                                                                <div class="empty-icon">🛒</div>
+                                                                <h3>No Orders Yet</h3>
+                                                                <p>You haven't made any purchases yet. Start exploring
+                                                                    our stores to find amazing products!</p>
+                                                                <a href="${pageContext.request.contextPath}/stores"
+                                                                    class="btn-shop">Browse Stores</a>
+                                                            </div>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </main>
+
+                                            </body>
+
+                                            </html>

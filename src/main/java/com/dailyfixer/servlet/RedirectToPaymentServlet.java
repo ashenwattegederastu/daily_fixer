@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * RedirectToPaymentServlet - Handles checkout form submission from checkout.jsp.
+ * RedirectToPaymentServlet - Handles checkout form submission from
+ * checkout.jsp.
  * Creates an order from cart items and redirects to PayHere payment gateway.
  *
  * URL: /redirectToPayment
@@ -80,8 +81,7 @@ public class RedirectToPaymentServlet extends HttpServlet {
 
             // Get cart items from session
             @SuppressWarnings("unchecked")
-            Map<Integer, CartItem> itemsToCheckout = (Map<Integer, CartItem>) 
-                    session.getAttribute("itemsToCheckout");
+            Map<Integer, CartItem> itemsToCheckout = (Map<Integer, CartItem>) session.getAttribute("itemsToCheckout");
 
             // Store form data in session for repopulation on error
             session.setAttribute("checkout_name", name);
@@ -134,27 +134,30 @@ public class RedirectToPaymentServlet extends HttpServlet {
                 String storeUsername = null;
                 try {
                     Product product = productDAO.getProductById(item.getProductId());
-                    if (product != null && product.getStoreUsername() != null && !product.getStoreUsername().isEmpty()) {
+                    if (product != null && product.getStoreUsername() != null
+                            && !product.getStoreUsername().isEmpty()) {
                         storeUsername = product.getStoreUsername();
                     } else {
-                        System.err.println("Warning: Could not find store_username for product: " + item.getProductId());
+                        System.err
+                                .println("Warning: Could not find store_username for product: " + item.getProductId());
                         continue; // Skip items without valid store_username
                     }
                 } catch (Exception e) {
-                    System.err.println("Error getting product info for productId: " + item.getProductId() + " - " + e.getMessage());
+                    System.err.println("Error getting product info for productId: " + item.getProductId() + " - "
+                            + e.getMessage());
                     continue;
                 }
 
                 // Group items by store
                 itemsByStore.computeIfAbsent(storeUsername, k -> new ArrayList<>()).add(item);
-                
+
                 // Build product names per store with variant information
                 String storeProducts = storeProductNames.getOrDefault(storeUsername, "");
                 if (!storeProducts.isEmpty()) {
                     storeProducts += ", ";
                 }
                 String itemDisplayName = item.getName();
-                
+
                 // Add variant information if available
                 StringBuilder variantInfo = new StringBuilder();
                 if (item.getVariantColor() != null && !item.getVariantColor().isEmpty()) {
@@ -166,15 +169,15 @@ public class RedirectToPaymentServlet extends HttpServlet {
                 if (item.getVariantPower() != null && !item.getVariantPower().isEmpty()) {
                     variantInfo.append(" - Power: ").append(item.getVariantPower());
                 }
-                
+
                 if (variantInfo.length() > 0) {
                     itemDisplayName += variantInfo.toString();
                 }
-                
+
                 if (item.getQuantity() > 1) {
                     itemDisplayName += " (x" + item.getQuantity() + ")";
                 }
-                
+
                 storeProducts += itemDisplayName;
                 storeProductNames.put(storeUsername, storeProducts);
             }
@@ -222,6 +225,7 @@ public class RedirectToPaymentServlet extends HttpServlet {
                         phone, address, city, storeProductName, storeTotal);
                 storeOrder.setStatus("PENDING");
                 storeOrder.setStoreUsername(storeUsername); // Set store username
+                storeOrder.setBuyerId(currentUser.getUserId()); // Link order to logged-in buyer
 
                 // Get store_id from store_username
                 Store store = storeDAO.getStoreByUsername(storeUsername);
@@ -270,13 +274,13 @@ public class RedirectToPaymentServlet extends HttpServlet {
                                 itemProductName,
                                 item.getQuantity(),
                                 unitPrice,
-                                totalPrice
-                        );
+                                totalPrice);
                         orderItem.setStatus("PENDING");
 
                         boolean itemSaved = orderDAO.createOrderItem(orderItem);
                         if (itemSaved) {
-                            System.out.println("Order item created: " + itemProductName + " (Qty: " + item.getQuantity() + ")");
+                            System.out.println(
+                                    "Order item created: " + itemProductName + " (Qty: " + item.getQuantity() + ")");
                         } else {
                             System.err.println("Failed to create order item for: " + itemProductName);
                         }
@@ -297,23 +301,23 @@ public class RedirectToPaymentServlet extends HttpServlet {
             BigDecimal combinedTotal = BigDecimal.ZERO;
             StringBuilder combinedProductNames = new StringBuilder();
             int productCount = 0;
-            
+
             for (Order storeOrder : createdOrders) {
                 combinedTotal = combinedTotal.add(storeOrder.getAmount());
-                
+
                 if (productCount > 0) {
                     combinedProductNames.append(", ");
                 }
                 combinedProductNames.append(storeOrder.getProductName());
                 productCount++;
             }
-            
+
             // Truncate combined product name if too long
             String combinedProductName = combinedProductNames.toString();
             if (combinedProductName.length() > 200) {
                 combinedProductName = combinedProductName.substring(0, 197) + "...";
             }
-            
+
             System.out.println("Combined total for payment: " + combinedTotal);
             System.out.println("Combined products: " + combinedProductName);
 
@@ -322,7 +326,7 @@ public class RedirectToPaymentServlet extends HttpServlet {
             Order paymentOrder = createdOrders.get(0); // Use first order as base
             paymentOrder.setAmount(combinedTotal); // Update with combined total
             paymentOrder.setProductName(combinedProductName); // Update with all product names
-            
+
             // Store payment order in session for PayHere servlet
             request.getSession().setAttribute("currentOrder", paymentOrder);
             request.getSession().setAttribute("allOrderIds", createdOrders.stream()

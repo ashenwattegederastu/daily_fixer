@@ -21,6 +21,7 @@ public class Order {
     private String status;
     private String payherePaymentId;
     private String storeUsername; // Store username to filter orders by store
+    private Integer buyerId; // User ID of the buyer (null for guest checkout)
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -32,7 +33,7 @@ public class Order {
 
     // Constructor with essential fields
     public Order(String orderId, String firstName, String lastName, String email,
-                 String phone, String address, String city, String productName, BigDecimal amount) {
+            String phone, String address, String city, String productName, BigDecimal amount) {
         this();
         this.orderId = orderId;
         this.firstName = firstName;
@@ -167,6 +168,14 @@ public class Order {
         this.storeUsername = storeUsername;
     }
 
+    public Integer getBuyerId() {
+        return buyerId;
+    }
+
+    public void setBuyerId(Integer buyerId) {
+        this.buyerId = buyerId;
+    }
+
     // Get full customer name
     public String getFullName() {
         return firstName + " " + lastName;
@@ -187,4 +196,3 @@ public class Order {
                 '}';
     }
 }
-
