@@ -1,11 +1,13 @@
 <%@ page import="java.util.List" %>
-    <%@ page import="java.util.ArrayList" %>
-        <%@ page import="com.dailyfixer.model.Product" %>
-            <%@ page import="com.dailyfixer.model.Store" %>
-                <%@ page import="com.dailyfixer.model.ProductVariant" %>
-                <%@ page import="com.dailyfixer.model.User" %>
-                <%@ page import="com.dailyfixer.dao.StoreDAO" %>
-                <%@ page import="com.dailyfixer.dao.ProductVariantDAO" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="com.dailyfixer.model.Product" %>
+<%@ page import="com.dailyfixer.model.Store" %>
+<%@ page import="com.dailyfixer.model.ProductVariant" %>
+<%@ page import="com.dailyfixer.model.User" %>
+<%@ page import="com.dailyfixer.model.Discount" %>
+<%@ page import="com.dailyfixer.dao.StoreDAO" %>
+<%@ page import="com.dailyfixer.dao.ProductVariantDAO" %>
+<%@ page import="com.dailyfixer.dao.DiscountDAO" %>
 
                     <% double userLat=0; double userLng=0; boolean hasLocationFilter=false; List<Product> products =
                         (List<Product>) request.getAttribute("products");
@@ -480,6 +482,31 @@ nav.public-nav .logo {
                                                     color: white;
                                                     margin-top: 12px;
                                                 }
+
+                                                .product-card { position: relative; }
+                                                .product-discount-badge {
+                                                    position: absolute;
+                                                    top: 10px;
+                                                    right: 10px;
+                                                    background: #e53935;
+                                                    color: #fff;
+                                                    font-size: 0.75rem;
+                                                    font-weight: 700;
+                                                    padding: 4px 8px;
+                                                    border-radius: 6px;
+                                                    z-index: 1;
+                                                    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                                                }
+                                                .product-card .price-original {
+                                                    text-decoration: line-through;
+                                                    color: #999;
+                                                    margin-right: 8px;
+                                                    font-size: 0.9em;
+                                                }
+                                                .product-card .price-discounted {
+                                                    color: #2e7d32;
+                                                    font-weight: 600;
+                                                }
                                             </style>
                                         </head>
 
@@ -591,34 +618,51 @@ nav.public-nav .logo {
                                                         <% } %>
                                                     </h3>
                                                     <div class="product-grid" id="product-grid">
-                                                        <% if (products !=null && !products.isEmpty()) { for (Product
-                                                            item : products) { 
-                                                            // Get display price - use first variant price if main price is 0.00
-                                                            double displayPrice = item.getPrice();
-                                                            if (item.getPrice() == 0.00) {
+                                                        <% if (products != null && !products.isEmpty()) {
+                                                            DiscountDAO discountDAO = new DiscountDAO();
+                                                            for (Product item : products) {
+                                                            double originalPrice = item.getPrice();
+                                                            if (originalPrice == 0.00) {
                                                                 try {
                                                                     ProductVariantDAO variantDAO = new ProductVariantDAO();
                                                                     List<ProductVariant> variants = variantDAO.getVariantsByProductId(item.getProductId());
                                                                     if (variants != null && !variants.isEmpty() && variants.get(0).getPrice() != null) {
-                                                                        displayPrice = variants.get(0).getPrice().doubleValue();
+                                                                        originalPrice = variants.get(0).getPrice().doubleValue();
                                                                     }
-                                                                } catch (Exception e) {
-                                                                    // If error getting variants, use main price
-                                                                }
+                                                                } catch (Exception e) { }
                                                             }
+                                                            double displayPrice = originalPrice;
+                                                            Discount activeDiscount = null;
+                                                            try {
+                                                                activeDiscount = discountDAO.getActiveDiscountForProduct(item.getProductId());
+                                                                if (activeDiscount != null && activeDiscount.isValid()) {
+                                                                    displayPrice = activeDiscount.calculateDiscountedPrice(originalPrice);
+                                                                } else {
+                                                                    activeDiscount = null;
+                                                                }
+                                                            } catch (Exception e) { }
                                                             %>
                                                             <div class="product-card"
                                                                 data-name="<%= item.getName().toLowerCase() %>"
                                                                 data-price="<%= displayPrice %>">
+                                                                <% if (activeDiscount != null) { %>
+                                                                    <span class="product-discount-badge">
+                                                                        <%= "PERCENTAGE".equalsIgnoreCase(activeDiscount.getDiscountType()) 
+                                                                            ? (activeDiscount.getDiscountValue() != null ? (int)activeDiscount.getDiscountValue().doubleValue() : 0) + "% OFF" 
+                                                                            : "Rs " + (activeDiscount.getDiscountValue() != null ? (int)activeDiscount.getDiscountValue().doubleValue() : 0) + " OFF" %>
+                                                                    </span>
+                                                                <% } %>
                                                                 <img src="data:image/jpeg;base64,<%= item.getImageBase64() %>"
                                                                     alt="<%= item.getName() %>">
-                                                                <h4>
-                                                                    <%= item.getName() %>
-                                                                </h4>
-                                                                <p class="desc">
-                                                                    <%= item.getDescription() %>
-                                                                </p>
-                                                                <p class="price">Rs. <%= String.format("%.2f", displayPrice) %>
+                                                                <h4><%= item.getName() %></h4>
+                                                                <p class="desc"><%= item.getDescription() %></p>
+                                                                <p class="price">
+                                                                    <% if (activeDiscount != null) { %>
+                                                                        <span class="price-original">Rs. <%= String.format("%.2f", originalPrice) %></span>
+                                                                        <span class="price-discounted">Rs. <%= String.format("%.2f", displayPrice) %></span>
+                                                                    <% } else { %>
+                                                                        Rs. <%= String.format("%.2f", displayPrice) %>
+                                                                    <% } %>
                                                                 </p>
                                                                 <button class="btn-buy"
                                                                     onclick="window.location.href='product_details.jsp?productId=<%= item.getProductId() %>'">

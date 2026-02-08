@@ -514,9 +514,10 @@ nav.public-nav .logo {
             font-weight: 600;
         }
     </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/toast.css">
 </head>
 <body>
-
+<div id="toast-container"></div>
 <!-- Floating Cart -->
 <jsp:include page="fragment_cart.jsp"/>
 
@@ -722,14 +723,14 @@ nav.public-nav .logo {
                     </p>
                 </div>
             <% } %>
-            <button class="add-to-cart"
+            <button type="button" class="add-to-cart"
                     id="addBtn"
                     data-product-id="<%=product.getProductId()%>"
                     <%= (outOfStock || !isLoggedIn) ? "disabled" : "" %>>
                 Add to Cart
             </button>
 
-            <button class="buy-now"
+            <button type="button" class="buy-now"
                     id="buyNowBtn"
                     data-product-id="<%=product.getProductId()%>"
                     <%= (outOfStock || !isLoggedIn) ? "disabled" : "" %>>
@@ -1147,12 +1148,9 @@ nav.public-nav .logo {
     if (btn) {
         btn.addEventListener("click", () => {
             <% if (!isLoggedIn) { %>
-                // Store current page path and query to redirect back after login
                 const currentPath = window.location.pathname + window.location.search;
-                alert("Please login before purchasing products");
-                // Pass redirect URL as parameter (relative path)
+                if (typeof showToast === 'function') showToast("Please login before purchasing products", "info"); else alert("Please login before purchasing products");
                 const loginUrl = "<%=request.getContextPath()%>/login.jsp?redirect=" + encodeURIComponent(currentPath);
-                console.log("Redirecting to login with URL: " + loginUrl);
                 window.location.href = loginUrl;
                 return;
             <% } %>
@@ -1160,23 +1158,23 @@ nav.public-nav .logo {
             const variantId = selectedVariantIdEl ? selectedVariantIdEl.value : "";
             
             if (hasVariants && !variantId) {
-                alert("Please select color, size, and power options");
+                if (typeof showToast === 'function') showToast("Please select color, size, and power options", "error"); else alert("Please select color, size, and power options");
                 return;
             }
 
             if (currentStock <= 0) {
-                alert("Product is out of stock");
+                if (typeof showToast === 'function') showToast("Product is out of stock", "error"); else alert("Product is out of stock");
                 return;
             }
 
             const quantity = parseInt(qty.value);
             if (!quantity || quantity < 1) {
-                alert("Invalid quantity");
+                if (typeof showToast === 'function') showToast("Invalid quantity", "error"); else alert("Invalid quantity");
                 return;
             }
 
             if (quantity > currentStock) {
-                alert("Requested quantity exceeds available stock");
+                if (typeof showToast === 'function') showToast("Requested quantity exceeds available stock", "error"); else alert("Requested quantity exceeds available stock");
                 return;
             }
 
@@ -1195,16 +1193,16 @@ nav.public-nav .logo {
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
-                        alert(data.error);
+                        if (typeof showToast === 'function') showToast(data.error, 'error'); else alert(data.error);
                         return;
                     }
 
                     const cartCount = document.querySelector(".cart-count");
                     if (cartCount) cartCount.innerText = data.cartCount;
 
-                    alert("Product added to cart");
+                    if (typeof showToast === 'function') showToast("Product added to cart", "success"); else alert("Product added to cart");
                 })
-                .catch(() => alert("Server error"));
+                .catch(function() { if (typeof showToast === 'function') showToast("Server error", "error"); else alert("Server error"); });
         });
     }
 
@@ -1215,37 +1213,41 @@ nav.public-nav .logo {
     if (buyNowBtn) {
         buyNowBtn.addEventListener("click", () => {
             <% if (!isLoggedIn) { %>
-                // Store current page path and query to redirect back after login
                 const currentPath = window.location.pathname + window.location.search;
-                alert("Please login before purchasing products");
-                // Pass redirect URL as parameter (relative path)
+                if (typeof showToast === 'function') showToast("Please login before purchasing products", "info"); else alert("Please login before purchasing products");
                 const loginUrl = "<%=request.getContextPath()%>/login.jsp?redirect=" + encodeURIComponent(currentPath);
-                console.log("Redirecting to login with URL: " + loginUrl);
                 window.location.href = loginUrl;
                 return;
             <% } %>
             
             const productId = buyNowBtn.getAttribute("data-product-id");
             const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
-            const variantId = selectedVariantIdEl ? selectedVariantIdEl.value : "";
+            // Derive variant from current selection at click time (same as Add to Cart) so the correct variant is used
+            let variantId = "";
+            if (hasVariants) {
+                const variant = findMatchingVariant();
+                variantId = variant ? String(variant.id) : (selectedVariantIdEl ? selectedVariantIdEl.value : "");
+            } else {
+                variantId = selectedVariantIdEl ? selectedVariantIdEl.value : "";
+            }
 
             if (hasVariants && !variantId) {
-                alert("Please select color, size, and power options");
+                if (typeof showToast === 'function') showToast("Please select color, size, and power options", "error"); else alert("Please select color, size, and power options");
                 return;
             }
 
             if (!productId) {
-                alert("Product ID missing!");
+                if (typeof showToast === 'function') showToast("Product ID missing!", "error"); else alert("Product ID missing!");
                 return;
             }
 
             if (!quantity || quantity < 1) {
-                alert("Invalid quantity!");
+                if (typeof showToast === 'function') showToast("Invalid quantity!", "error"); else alert("Invalid quantity!");
                 return;
             }
 
             if (quantity > currentStock) {
-                alert("Requested quantity exceeds available stock");
+                if (typeof showToast === 'function') showToast("Requested quantity exceeds available stock", "error"); else alert("Requested quantity exceeds available stock");
                 return;
             }
 
@@ -1257,14 +1259,22 @@ nav.public-nav .logo {
         });
     }
 
-    // Auto-select first variant on page load if variants exist
+    // Auto-select first variant on page load if variants exist and highlight it
     function autoSelectFirstVariant() {
         if (!hasVariants || variants.length === 0) return;
         
-        // Get the first variant
+        // Clear any existing active state on all variant buttons so only the default is highlighted
+        document.querySelectorAll(".variant-btn.color-btn, .variant-btn.size-btn, .variant-btn.power-btn").forEach(btn => {
+            btn.classList.remove("active");
+        });
+        if (selectedColorEl) selectedColorEl.value = "";
+        if (selectedSizeEl) selectedSizeEl.value = "";
+        if (selectedPowerEl) selectedPowerEl.value = "";
+        
+        // Get the first variant (default selection)
         const firstVariant = variants[0];
         
-        // Select the buttons for this variant - use CSS classes only
+        // Select and highlight the buttons for this variant
         if (firstVariant.color && firstVariant.color !== "") {
             const colorBtn = document.querySelector(`.color-btn[data-value="${firstVariant.color}"]`);
             if (colorBtn && selectedColorEl) {
@@ -1289,13 +1299,35 @@ nav.public-nav .logo {
             }
         }
         
-        // Update the UI with the first variant's data
+        // Update the UI with the first variant's data (price, stock, selectedVariantId)
         updateVariantSelection();
     }
 
-    // Initialize variant selection on page load
+    // Initialize variant selection on page load and ensure default variant is highlighted
     if (hasVariants) {
         autoSelectFirstVariant();
+        // Re-apply highlight after variant button listeners attach (so default stays visible)
+        setTimeout(function() {
+            if (selectedVariantIdEl && selectedVariantIdEl.value) {
+                const vid = selectedVariantIdEl.value;
+                const v = variants.find(function(vr) { return String(vr.id) === vid; });
+                if (v) {
+                    document.querySelectorAll(".variant-btn").forEach(btn => btn.classList.remove("active"));
+                    if (v.color) {
+                        const cb = document.querySelector(".color-btn[data-value=\"" + v.color + "\"]");
+                        if (cb) cb.classList.add("active");
+                    }
+                    if (v.size) {
+                        const sb = document.querySelector(".size-btn[data-value=\"" + v.size + "\"]");
+                        if (sb) sb.classList.add("active");
+                    }
+                    if (v.power) {
+                        const pb = document.querySelector(".power-btn[data-value=\"" + v.power + "\"]");
+                        if (pb) pb.classList.add("active");
+                    }
+                }
+            }
+        }, 150);
     } else {
         updateVariantSelection();
     }
@@ -1680,6 +1712,7 @@ nav.public-nav .logo {
         });
     }
 </script>
+<script src="${pageContext.request.contextPath}/assets/js/toast.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
 
 </body>

@@ -1,5 +1,5 @@
 <%@ page import="java.util.Map" %>
-<%@ page import="java.util.HashMap" %>
+<%@ page import="java.util.LinkedHashMap" %>
 <%@ page import="com.dailyfixer.model.CartItem" %>
 <%@ page import="com.dailyfixer.dao.ProductDAO" %>
 <%@ page import="com.dailyfixer.dao.ProductVariantDAO" %>
@@ -23,108 +23,96 @@
         return;
     }
     
-    // First check if itemsToCheckout already exists in session (from previous page load)
-Map<Integer, CartItem> itemsToCheckout = (Map<Integer, CartItem>) session.getAttribute("itemsToCheckout");
+    // Build itemsToCheckout from request: Buy Now (URL params) = single product only; otherwise = full cart.
+// Never reuse stale session items so checkout always matches user intent and cart is up to date.
+String productIdParam = request.getParameter("productId");
+String quantityParam = request.getParameter("quantity");
+String variantIdParam = request.getParameter("variantId");
+Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+Map<Integer, CartItem> itemsToCheckout = new LinkedHashMap<>();
 
-// If not in session, build from cart or Buy Now parameters
-if (itemsToCheckout == null || itemsToCheckout.isEmpty()) {
-    itemsToCheckout = new HashMap<>();
-    
-    // Get cart from session
-    Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+if (productIdParam != null && quantityParam != null && !productIdParam.isEmpty()) {
+    // BUY NOW: checkout with only this product (ignore cart)
+    int productId = Integer.parseInt(productIdParam);
+    int quantity = Integer.parseInt(quantityParam);
+    Integer variantId = null;
+    if (variantIdParam != null && !variantIdParam.isBlank()) {
+        variantId = Integer.parseInt(variantIdParam);
+    }
 
-    if (cart != null && !cart.isEmpty()) {
-        itemsToCheckout.putAll(cart);
-    } else {
-        String productIdParam = request.getParameter("productId");
-        String quantityParam = request.getParameter("quantity");
-        String variantIdParam = request.getParameter("variantId");
+    ProductDAO dao = new ProductDAO();
+    Product product = dao.getProductById(productId);
+    if (product != null) {
+        double price = product.getPrice();
+        double originalPrice = product.getPrice();
+        String variantColor = null;
+        String variantSize = null;
+        String variantPower = null;
 
-    if (productIdParam != null && quantityParam != null && !productIdParam.isEmpty()) {
-        int productId = Integer.parseInt(productIdParam);
-        int quantity = Integer.parseInt(quantityParam);
-        Integer variantId = null;
-        if (variantIdParam != null && !variantIdParam.isBlank()) {
-            variantId = Integer.parseInt(variantIdParam);
-        }
-
-        ProductDAO dao = new ProductDAO();
-        Product product = dao.getProductById(productId);
-        if (product != null) {
-            double price = product.getPrice();
-            double originalPrice = product.getPrice();
-            String variantColor = null;
-            String variantSize = null;
-            String variantPower = null;
-
-            // If variant is selected, use variant price
-            if (variantId != null) {
-                try {
-                    ProductVariantDAO variantDAO = new ProductVariantDAO();
-                    ProductVariant variant = variantDAO.getVariantById(variantId);
-                    if (variant != null && variant.getProductId() == productId) {
-                        price = variant.getPrice().doubleValue();
-                        originalPrice = price;
-                        variantColor = variant.getColor();
-                        variantSize = variant.getSize();
-                        variantPower = variant.getPower();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // Check for active discount
-            double discountAmount = 0;
-            String discountName = null;
-            String discountType = null;
-            double discountedPrice = price;
-
+        if (variantId != null) {
             try {
-                DiscountDAO discountDAO = new DiscountDAO();
-                Discount discount = null;
-
-                if (variantId != null) {
-                    // First check for variant-specific discount
-                    discount = discountDAO.getActiveDiscountForVariant(variantId);
-                    // If no variant discount, check for product-level discount
-                    if (discount == null || !discount.isValid()) {
-                        discount = discountDAO.getActiveDiscountForProduct(productId);
-                    }
-                } else {
-                    discount = discountDAO.getActiveDiscountForProduct(productId);
-                }
-
-                if (discount != null && discount.isValid()) {
+                ProductVariantDAO variantDAO = new ProductVariantDAO();
+                ProductVariant variant = variantDAO.getVariantById(variantId);
+                if (variant != null && variant.getProductId() == productId) {
+                    price = variant.getPrice().doubleValue();
                     originalPrice = price;
-                    discountedPrice = discount.calculateDiscountedPrice(price);
-                    discountAmount = originalPrice - discountedPrice;
-                    discountName = discount.getDiscountName();
-                    discountType = discount.getDiscountType();
+                    variantColor = variant.getColor();
+                    variantSize = variant.getSize();
+                    variantPower = variant.getPower();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            CartItem item = new CartItem(
-                product.getProductId(),
-                product.getName(),
-                discountedPrice,
-                originalPrice,
-                quantity,
-                product.getImageBase64(),
-                variantId,
-                variantColor,
-                variantSize,
-                variantPower,
-                discountAmount,
-                discountName,
-                discountType
-            );
-            int cartKey = variantId != null ? variantId : productId;
-            itemsToCheckout.put(cartKey, item);
         }
+
+        double discountAmount = 0;
+        String discountName = null;
+        String discountType = null;
+        double discountedPrice = price;
+        try {
+            DiscountDAO discountDAO = new DiscountDAO();
+            Discount discount = null;
+            if (variantId != null) {
+                discount = discountDAO.getActiveDiscountForVariant(variantId);
+                if (discount == null || !discount.isValid()) {
+                    discount = discountDAO.getActiveDiscountForProduct(productId);
+                }
+            } else {
+                discount = discountDAO.getActiveDiscountForProduct(productId);
+            }
+            if (discount != null && discount.isValid()) {
+                originalPrice = price;
+                discountedPrice = discount.calculateDiscountedPrice(price);
+                discountAmount = originalPrice - discountedPrice;
+                discountName = discount.getDiscountName();
+                discountType = discount.getDiscountType();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        CartItem item = new CartItem(
+            product.getProductId(),
+            product.getName(),
+            discountedPrice,
+            originalPrice,
+            quantity,
+            product.getImageBase64(),
+            variantId,
+            variantColor,
+            variantSize,
+            variantPower,
+            discountAmount,
+            discountName,
+            discountType
+        );
+        int cartKey = variantId != null ? variantId : productId;
+        itemsToCheckout.put(cartKey, item);
     }
+} else {
+    // PROCEED TO CHECKOUT FROM CART: use full current cart (all stores, all items)
+    if (cart != null && !cart.isEmpty()) {
+        itemsToCheckout.putAll(cart);
     }
 }
 

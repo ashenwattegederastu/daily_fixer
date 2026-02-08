@@ -521,8 +521,10 @@ body.dashboard-layout {
   width: auto;
 }
 </style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/toast.css">
 </head>
 <body class="dashboard-layout">
+<div id="toast-container"></div>
 
 <header class="topbar">
     <div class="logo">Daily Fixer</div>
@@ -670,7 +672,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     const productCheckboxes = document.querySelectorAll('input[name="productIds"]:checked');
     if (productCheckboxes.length === 0) {
         e.preventDefault();
-        alert('Please select at least one product to apply the discount.');
+        if (typeof showToast === 'function') showToast('Please select at least one product to apply the discount.', 'error'); else alert('Please select at least one product to apply the discount.');
         return false;
     }
     
@@ -679,19 +681,19 @@ document.querySelector('form').addEventListener('submit', function(e) {
     
     if (discountType === 'PERCENTAGE' && (discountValue <= 0 || discountValue > 100)) {
         e.preventDefault();
-        alert('Percentage discount must be between 1 and 100.');
+        if (typeof showToast === 'function') showToast('Percentage discount must be between 1 and 100.', 'error'); else alert('Percentage discount must be between 1 and 100.');
         return false;
     }
     
     if (discountType === 'FIXED' && discountValue <= 0) {
         e.preventDefault();
-        alert('Fixed discount amount must be greater than 0.');
+        if (typeof showToast === 'function') showToast('Fixed discount amount must be greater than 0.', 'error'); else alert('Fixed discount amount must be greater than 0.');
         return false;
     }
     
     return true;
 });
 </script>
-
+<script src="${pageContext.request.contextPath}/assets/js/toast.js"></script>
 </body>
 </html>

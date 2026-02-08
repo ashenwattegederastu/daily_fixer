@@ -38,7 +38,7 @@
     // Get cart from session
     Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
     if(cart == null){
-        cart = new java.util.HashMap<>();
+        cart = new java.util.LinkedHashMap<>();
         session.setAttribute("cart", cart);
     }
 

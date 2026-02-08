@@ -3,6 +3,7 @@ package com.dailyfixer.servlet;
 import com.dailyfixer.config.PayHereConfig;
 import com.dailyfixer.dao.OrderDAO;
 import com.dailyfixer.model.Order;
+import com.dailyfixer.util.OrderNotificationHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -120,6 +121,10 @@ public class NotifyServlet extends HttpServlet {
             // Update order in database
             boolean updated = orderDAO.updateOrderStatus(orderId, newOrderStatus, paymentId);
 
+            if (updated && ("FAILED".equals(newOrderStatus) || "CANCELLED".equals(newOrderStatus))) {
+                OrderNotificationHelper.createOrderUnsuccessfulNotificationIfNeeded(orderId);
+            }
+
             // If payment successful, update all related orders and reduce stock
             // This handles multi-store orders where we create separate orders per store
             if (updated && "PAID".equals(newOrderStatus)) {
@@ -135,7 +140,9 @@ public class NotifyServlet extends HttpServlet {
                     System.err.println("Error reducing stock for order " + orderId + ": " + e.getMessage());
                     e.printStackTrace();
                 }
-                
+
+                OrderNotificationHelper.createOrderSuccessNotificationIfNeeded(orderId);
+
                 // Find and update related orders (orders with same email created within last 5 minutes)
                 // This is a workaround since we don't have a parent_order_id field
                 try {
@@ -164,6 +171,7 @@ public class NotifyServlet extends HttpServlet {
                                     } catch (Exception e) {
                                         System.err.println("Error reducing stock for related order " + relatedOrder.getOrderId() + ": " + e.getMessage());
                                     }
+                                    OrderNotificationHelper.createOrderSuccessNotificationIfNeeded(relatedOrder.getOrderId());
                                 }
                             }
                         }

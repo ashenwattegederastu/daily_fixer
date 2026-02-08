@@ -44,7 +44,6 @@ public class RegisterStoreServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         String phone = req.getParameter("phone");
-        String city = req.getParameter("city");
         String storeName = req.getParameter("storeName");
         String storeAddress = req.getParameter("storeAddress");
         String storeCity = req.getParameter("storeCity");
@@ -92,7 +91,7 @@ public class RegisterStoreServlet extends HttpServlet {
             user.setEmail(email);
             user.setPassword(HashUtil.sha256(password));
             user.setPhoneNumber(phone);
-            user.setCity(city);
+            user.setCity(storeCity);  // use store city for owner's city
             user.setRole("store");
 
             int userId = userDAO.saveUser(user);

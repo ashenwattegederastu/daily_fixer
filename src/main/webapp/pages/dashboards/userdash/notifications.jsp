@@ -1,6 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ page import="com.dailyfixer.model.User" %>
+<%@ page import="com.dailyfixer.model.UserNotification" %>
+<%@ page import="com.dailyfixer.dao.UserNotificationDAO" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Collections" %>
+<%@ page import="java.util.Comparator" %>
 
 <%
     User user = (User) session.getAttribute("currentUser");
@@ -9,6 +15,20 @@
         response.sendRedirect(request.getContextPath() + "/pages/shared/login.jsp");
         return;
     }
+    UserNotificationDAO notifDAO = new UserNotificationDAO();
+    List<UserNotification> notifications = notifDAO.findByUserId(user.getUserId());
+    String sortParam = request.getParameter("sort");
+    if (notifications != null && "date_asc".equals(sortParam)) {
+        Collections.sort(notifications, new Comparator<UserNotification>() {
+            public int compare(UserNotification a, UserNotification b) {
+                if (a.getCreatedAt() == null && b.getCreatedAt() == null) return 0;
+                if (a.getCreatedAt() == null) return 1;
+                if (b.getCreatedAt() == null) return -1;
+                return a.getCreatedAt().compareTo(b.getCreatedAt());
+            }
+        });
+    }
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy 'at' HH:mm");
 %>
 
 <!DOCTYPE html>
@@ -17,255 +37,212 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Notifications | Daily Fixer</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/framework.css">
 <style>
-:root {
-    --panel-color: #dcdaff;
-    --accent: #8b95ff;
-    --text-dark: #000000;
-    --text-secondary: #333333;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.12);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.18);
-    --shadow-lg: 0 12px 36px rgba(0,0,0,0.22);
-}
-
-/* Reset */
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #ffffff;
-    color: var(--text-dark);
-    display: flex;
-    min-height: 100vh;
-}
-
-/* Top Navbar */
-.topbar {
-    position: fixed;
-    top:0; left:0; right:0;
-    height:76px;
-    background-color: var(--panel-color);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 30px;
-    z-index: 200;
-    box-shadow: var(--shadow-md);
-}
-.topbar .logo { font-size: 1.5em; font-weight: 700; color: var(--accent); }
-.topbar .panel-name { font-weight: 600; flex:1; text-align:center; color: var(--text-dark); }
-.topbar-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
+.topbar-actions { display: flex; gap: 15px; align-items: center; }
 .topbar .home-btn {
     padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: var(--chart-1);
     border: none;
-    color: #fff;
-    border-radius: 8px;
+    color: white;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
     text-decoration: none;
-    transition: all 0.2s;
+    display: inline-block;
+    transition: all 0.3s ease;
 }
-.topbar .home-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
+.topbar .home-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); opacity: 0.9; }
 
-.topbar .logout-btn {
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, var(--accent), #7ba3d4);
-    border: none;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.topbar .logout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    opacity: 0.9;
-}
+.container h2 { font-size: 1.6em; margin-bottom: 24px; color: var(--foreground); }
 
-/* Sidebar */
-.sidebar {
-    width: 240px;
-    background-color: var(--panel-color);
-    height: 100vh;
-    position: fixed;
-    top:0;
-    left:0;
-    padding-top: 96px;
-    box-shadow: var(--shadow-md);
-    overflow-y: auto;
-    z-index: 100;
-}
-.sidebar h3 { padding: 0 20px 12px; font-size: 0.85em; color: var(--text-dark); text-transform: uppercase; }
-.sidebar ul { list-style:none; }
-.sidebar a {
-    display:block;
-    padding:12px 20px;
-    text-decoration:none;
-    color: var(--text-dark);
-    font-weight:500;
-    border-left:3px solid transparent;
-    border-radius:0 8px 8px 0;
-    margin-bottom:4px;
-    transition: all 0.2s;
-}
-.sidebar a:hover, .sidebar a.active {
-    background-color: #f0f0ff;
-    border-left-color: var(--accent);
-}
-
-/* Main Content */
-.container {
-    flex:1;
-    margin-left:240px;
-    margin-top:83px;
-    padding:30px;
-}
-.container h2 {
-    font-size:1.6em;
-    margin-bottom:20px;
-    color: #000000;
-}
-
-/* Notification Cards */
+/* Notification cards – match dashboard card style */
 .notification-card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid rgba(0,0,0,0.1);
-    margin-bottom: 15px;
+    background: var(--card);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
     display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: all 0.2s;
+    align-items: flex-start;
+    gap: 20px;
+    transition: all 0.25s ease;
+    color: var(--foreground);
 }
-
 .notification-card:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-xl);
     transform: translateY(-2px);
+    border-color: var(--primary);
 }
 
 .notification-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     color: white;
-    font-size: 1.2em;
+    font-size: 1.3em;
 }
+.notification-icon.accepted { background: var(--chart-1); }
+.notification-icon.denied { background: var(--destructive); }
+.notification-icon.delivery { background: var(--chart-2); }
+.notification-icon.pending { background: var(--chart-3); }
 
-.notification-icon.accepted {
-    background: linear-gradient(135deg, #10b981, #059669);
+.notification-body { flex: 1; min-width: 0; }
+.notification-body h4 {
+    margin: 0 0 8px 0;
+    color: var(--foreground);
+    font-size: 1.15em;
+    font-weight: 600;
 }
-
-.notification-icon.denied {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+.notification-body .notification-desc {
+    margin: 0 0 12px 0;
+    color: var(--muted-foreground);
+    font-size: 0.95em;
+    line-height: 1.45;
 }
-
-.notification-icon.delivery {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.notification-icon.pending {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.notification-content {
-    flex: 1;
-}
-
-.notification-content h4 {
-    margin: 0 0 5px 0;
-    color: var(--text-dark);
-    font-size: 1.1em;
-}
-
-.notification-content p {
-    margin: 0;
-    color: var(--text-secondary);
+.notification-details-box {
+    background: var(--muted);
+    border-left: 4px solid var(--primary);
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    margin: 12px 0 16px 0;
     font-size: 0.9em;
+    color: var(--foreground);
+    white-space: pre-line;
+    line-height: 1.5;
+}
+.notification-actions-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+.btn-view-details {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+.btn-view-details:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    opacity: 0.95;
+}
+.btn-download-receipt {
+    padding: 10px 20px;
+    background: var(--chart-1);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+.btn-download-receipt:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    opacity: 0.95;
 }
 
+.notification-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
 .notification-time {
-    color: var(--text-secondary);
-    font-size: 0.8em;
+    color: var(--muted-foreground);
+    font-size: 0.85em;
     font-weight: 500;
 }
-
 .notification-status {
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 6px 14px;
+    border-radius: 999px;
     font-size: 0.8em;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
+.status-accepted { background: oklch(0.9 0.08 156); color: oklch(0.3 0.12 156); }
+.status-denied { background: oklch(0.95 0.06 25); color: oklch(0.45 0.15 25); }
+.status-delivery { background: oklch(0.92 0.06 250); color: oklch(0.4 0.15 250); }
+.status-pending { background: oklch(0.95 0.08 85); color: oklch(0.45 0.12 85); }
 
-.status-accepted {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.status-denied {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.status-delivery {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.status-pending {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-/* Section Headers */
 .section-header {
-    font-size: 1.2em;
+    font-size: 1.15em;
     font-weight: 600;
-    color: var(--text-dark);
-    margin: 30px 0 15px 0;
+    color: var(--foreground);
+    margin: 28px 0 16px 0;
     padding-bottom: 10px;
-    border-bottom: 2px solid var(--panel-color);
+    border-bottom: 2px solid var(--border);
 }
-
-/* Empty State */
+.sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.sort-bar span {
+    font-size: 0.95em;
+    color: var(--muted-foreground);
+    font-weight: 500;
+}
+.sort-bar a {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.9em;
+    font-weight: 600;
+    text-decoration: none;
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+.sort-bar a:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+.sort-bar a.sort-active {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+}
 .empty-state {
     text-align: center;
-    padding: 60px 20px;
-    color: var(--text-secondary);
+    padding: 60px 24px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
 }
-
-.empty-state h3 {
-    margin-bottom: 10px;
-    color: var(--text-dark);
-}
-
-.empty-state p {
-    font-size: 0.9em;
-}
+.empty-state h3 { margin-bottom: 12px; color: var(--foreground); font-size: 1.25em; }
+.empty-state p { font-size: 0.95em; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -274,6 +251,7 @@ body {
     <div class="logo">Daily Fixer</div>
     <div class="panel-name">User Panel</div>
     <div class="topbar-actions">
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙 Dark</button>
         <a href="${pageContext.request.contextPath}" class="home-btn">Home</a>
         <a href="${pageContext.request.contextPath}/logout" class="logout-btn">Log Out</a>
     </div>
@@ -293,87 +271,96 @@ body {
 <main class="container">
     <h2>Notifications</h2>
     
+    <% if (notifications != null && !notifications.isEmpty()) { %>
+    <div class="sort-bar">
+        <span>Sort:</span>
+        <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/notifications.jsp?sort=date_asc" class="<%= "date_asc".equals(sortParam) ? "sort-active" : "" %>">Earliest to latest</a>
+        <a href="${pageContext.request.contextPath}/pages/dashboards/userdash/notifications.jsp?sort=date_desc" class="<%= "date_asc".equals(sortParam) ? "" : "sort-active" %>">Latest to earliest</a>
+    </div>
+    <% } %>
+    
     <div class="section-header">Recent Notifications</div>
     
-    <!-- Booking Accepted Notification -->
+    <%
+        if (notifications == null || notifications.isEmpty()) {
+    %>
+    <div class="empty-state">
+        <h3>No notifications yet</h3>
+        <p>When you place an order successfully, you'll see an order success notification here with order details and an option to download your receipt.</p>
+    </div>
+    <%
+        } else {
+            for (UserNotification n : notifications) {
+                String bodyEscaped = (n.getBody() != null ? n.getBody().replace("<", "&lt;").replace(">", "&gt;") : "");
+                String timeStr = (n.getCreatedAt() != null ? dateFormat.format(n.getCreatedAt()) : "");
+                String orderIdEnc = (n.getOrderId() != null ? java.net.URLEncoder.encode(n.getOrderId(), "UTF-8") : "");
+                boolean isOrderSuccess = "ORDER_SUCCESS".equals(n.getType());
+                boolean isOrderUnsuccessful = "ORDER_UNSUCCESSFUL".equals(n.getType());
+    %>
+    <% if (isOrderSuccess && n.getOrderId() != null && !n.getOrderId().isEmpty()) { %>
     <div class="notification-card">
         <div class="notification-icon accepted">✓</div>
-        <div class="notification-content">
-            <h4>Booking Accepted</h4>
-            <p>Your electrical repair booking for October 25, 2025 has been accepted by John Silva</p>
+        <div class="notification-body">
+            <h4><%= n.getTitle() %></h4>
+            <p class="notification-desc">Your order was placed successfully. View full order and store details, or download your receipt.</p>
+            <% if (n.getBody() != null && !n.getBody().isEmpty()) { %>
+            <div class="notification-details-box"><%= bodyEscaped %></div>
+            <% } %>
+            <div class="notification-actions-row">
+                <a href="${pageContext.request.contextPath}/OrderDetails.jsp?order_id=<%= orderIdEnc %>" class="btn-view-details">View details →</a>
+                <a href="${pageContext.request.contextPath}/OrderDetails.jsp?order_id=<%= orderIdEnc %>" class="btn-download-receipt" target="_blank">📄 Download receipt</a>
+            </div>
         </div>
-        <div class="notification-time">2 hours ago</div>
-        <div class="notification-status status-accepted">Accepted</div>
-    </div>
-
-    <!-- Delivery Update Notification -->
-    <div class="notification-card">
-        <div class="notification-icon delivery">🚚</div>
-        <div class="notification-content">
-            <h4>Out for Delivery</h4>
-            <p>Your Heavy Duty Hammer order is now out for delivery. Expected arrival: 2-3 hours</p>
+        <div class="notification-meta">
+            <span class="notification-time"><%= timeStr %></span>
+            <span class="notification-status status-accepted">Order placed</span>
         </div>
-        <div class="notification-time">4 hours ago</div>
-        <div class="notification-status status-delivery">In Transit</div>
     </div>
-
-    <!-- Booking Denied Notification -->
-    <div class="notification-card">
-        <div class="notification-icon denied">✗</div>
-        <div class="notification-content">
-            <h4>Booking Declined</h4>
-            <p>Your plumbing service booking for October 28, 2025 has been declined due to scheduling conflict</p>
-        </div>
-        <div class="notification-time">1 day ago</div>
-        <div class="notification-status status-denied">Declined</div>
-    </div>
-
-    <!-- Delivery Completed Notification -->
-    <div class="notification-card">
-        <div class="notification-icon accepted">📦</div>
-        <div class="notification-content">
-            <h4>Delivery Completed</h4>
-            <p>Your Premium Paint Brush Set has been delivered successfully. Please rate your experience!</p>
-        </div>
-        <div class="notification-time">2 days ago</div>
-        <div class="notification-status status-accepted">Delivered</div>
-    </div>
-
-    <!-- Booking Pending Notification -->
-    <div class="notification-card">
-        <div class="notification-icon pending">⏳</div>
-        <div class="notification-content">
-            <h4>Booking Under Review</h4>
-            <p>Your AC repair booking is currently under review. We'll notify you once a technician is assigned</p>
-        </div>
-        <div class="notification-time">3 days ago</div>
-        <div class="notification-status status-pending">Pending</div>
-    </div>
-
-    <div class="section-header">Earlier Notifications</div>
-    
-    <!-- Older notifications -->
+    <% } else if (isOrderSuccess) { %>
     <div class="notification-card">
         <div class="notification-icon accepted">✓</div>
-        <div class="notification-content">
-            <h4>Service Completed</h4>
-            <p>Your AC repair service has been completed successfully by Kusal Jayawardena</p>
+        <div class="notification-body">
+            <h4><%= n.getTitle() %></h4>
+            <p class="notification-desc">Your order is successful.</p>
+            <% if (n.getBody() != null && !n.getBody().isEmpty()) { %><div class="notification-details-box"><%= bodyEscaped %></div><% } %>
         </div>
-        <div class="notification-time">1 week ago</div>
-        <div class="notification-status status-accepted">Completed</div>
+        <div class="notification-meta">
+            <span class="notification-time"><%= timeStr %></span>
+            <span class="notification-status status-accepted">Order placed</span>
+        </div>
     </div>
-
+    <% } else if (isOrderUnsuccessful) { %>
     <div class="notification-card">
-        <div class="notification-icon delivery">📦</div>
-        <div class="notification-content">
-            <h4>Order Shipped</h4>
-            <p>Your Cordless Drill Machine has been shipped and is on its way</p>
+        <div class="notification-icon denied">✕</div>
+        <div class="notification-body">
+            <h4><%= n.getTitle() %></h4>
+            <p class="notification-desc">Your order could not be completed. Payment was cancelled or failed.</p>
+            <% if (n.getBody() != null && !n.getBody().isEmpty()) { %><div class="notification-details-box"><%= bodyEscaped %></div><% } %>
         </div>
-        <div class="notification-time">1 week ago</div>
-        <div class="notification-status status-delivery">Shipped</div>
+        <div class="notification-meta">
+            <span class="notification-time"><%= timeStr %></span>
+            <span class="notification-status status-denied">Unsuccessful</span>
+        </div>
     </div>
-
+    <% } else { %>
+    <div class="notification-card">
+        <div class="notification-icon pending">📋</div>
+        <div class="notification-body">
+            <h4><%= n.getTitle() %></h4>
+            <% if (n.getBody() != null && !n.getBody().isEmpty()) { %><p class="notification-desc"><%= bodyEscaped %></p><% } %>
+        </div>
+        <div class="notification-meta">
+            <span class="notification-time"><%= timeStr %></span>
+            <span class="notification-status status-pending">Info</span>
+        </div>
+    </div>
+    <% } %>
+    <%
+            }
+        }
+    %>
 </main>
 
+<script src="${pageContext.request.contextPath}/assets/js/dark-mode.js"></script>
 </body>
 </html>

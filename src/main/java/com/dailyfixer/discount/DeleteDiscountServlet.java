@@ -35,6 +35,6 @@ public class DeleteDiscountServlet extends HttpServlet {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/ListDiscountsServlet");
+        response.sendRedirect(request.getContextPath() + "/ListDiscountsServlet?deleted=1");
     }
 }

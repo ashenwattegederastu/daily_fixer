@@ -15,7 +15,7 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @WebServlet("/addToCart")
@@ -44,7 +44,7 @@ public class CartServlet extends HttpServlet {
             Map<Integer, CartItem> tempCart = (Map<Integer, CartItem>) obj;
             cart = tempCart;
         } else {
-            cart = new HashMap<>();
+            cart = new LinkedHashMap<>();
         }
 
         try {

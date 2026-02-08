@@ -14,6 +14,7 @@
 <%@ page import="java.util.Set" %>
 <%@ page import="java.util.HashSet" %>
 <%@ page import="java.math.BigDecimal" %>
+<%@ page import="com.dailyfixer.util.OrderNotificationHelper" %>
 <%
     User currentUser = (User) session.getAttribute("currentUser");
     boolean isLoggedIn = (currentUser != null);
@@ -28,67 +29,94 @@
     
     if (orderIdParam != null && !orderIdParam.isEmpty()) {
         order = orderDAO.findOrderById(orderIdParam);
+        String payHereStatusParam = request.getParameter("status_code");
+        boolean urlIndicatesFailure = false;
+        if (payHereStatusParam != null && !payHereStatusParam.trim().isEmpty()) {
+            try {
+                int code = Integer.parseInt(payHereStatusParam.trim());
+                if (code == -2 || code == -1 || code == -3) urlIndicatesFailure = true;
+            } catch (NumberFormatException e) { }
+        }
+        if (request.getParameter("payment_failed") != null || "failed".equalsIgnoreCase(request.getParameter("payment_status") != null ? request.getParameter("payment_status").trim() : "")) {
+            urlIndicatesFailure = true;
+        }
         
-        // Update order status to PAID if it's still PENDING
-        // This is a fallback in case NotifyServlet wasn't called (common in sandbox/development)
+        if (order != null && urlIndicatesFailure && "PENDING".equalsIgnoreCase(order.getStatus() != null ? order.getStatus().trim() : "")) {
+            orderDAO.updateStatus(orderIdParam, "FAILED");
+            order = orderDAO.findOrderById(orderIdParam);
+        }
+        
+        // Update order status to PAID if it's still PENDING (success path), or handle failed/cancelled
         if (order != null) {
             String currentStatus = order.getStatus() != null ? order.getStatus().trim() : "";
             boolean statusChangedToPaid = false;
-            
-            if ("PENDING".equalsIgnoreCase(currentStatus)) {
-                boolean updated = orderDAO.updateStatus(orderIdParam, "PAID");
-                if (updated) {
-                    System.out.println("Order status updated to PAID on success page: " + orderIdParam);
-                    statusChangedToPaid = true;
-                    // Refresh order data first
-                    order = orderDAO.findOrderById(orderIdParam);
-                    
-                    // Reduce stock for this order
-                    try {
-                        boolean stockReduced = orderDAO.reduceStockForOrder(orderIdParam);
-                        if (stockReduced) {
-                            System.out.println("Stock reduced successfully for order: " + orderIdParam);
-                        } else {
-                            System.err.println("Warning: Stock reduction failed or incomplete for order: " + orderIdParam);
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error reducing stock for order " + orderIdParam + ": " + e.getMessage());
-                        e.printStackTrace();
-                    }
+            boolean isFailedOrCancelled = "FAILED".equalsIgnoreCase(currentStatus) || "CANCELLED".equalsIgnoreCase(currentStatus);
+
+            if (isFailedOrCancelled) {
+                // Payment was denied/cancelled – create unsuccessful notification for logged-in user
+                if (currentUser != null) {
+                    OrderNotificationHelper.createOrderUnsuccessfulNotificationForUser(currentUser.getUserId(), orderIdParam);
                 } else {
-                    System.err.println("Failed to update order status to PAID: " + orderIdParam);
+                    OrderNotificationHelper.createOrderUnsuccessfulNotificationIfNeeded(orderIdParam);
                 }
-            } else if (!"PAID".equalsIgnoreCase(currentStatus)) {
-                // If status is not PAID and not PENDING, update to PAID anyway (for safety)
-                System.out.println("Order status is '" + currentStatus + "', updating to PAID: " + orderIdParam);
-                boolean updated = orderDAO.updateStatus(orderIdParam, "PAID");
-                if (updated) {
-                    statusChangedToPaid = true;
-                    order = orderDAO.findOrderById(orderIdParam);
-                    
-                    // Reduce stock for this order
-                    try {
-                        boolean stockReduced = orderDAO.reduceStockForOrder(orderIdParam);
-                        if (stockReduced) {
-                            System.out.println("Stock reduced successfully for order: " + orderIdParam);
-                        } else {
-                            System.err.println("Warning: Stock reduction failed or incomplete for order: " + orderIdParam);
+            } else {
+                // Order is PENDING or PAID – handle success path
+                if ("PENDING".equalsIgnoreCase(currentStatus)) {
+                    boolean updated = orderDAO.updateStatus(orderIdParam, "PAID");
+                    if (updated) {
+                        System.out.println("Order status updated to PAID on success page: " + orderIdParam);
+                        statusChangedToPaid = true;
+                        order = orderDAO.findOrderById(orderIdParam);
+                        try {
+                            boolean stockReduced = orderDAO.reduceStockForOrder(orderIdParam);
+                            if (stockReduced) {
+                                System.out.println("Stock reduced successfully for order: " + orderIdParam);
+                            } else {
+                                System.err.println("Warning: Stock reduction failed or incomplete for order: " + orderIdParam);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Error reducing stock for order " + orderIdParam + ": " + e.getMessage());
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        System.err.println("Error reducing stock for order " + orderIdParam + ": " + e.getMessage());
-                        e.printStackTrace();
+                    } else {
+                        System.err.println("Failed to update order status to PAID: " + orderIdParam);
                     }
+                } else if (!"PAID".equalsIgnoreCase(currentStatus)) {
+                    // Unknown status (not PAID, PENDING, FAILED, CANCELLED) – fallback to PAID for safety
+                    System.out.println("Order status is '" + currentStatus + "', updating to PAID: " + orderIdParam);
+                    boolean updated = orderDAO.updateStatus(orderIdParam, "PAID");
+                    if (updated) {
+                        statusChangedToPaid = true;
+                        order = orderDAO.findOrderById(orderIdParam);
+                        try {
+                            orderDAO.reduceStockForOrder(orderIdParam);
+                        } catch (Exception e) {
+                            System.err.println("Error reducing stock for order " + orderIdParam + ": " + e.getMessage());
+                        }
+                    }
+                }
+
+                // Create success notification only when order is (or was just set to) PAID
+                if (currentUser != null) {
+                    OrderNotificationHelper.createOrderSuccessNotificationForUser(currentUser.getUserId(), orderIdParam);
+                } else {
+                    OrderNotificationHelper.createOrderSuccessNotificationIfNeeded(orderIdParam);
                 }
             }
-            // Note: If order is already PAID, we don't reduce stock again to avoid duplicate reductions
             
             // Get all related orders from session (stored during checkout)
             @SuppressWarnings("unchecked")
             List<String> allOrderIds = (List<String>) session.getAttribute("allOrderIds");
             
             if (allOrderIds != null && !allOrderIds.isEmpty()) {
-                // Fetch all orders by their IDs
                 for (String orderId : allOrderIds) {
+                    if (!isFailedOrCancelled) {
+                        if (currentUser != null) {
+                            OrderNotificationHelper.createOrderSuccessNotificationForUser(currentUser.getUserId(), orderId);
+                        } else {
+                            OrderNotificationHelper.createOrderSuccessNotificationIfNeeded(orderId);
+                        }
+                    }
                     try {
                         Order relatedOrder = orderDAO.findOrderById(orderId);
                         if (relatedOrder != null) {

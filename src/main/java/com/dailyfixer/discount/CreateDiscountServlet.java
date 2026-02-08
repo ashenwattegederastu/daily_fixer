@@ -99,7 +99,7 @@ public class CreateDiscountServlet extends HttpServlet {
                 }
             }
 
-            response.sendRedirect(request.getContextPath() + "/ListDiscountsServlet");
+            response.sendRedirect(request.getContextPath() + "/ListDiscountsServlet?created=1");
 
         } catch (Exception e) {
             e.printStackTrace();

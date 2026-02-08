@@ -351,6 +351,16 @@
     border: 2px solid var(--border);
     box-shadow: var(--shadow-sm);
 }
+.most-selling-item .img-empty {
+    width: 70px;
+    height: 70px;
+    min-width: 70px;
+    min-height: 70px;
+    border-radius: 12px;
+    border: 2px dashed var(--border);
+    background: var(--muted);
+    box-sizing: border-box;
+}
 .most-selling-item .info { flex: 1; }
 .most-selling-item .info h4 {
     color: var(--foreground);
@@ -702,7 +712,7 @@ a.low-stock-item {
                 </div>
             <% } else { %>
                 <div class="most-selling-item">
-                    <img src="${pageContext.request.contextPath}/assets/images/power-drill.png" alt="No sales">
+                    <div class="img-empty" aria-hidden="true"></div>
                     <div class="info">
                         <h4>No sales yet</h4>
                         <p>Top seller will appear here</p>

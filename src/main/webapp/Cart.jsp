@@ -1,13 +1,45 @@
 <%@ page import="java.util.Map" %>
-    <%@ page import="com.dailyfixer.model.CartItem" %>
-    <%@ page import="com.dailyfixer.model.User" %>
-        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-        
-        <%
-            // Check if user is logged in
-            User currentUser = (User) session.getAttribute("currentUser");
-            boolean isLoggedIn = (currentUser != null);
-        %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.LinkedHashMap" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="com.dailyfixer.model.CartItem" %>
+<%@ page import="com.dailyfixer.model.User" %>
+<%@ page import="com.dailyfixer.model.Product" %>
+<%@ page import="com.dailyfixer.model.Store" %>
+<%@ page import="com.dailyfixer.dao.ProductDAO" %>
+<%@ page import="com.dailyfixer.dao.StoreDAO" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    User currentUser = (User) session.getAttribute("currentUser");
+    boolean isLoggedIn = (currentUser != null);
+    // Group cart items by store (storeUsername -> list of CartItem)
+    Map<String, List<CartItem>> itemsByStore = new LinkedHashMap<>();
+    Map<String, String> storeDisplayName = new LinkedHashMap<>();
+    Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+    if (cart != null && !cart.isEmpty()) {
+        ProductDAO productDAO = new ProductDAO();
+        StoreDAO storeDAO = new StoreDAO();
+        for (CartItem ci : cart.values()) {
+            String storeUsername = null;
+            try {
+                Product p = productDAO.getProductById(ci.getProductId());
+                if (p != null && p.getStoreUsername() != null && !p.getStoreUsername().isEmpty()) {
+                    storeUsername = p.getStoreUsername();
+                }
+            } catch (Exception e) { /* ignore */ }
+            if (storeUsername == null) storeUsername = "unknown";
+            itemsByStore.computeIfAbsent(storeUsername, k -> new ArrayList<>()).add(ci);
+            if (!storeDisplayName.containsKey(storeUsername)) {
+                try {
+                    Store store = storeDAO.getStoreByUsername(storeUsername);
+                    storeDisplayName.put(storeUsername, store != null && store.getStoreName() != null ? store.getStoreName() : storeUsername);
+                } catch (Exception e) {
+                    storeDisplayName.put(storeUsername, storeUsername);
+                }
+            }
+        }
+    }
+%>
             <!DOCTYPE html>
             <html lang="en">
 
@@ -15,6 +47,7 @@
                 <meta charset="UTF-8">
                 <title>Daily Fixer - Cart</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/cart.css">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/toast.css">
                 <style>
                     body {
                         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -42,8 +75,37 @@
                     .cart-items {
                         display: flex;
                         flex-direction: column;
-                        gap: 20px;
+                        gap: 28px;
                     }
+                    .store-card {
+                        border: 2px solid #e0d6ff;
+                        border-radius: 14px;
+                        overflow: hidden;
+                        background: linear-gradient(180deg, #faf8ff 0%, #fff 100%);
+                        box-shadow: 0 2px 12px rgba(123, 44, 255, 0.08);
+                    }
+                    .store-card-header {
+                        padding: 14px 20px;
+                        background: linear-gradient(135deg, #7b2cff, #8b95ff);
+                        color: #fff;
+                        font-weight: 700;
+                        font-size: 1.1rem;
+                    }
+                    .store-card-items {
+                        padding: 16px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                    }
+                    .store-card-summary {
+                        padding: 12px 20px;
+                        background: #f4f1ff;
+                        border-top: 1px solid #e0d6ff;
+                        text-align: right;
+                        font-weight: 600;
+                        color: #360062;
+                    }
+                    .store-card-summary .store-total { font-size: 1.05rem; }
 
                     .cart-item {
                         display: flex;
@@ -264,128 +326,101 @@
             </head>
 
             <body>
-
+                <div id="toast-container"></div>
                 <jsp:include page="fragment_cart.jsp" />
 
                 <div class="cart-container">
                     <h2>Your Cart</h2>
 
-                    <% Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
-                            if (cart == null || cart.isEmpty()) {
-                            %>
+                    <% if (cart == null || cart.isEmpty()) { %>
                             <p class="empty-cart-msg">Your cart is empty.</p>
                             <p class="subtotal">Subtotal: Rs 0</p>
                             <% } else { %>
                                 <div class="cart-items">
-                                    <% for (CartItem ci : cart.values()) { %>
-                                        <div class="cart-item" data-id="<%=ci.getProductId()%>"
-                                            data-cart-key="<%=ci.getVariantId() != null ? ci.getVariantId() : ci.getProductId()%>">
-                                            <img src="data:image/jpeg;base64,<%=ci.getImageBase64()%>"
-                                                alt="<%=ci.getName()%>">
-                                            <div class="item-details">
-                                                <p class="item-name">
-                                                    <%=ci.getName()%>
-                                                </p>
-                                                <% if (ci.getVariantId() !=null) { %>
-                                                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">
-                                                        <% if (ci.getVariantColor() !=null &&
-                                                            !ci.getVariantColor().isEmpty()) { %>
-                                                            Color: <%=ci.getVariantColor()%>
-                                                                <% } %>
-                                                                    <% if (ci.getVariantSize() !=null &&
-                                                                        !ci.getVariantSize().isEmpty()) { %>
-                                                                        <% if (ci.getVariantColor() !=null &&
-                                                                            !ci.getVariantColor().isEmpty()) { %> | <% }
-                                                                                %>
-                                                                                Size: <%=ci.getVariantSize()%>
-                                                                                    <% } %>
-                                                                                        <% if (ci.getVariantPower()
-                                                                                            !=null &&
-                                                                                            !ci.getVariantPower().isEmpty())
-                                                                                            { %>
-                                                                                            <% if ((ci.getVariantColor()
-                                                                                                !=null &&
-                                                                                                !ci.getVariantColor().isEmpty())
-                                                                                                || (ci.getVariantSize()
-                                                                                                !=null &&
-                                                                                                !ci.getVariantSize().isEmpty()))
-                                                                                                { %> | <% } %>
-                                                                                                    Power:
-                                                                                                    <%=ci.getVariantPower()%>
-                                                                                                        <% } %>
-                                                    </p>
-                                                    <% } %>
+                                    <% 
+                                    double grandSubtotal = 0, grandTotalDiscount = 0;
+                                    for (Map.Entry<String, List<CartItem>> entry : itemsByStore.entrySet()) {
+                                        String storeUsername = entry.getKey();
+                                        List<CartItem> storeItems = entry.getValue();
+                                        String storeName = storeDisplayName.getOrDefault(storeUsername, storeUsername);
+                                        double storeSubtotal = 0, storeDiscount = 0;
+                                        for (CartItem ci : storeItems) {
+                                            storeSubtotal += ci.getQuantity() * ci.getOriginalPrice();
+                                            if (ci.getDiscountAmount() > 0) storeDiscount += ci.getTotalDiscount();
+                                        }
+                                        grandSubtotal += storeSubtotal;
+                                        grandTotalDiscount += storeDiscount;
+                                        double storeTotal = storeSubtotal - storeDiscount;
+                                    %>
+                                    <div class="store-card" data-store="<%= storeUsername %>">
+                                        <div class="store-card-header"><%= storeName %></div>
+                                        <div class="store-card-items">
+                                            <% for (CartItem ci : storeItems) { %>
+                                                <div class="cart-item" data-id="<%=ci.getProductId()%>"
+                                                    data-cart-key="<%=ci.getVariantId() != null ? ci.getVariantId() : ci.getProductId()%>">
+                                                    <img src="data:image/jpeg;base64,<%=ci.getImageBase64()%>"
+                                                        alt="<%=ci.getName()%>">
+                                                    <div class="item-details">
+                                                        <p class="item-name"><%=ci.getName()%></p>
+                                                        <% if (ci.getVariantId() != null) { %>
+                                                            <p style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">
+                                                                <% if (ci.getVariantColor() != null && !ci.getVariantColor().isEmpty()) { %>Color: <%=ci.getVariantColor()%><% } %>
+                                                                <% if (ci.getVariantSize() != null && !ci.getVariantSize().isEmpty()) { %><% if (ci.getVariantColor() != null && !ci.getVariantColor().isEmpty()) { %> | <% } %>Size: <%=ci.getVariantSize()%><% } %>
+                                                                <% if (ci.getVariantPower() != null && !ci.getVariantPower().isEmpty()) { %><% if ((ci.getVariantColor() != null && !ci.getVariantColor().isEmpty()) || (ci.getVariantSize() != null && !ci.getVariantSize().isEmpty())) { %> | <% } %>Power: <%=ci.getVariantPower()%><% } %>
+                                                            </p>
+                                                        <% } %>
                                                         <p class="item-qty">
                                                             Quantity:
                                                             <span class="quantity-controls"
                                                                 data-product-id="<%=ci.getProductId()%>"
                                                                 data-variant-id="<%=ci.getVariantId() != null ? ci.getVariantId() : ""%>"
                                                                 data-cart-key="<%=ci.getVariantId() != null ? ci.getVariantId() : ci.getProductId()%>">
-                                                                <button type="button"
-                                                                    class="qty-btn qty-decrease">-</button>
-                                                                <span class="qty-value">
-                                                                    <%=ci.getQuantity()%>
-                                                                </span>
-                                                                <button type="button"
-                                                                    class="qty-btn qty-increase">+</button>
+                                                                <button type="button" class="qty-btn qty-decrease">-</button>
+                                                                <span class="qty-value"><%=ci.getQuantity()%></span>
+                                                                <button type="button" class="qty-btn qty-increase">+</button>
                                                             </span>
                                                         </p>
                                                         <p class="item-price">
-                                                            <% if (ci.getDiscountAmount() > 0.01 && 
-                                                                ci.getOriginalPrice() > ci.getPrice()) { %>
-                                                                <span
-                                                                    style="text-decoration: line-through; color: #999; margin-right: 10px;">
-                                                                    Rs <%= String.format("%.2f", ci.getOriginalPrice())
-                                                                        %>
-                                                                </span>
-                                                                <span style="color: #4caf50; font-weight: 600;">
-                                                                    Rs <%= String.format("%.2f", ci.getPrice()) %>
-                                                                </span>
-                                                                <% if (ci.getDiscountName() !=null && !ci.getDiscountName().trim().isEmpty()) { %>
-                                                                    <span
-                                                                        style="background: #ff4d4f; color: white; padding: 2px 8px; border-radius: 8px; font-size: 0.8em; margin-left: 8px;">
-                                                                        <%= ci.getDiscountName() %>
-                                                                    </span>
-                                                                    <% } %>
-                                                                        <% } else { %>
-                                                                            Price: Rs <%= String.format("%.2f",
-                                                                                ci.getPrice()) %>
-                                                                                <% } %>
+                                                            <% if (ci.getDiscountAmount() > 0.01 && ci.getOriginalPrice() > ci.getPrice()) { %>
+                                                                <span style="text-decoration: line-through; color: #999; margin-right: 10px;">Rs <%= String.format("%.2f", ci.getOriginalPrice()) %></span>
+                                                                <span style="color: #4caf50; font-weight: 600;">Rs <%= String.format("%.2f", ci.getPrice()) %></span>
+                                                                <% if (ci.getDiscountName() != null && !ci.getDiscountName().trim().isEmpty()) { %>
+                                                                    <span style="background: #ff4d4f; color: white; padding: 2px 8px; border-radius: 8px; font-size: 0.8em; margin-left: 8px;"><%= ci.getDiscountName() %></span>
+                                                                <% } %>
+                                                            <% } else { %>
+                                                                Price: Rs <%= String.format("%.2f", ci.getPrice()) %>
+                                                            <% } %>
                                                         </p>
-                                            </div>
-                                            <button class="remove-item" data-product-id="<%=ci.getProductId()%>"
-                                                data-variant-id="<%=ci.getVariantId() != null ? ci.getVariantId() : ""%>"
-                                                data-cart-key="<%=ci.getVariantId() != null ? ci.getVariantId() : ci.getProductId()%>">Remove</button>
+                                                    </div>
+                                                    <button class="remove-item" data-product-id="<%=ci.getProductId()%>"
+                                                        data-variant-id="<%=ci.getVariantId() != null ? ci.getVariantId() : ""%>"
+                                                        data-cart-key="<%=ci.getVariantId() != null ? ci.getVariantId() : ci.getProductId()%>">Remove</button>
+                                                </div>
+                                            <% } %>
                                         </div>
-                                        <% } %>
+                                        <div class="store-card-summary">
+                                            Store total: <span class="store-total">Rs <%= String.format("%.2f", storeTotal) %></span>
+                                        </div>
+                                    </div>
+                                    <% } %>
                                 </div>
 
-                                <% double subtotal=0; double totalDiscount=0; for (CartItem ci : cart.values()) {
-                                    subtotal +=ci.getQuantity() * ci.getOriginalPrice(); if (ci.getDiscountAmount()> 0)
-                                    {
-                                    totalDiscount += ci.getTotalDiscount();
-                                    }
-                                    }
-                                    double finalTotal = subtotal - totalDiscount;
-                                    %>
+                                <% double finalTotal = grandSubtotal - grandTotalDiscount; %>
                                     <div class="cart-summary">
                                         <div class="summary-row subtotal-row">
                                             <span class="summary-label">Subtotal</span>
-                                            <span class="summary-value" id="subtotal">Rs <%= String.format("%.2f",
-                                                    subtotal) %></span>
+                                            <span class="summary-value" id="subtotal">Rs <%= String.format("%.2f", grandSubtotal) %></span>
                                         </div>
-                                        <% if (totalDiscount> 0) { %>
+                                        <% if (grandTotalDiscount > 0) { %>
                                             <div class="summary-row discount-row">
                                                 <span class="summary-label">Discount</span>
-                                                <span class="summary-value discount-value" id="totalDiscount">-Rs <%=
-                                                        String.format("%.2f", totalDiscount) %></span>
+                                                <span class="summary-value discount-value" id="totalDiscount">-Rs <%= String.format("%.2f", grandTotalDiscount) %></span>
                                             </div>
-                                            <% } %>
-                                                <div class="summary-row total-row">
-                                                    <span class="summary-label">Total</span>
-                                                    <span class="summary-value total-value" id="finalTotal">Rs <%=
-                                                            String.format("%.2f", finalTotal) %></span>
-                                                </div>
+                                        <% } %>
+                                        <div class="summary-row total-row">
+                                            <span class="summary-label">Total</span>
+                                            <span class="summary-value total-value" id="finalTotal">Rs <%= String.format("%.2f", finalTotal) %></span>
+                                        </div>
                                     </div>
 
                                     <form id="checkoutForm">
@@ -398,69 +433,55 @@
 
                 <script>
                     function updateSubtotal() {
-                        const items = document.querySelectorAll(".cart-item");
-                        let subtotal = 0;
-                        let totalDiscount = 0;
+                        let grandSubtotal = 0;
+                        let grandDiscount = 0;
 
-                        items.forEach(item => {
-                            const qtyText = item.querySelector(".qty-value").innerText;
-                            const qty = parseInt(qtyText);
-                            const priceElement = item.querySelector(".item-price");
+                        document.querySelectorAll(".store-card").forEach(storeCard => {
+                            const items = storeCard.querySelectorAll(".cart-item");
+                            let storeSubtotal = 0;
+                            let storeDiscount = 0;
 
-                            // Get original price and discounted price
-                            let originalPrice = 0;
-                            let discountedPrice = 0;
-                            const priceText = priceElement.innerText;
-
-                            // Check if there's a discount (line-through price exists)
-                            const originalPriceMatch = priceText.match(/Rs\s+([\d.]+)/);
-                            if (originalPriceMatch) {
-                                originalPrice = parseFloat(originalPriceMatch[1]);
-                            }
-
-                            // Get the discounted price (usually the second price)
-                            const prices = priceText.match(/Rs\s+([\d.]+)/g);
-                            if (prices && prices.length > 1) {
-                                discountedPrice = parseFloat(prices[1].replace("Rs ", ""));
-                                totalDiscount += (originalPrice - discountedPrice) * qty;
-                                subtotal += originalPrice * qty;
-                            } else if (originalPriceMatch) {
-                                // No discount, single price
-                                discountedPrice = originalPrice;
-                                subtotal += originalPrice * qty;
-                            } else {
-                                // Fallback: try to parse single price
-                                const singlePrice = parseFloat(priceText.replace(/[^\d.]/g, ''));
-                                if (!isNaN(singlePrice)) {
-                                    originalPrice = singlePrice;
-                                    discountedPrice = singlePrice;
-                                    subtotal += originalPrice * qty;
+                            items.forEach(item => {
+                                const qtyText = item.querySelector(".qty-value");
+                                const qty = parseInt(qtyText ? qtyText.innerText : "0", 10);
+                                const priceElement = item.querySelector(".item-price");
+                                if (!priceElement) return;
+                                const priceText = priceElement.innerText;
+                                let originalPrice = 0;
+                                const originalPriceMatch = priceText.match(/Rs\s+([\d.]+)/);
+                                if (originalPriceMatch) originalPrice = parseFloat(originalPriceMatch[1]);
+                                const prices = priceText.match(/Rs\s+([\d.]+)/g);
+                                let discountedPrice = originalPrice;
+                                if (prices && prices.length > 1) {
+                                    discountedPrice = parseFloat(prices[1].replace("Rs ", ""));
+                                    storeDiscount += (originalPrice - discountedPrice) * qty;
                                 }
-                            }
+                                storeSubtotal += originalPrice * qty;
+                            });
+
+                            grandSubtotal += storeSubtotal;
+                            grandDiscount += storeDiscount;
+                            const storeTotal = storeSubtotal - storeDiscount;
+                            const storeTotalEl = storeCard.querySelector(".store-total");
+                            if (storeTotalEl) storeTotalEl.innerText = "Rs " + storeTotal.toFixed(2);
                         });
 
                         const subtotalElement = document.getElementById("subtotal");
                         const discountElement = document.getElementById("totalDiscount");
                         const discountRow = discountElement ? discountElement.closest(".summary-row") : null;
                         const finalTotalElement = document.getElementById("finalTotal");
-                        const finalTotal = subtotal - totalDiscount;
+                        const finalTotal = grandSubtotal - grandDiscount;
 
-                        if (subtotalElement) {
-                            subtotalElement.innerText = "Rs " + subtotal.toFixed(2);
-                        }
-
+                        if (subtotalElement) subtotalElement.innerText = "Rs " + grandSubtotal.toFixed(2);
                         if (discountElement && discountRow) {
-                            if (totalDiscount > 0) {
-                                discountElement.innerText = "-Rs " + totalDiscount.toFixed(2);
+                            if (grandDiscount > 0) {
+                                discountElement.innerText = "-Rs " + grandDiscount.toFixed(2);
                                 discountRow.style.display = "flex";
                             } else {
                                 discountRow.style.display = "none";
                             }
                         }
-
-                        if (finalTotalElement) {
-                            finalTotalElement.innerText = "Rs " + finalTotal.toFixed(2);
-                        }
+                        if (finalTotalElement) finalTotalElement.innerText = "Rs " + finalTotal.toFixed(2);
                     }
 
                     function sendQuantityUpdate(productId, variantId, cartKey, newQty, onSuccess) {
@@ -478,14 +499,14 @@
                             .then(res => res.json())
                             .then(data => {
                                 if (data.error) {
-                                    alert(data.error);
+                                    if (typeof showToast === 'function') showToast(data.error, 'error'); else alert(data.error);
                                     return;
                                 }
                                 if (typeof onSuccess === "function") {
                                     onSuccess(data);
                                 }
                             })
-                            .catch(() => alert("Server error"));
+                            .catch(function() { if (typeof showToast === 'function') showToast("Server error", "error"); else alert("Server error"); });
                     }
 
                     document.querySelectorAll(".cart-item").forEach(item => {
@@ -560,21 +581,22 @@
                                 })
                                 .then(data => {
                                     if (data.error) {
-                                        alert(data.error);
+                                        if (typeof showToast === 'function') showToast(data.error, 'error'); else alert(data.error);
                                         return;
                                     }
-                                    // Remove item from DOM
+                                    if (typeof showToast === 'function') showToast("Item removed from cart", "success");
                                     const itemDiv = btn.closest(".cart-item");
+                                    const storeCard = itemDiv ? itemDiv.closest(".store-card") : null;
                                     itemDiv.remove();
 
-                                    // Update floating cart count
+                                    if (storeCard && storeCard.querySelectorAll(".cart-item").length === 0) {
+                                        storeCard.remove();
+                                    }
+
                                     const cartCountEl = document.querySelector(".cart-count");
                                     if (cartCountEl) cartCountEl.innerText = data.cartCount;
-
-                                    // Update subtotal
                                     updateSubtotal();
 
-                                    // Show "cart empty" if no items
                                     if (document.querySelectorAll(".cart-item").length === 0) {
                                         document.querySelector(".cart-items")?.remove();
                                         document.querySelector(".cart-summary")?.remove();
@@ -593,23 +615,21 @@
                                         cartContainer.appendChild(subtotalP);
                                     }
                                 })
-                                .catch(err => alert("Server error details: " + err.message));
+                                .catch(function(err) { if (typeof showToast === 'function') showToast("Server error", "error"); else alert("Server error details: " + err.message); });
                         });
                     });
                     document.getElementById("checkoutBtn").addEventListener("click", () => {
                         <% if (!isLoggedIn) { %>
-                            alert("Please login before purchasing products");
-                            // Pass current page path and query to redirect back after login
+                            if (typeof showToast === 'function') showToast("Please login before purchasing products", "info"); else alert("Please login before purchasing products");
                             const currentPath = window.location.pathname + window.location.search;
                             window.location.href = "<%=request.getContextPath()%>/login.jsp?redirect=" + encodeURIComponent(currentPath);
                             return;
                         <% } %>
-                        // Just redirect to checkout.jsp
                         window.location.href = "checkout.jsp";
                     });
 
                 </script>
-
+                <script src="${pageContext.request.contextPath}/assets/js/toast.js"></script>
             </body>
 
             </html>

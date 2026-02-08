@@ -465,8 +465,10 @@ table tr:hover {
   color: var(--foreground);
 }
 </style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/toast.css">
 </head>
 <body class="dashboard-layout">
+<div id="toast-container"></div>
 
 <header class="topbar">
     <div class="logo">Daily Fixer</div>
@@ -625,5 +627,23 @@ table tr:hover {
     </table>
 </main>
 
+<script src="${pageContext.request.contextPath}/assets/js/toast.js"></script>
+<script>
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('deleted') === '1') {
+        if (typeof showToast === 'function') showToast('Discount deleted successfully', 'success');
+        params.delete('deleted');
+    }
+    if (params.get('created') === '1') {
+        if (typeof showToast === 'function') showToast('Discount created successfully', 'success');
+        params.delete('created');
+    }
+    var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    if (newUrl !== window.location.pathname + window.location.search) {
+        window.history.replaceState({}, '', newUrl);
+    }
+})();
+</script>
 </body>
 </html>

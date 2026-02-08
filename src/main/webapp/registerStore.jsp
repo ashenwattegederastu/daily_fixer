@@ -169,16 +169,13 @@
                             </div>
 
                             <div style="margin-top:12px;">
-                                <label>Your City (optional)</label>
-                                <select class="small" name="city">
+                                <label>City</label>
+                                <select class="small" name="storeCity" id="storeCity" required>
                                     <option value="">-- Select city --</option>
-                                    <% String[]
-                                        cities={"Colombo","Kandy","Galle","Jaffna","Kurunegala","Matara","Trincomalee","Batticaloa","Negombo","Anuradhapura","Polonnaruwa","Badulla","Ratnapura","Puttalam","Kilinochchi","Mannar","Hambantota"};
-                                        for (String c : cities) { %>
-                                        <option value="<%=c%>">
-                                            <%=c%>
-                                        </option>
-                                        <% } %>
+                                    <% String[] cities = {"Colombo","Kandy","Galle","Jaffna","Kurunegala","Matara","Trincomalee","Batticaloa","Negombo","Anuradhapura","Polonnaruwa","Badulla","Ratnapura","Puttalam","Kilinochchi","Mannar","Hambantota"};
+                                    for (String c : cities) { %>
+                                        <option value="<%= c %>"><%= c %></option>
+                                    <% } %>
                                 </select>
                             </div>
 
@@ -195,17 +192,6 @@
 
 
                             <div class="input-row" style="margin-top:12px;">
-                                <div>
-                                    <label>Store city</label>
-                                    <select class="small" name="storeCity" id="storeCity" required>
-                                        <option value="">-- Select city --</option>
-                                        <% for (String c : cities) { %>
-                                            <option value="<%=c%>">
-                                                <%=c%>
-                                            </option>
-                                            <% } %>
-                                    </select>
-                                </div>
                                 <div>
                                     <label>Store type</label>
                                     <select class="small" name="storeType" id="storeType" required>

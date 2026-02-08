@@ -1,8 +1,19 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="com.dailyfixer.model.User" %>
+<%@ page import="com.dailyfixer.dao.OrderDAO" %>
+<%@ page import="com.dailyfixer.util.OrderNotificationHelper" %>
 <%
     User currentUser = (User) session.getAttribute("currentUser");
     boolean isLoggedIn = (currentUser != null);
+    String orderIdParam = request.getParameter("order_id");
+    if (currentUser != null && orderIdParam != null && !orderIdParam.trim().isEmpty()) {
+        OrderDAO orderDAO = new OrderDAO();
+        com.dailyfixer.model.Order order = orderDAO.findOrderById(orderIdParam);
+        if (order != null && "PENDING".equalsIgnoreCase(order.getStatus() != null ? order.getStatus().trim() : "")) {
+            orderDAO.updateStatus(orderIdParam, "CANCELLED");
+        }
+        OrderNotificationHelper.createOrderUnsuccessfulNotificationForUser(currentUser.getUserId(), orderIdParam);
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
