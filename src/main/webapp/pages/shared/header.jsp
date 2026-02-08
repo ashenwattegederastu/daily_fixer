@@ -10,13 +10,14 @@
         <!-- Navigation -->
         <nav id="navbar" class="public-nav">
             <div class="nav-container">
-                <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
-
                 <div class="hamburger" id="hamburger-btn">
                     <span></span>
                     <span></span>
                     <span></span>
                 </div>
+                <a href="${pageContext.request.contextPath}/index.jsp" class="logo">Daily Fixer</a>
+
+
 
                 <ul class="nav-links" id="nav-links">
                     <li><a href="${pageContext.request.contextPath}/pages/diagnostic/diagnostic-browse.jsp">Diagnostic
