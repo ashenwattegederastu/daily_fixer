@@ -1510,9 +1510,32 @@ nav.public-nav .logo {
     font-size: 1.8rem;
   }
 
-  .main-content {
-    margin-left: 0;
+  .main-content,
+  .container {
+    margin-left: 0 !important;
     padding: 20px;
+    width: 100%;
+  }
+
+  /* Header Fixes for Mobile */
+  .topbar {
+    padding: 0 15px;
+    gap: 10px;
+  }
+
+  .topbar .panel-name {
+    display: none;
+  }
+
+  .topbar .logo {
+    font-size: 1.2rem;
+  }
+
+  /* Make header buttons smaller on mobile */
+  .topbar .logout-btn,
+  .topbar .home-btn {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.8rem !important;
   }
 
   .sidebar {
