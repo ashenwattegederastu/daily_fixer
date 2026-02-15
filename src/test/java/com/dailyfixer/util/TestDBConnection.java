@@ -166,12 +166,14 @@ public class TestDBConnection {
                     "youtube_url VARCHAR(500), " +
                     "created_by INT NOT NULL, " +
                     "created_role VARCHAR(50), " +
-                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    "view_count INT DEFAULT 0, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     ")");
 
             // Guide requirements table
             stmt.execute("CREATE TABLE IF NOT EXISTS guide_requirements (" +
-                    "requirement_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "req_id INT AUTO_INCREMENT PRIMARY KEY, " +
                     "guide_id INT NOT NULL, " +
                     "requirement TEXT NOT NULL" +
                     ")");
