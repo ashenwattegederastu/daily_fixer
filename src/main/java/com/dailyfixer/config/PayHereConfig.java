@@ -92,6 +92,38 @@ public class PayHereConfig {
                 "http://localhost:8080/dailyfixer/notify");
     }
 
+    // ==================== PayHere Refund API Settings ====================
+
+    /**
+     * Get PayHere App ID (for Refund API OAuth)
+     */
+    public static String getAppId() {
+        return properties.getProperty("payhere.app_id", "");
+    }
+
+    /**
+     * Get PayHere App Secret (for Refund API OAuth)
+     */
+    public static String getAppSecret() {
+        return properties.getProperty("payhere.app_secret", "");
+    }
+
+    /**
+     * Get PayHere OAuth Token URL
+     */
+    public static String getOAuthUrl() {
+        return properties.getProperty("payhere.oauth_url",
+                "https://sandbox.payhere.lk/merchant/v1/oauth/token");
+    }
+
+    /**
+     * Get PayHere Refund API URL
+     */
+    public static String getRefundUrl() {
+        return properties.getProperty("payhere.refund_url",
+                "https://sandbox.payhere.lk/merchant/v1/payment/refund");
+    }
+
     // ==================== Database Settings ====================
 
     /**

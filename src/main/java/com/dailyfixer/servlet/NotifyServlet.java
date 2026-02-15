@@ -135,8 +135,9 @@ public class NotifyServlet extends HttpServlet {
                     System.err.println("Error reducing stock for order " + orderId + ": " + e.getMessage());
                     e.printStackTrace();
                 }
-                
-                // Find and update related orders (orders with same email created within last 5 minutes)
+
+                // Find and update related orders (orders with same email created within last 5
+                // minutes)
                 // This is a workaround since we don't have a parent_order_id field
                 try {
                     Order mainOrder = orderDAO.findOrderById(orderId);
@@ -144,25 +145,29 @@ public class NotifyServlet extends HttpServlet {
                         // Update all orders with same email and PENDING status created recently
                         java.util.List<Order> relatedOrders = orderDAO.getOrdersByStatus("PENDING");
                         for (Order relatedOrder : relatedOrders) {
-                            if (relatedOrder.getEmail() != null && 
-                                relatedOrder.getEmail().equals(mainOrder.getEmail()) &&
-                                !relatedOrder.getOrderId().equals(orderId)) {
+                            if (relatedOrder.getEmail() != null &&
+                                    relatedOrder.getEmail().equals(mainOrder.getEmail()) &&
+                                    !relatedOrder.getOrderId().equals(orderId)) {
                                 // Check if created within last 5 minutes (related order)
-                                long timeDiff = Math.abs(relatedOrder.getCreatedAt().getTime() - mainOrder.getCreatedAt().getTime());
+                                long timeDiff = Math.abs(
+                                        relatedOrder.getCreatedAt().getTime() - mainOrder.getCreatedAt().getTime());
                                 if (timeDiff < 300000) { // 5 minutes in milliseconds
-                                    orderDAO.updateStatus(relatedOrder.getOrderId(), "PAID");
+                                    orderDAO.updateOrderStatus(relatedOrder.getOrderId(), "PAID", paymentId);
                                     System.out.println("Updated related order to PAID: " + relatedOrder.getOrderId());
-                                    
+
                                     // Reduce stock for related order as well
                                     try {
                                         boolean stockReduced = orderDAO.reduceStockForOrder(relatedOrder.getOrderId());
                                         if (stockReduced) {
-                                            System.out.println("Stock reduced successfully for related order: " + relatedOrder.getOrderId());
+                                            System.out.println("Stock reduced successfully for related order: "
+                                                    + relatedOrder.getOrderId());
                                         } else {
-                                            System.err.println("Warning: Stock reduction failed for related order: " + relatedOrder.getOrderId());
+                                            System.err.println("Warning: Stock reduction failed for related order: "
+                                                    + relatedOrder.getOrderId());
                                         }
                                     } catch (Exception e) {
-                                        System.err.println("Error reducing stock for related order " + relatedOrder.getOrderId() + ": " + e.getMessage());
+                                        System.err.println("Error reducing stock for related order "
+                                                + relatedOrder.getOrderId() + ": " + e.getMessage());
                                     }
                                 }
                             }
@@ -198,8 +203,8 @@ public class NotifyServlet extends HttpServlet {
      * status_code + MD5(merchant_secret).toUpperCase()).toUpperCase()
      */
     private boolean verifyNotification(String merchantId, String orderId,
-                                       String amount, String currency,
-                                       String statusCode, String receivedMd5sig) {
+            String amount, String currency,
+            String statusCode, String receivedMd5sig) {
         try {
             String merchantSecret = PayHereConfig.getMerchantSecret();
 
@@ -284,4 +289,3 @@ public class NotifyServlet extends HttpServlet {
         out.flush();
     }
 }
-

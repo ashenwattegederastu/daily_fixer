@@ -24,6 +24,9 @@ public class Order {
     private Integer buyerId; // User ID of the buyer (null for guest checkout)
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String refundReason; // Reason for cancellation/refund
+    private String refundNumber; // PayHere refund number
+    private Timestamp refundedAt; // When the refund was processed
 
     // Default constructor
     public Order() {
@@ -186,7 +189,71 @@ public class Order {
         return String.format("%.2f", amount);
     }
 
+    // ==================== Refund Fields ====================
+
+    public String getRefundReason() {
+        return refundReason;
+    }
+
+    public void setRefundReason(String refundReason) {
+        this.refundReason = refundReason;
+    }
+
+    public String getRefundNumber() {
+        return refundNumber;
+    }
+
+    public void setRefundNumber(String refundNumber) {
+        this.refundNumber = refundNumber;
+    }
+
+    public Timestamp getRefundedAt() {
+        return refundedAt;
+    }
+
+    public void setRefundedAt(Timestamp refundedAt) {
+        this.refundedAt = refundedAt;
+    }
+
+    // ==================== Refund Helpers ====================
+
+    /**
+     * Check if the order can be cancelled/refunded.
+     * Cancellable if status is PAID or PROCESSING.
+     * Note: whether a PayHere refund API call is needed depends on
+     * whether payherePaymentId is present — that logic is in RefundServlet.
+     */
+    public boolean isRefundable() {
+        String s = status != null ? status.trim().toUpperCase() : "";
+        return "PAID".equals(s) || "PROCESSING".equals(s);
+    }
+
+    /**
+     * Check if the order is within the 1-hour cancellation window.
+     * Users can cancel within 1 hour of the order being created.
+     */
+    public boolean isWithinCancelWindow() {
+        if (createdAt == null)
+            return false;
+        long oneHourMs = 60 * 60 * 1000L;
+        long elapsed = System.currentTimeMillis() - createdAt.getTime();
+        return elapsed <= oneHourMs;
+    }
+
+    /**
+     * Get remaining minutes in the cancel window (0 if expired).
+     */
+    public long getCancelWindowMinutesRemaining() {
+        if (createdAt == null)
+            return 0;
+        long oneHourMs = 60 * 60 * 1000L;
+        long elapsed = System.currentTimeMillis() - createdAt.getTime();
+        long remaining = oneHourMs - elapsed;
+        return remaining > 0 ? remaining / (60 * 1000L) : 0;
+    }
+
     @Override
+
     public String toString() {
         return "Order{" +
                 "orderId='" + orderId + '\'' +

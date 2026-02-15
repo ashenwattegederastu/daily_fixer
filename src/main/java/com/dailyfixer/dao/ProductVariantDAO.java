@@ -15,7 +15,7 @@ public class ProductVariantDAO {
         String sql = "SELECT * FROM product_variants WHERE product_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, productId);
             ResultSet rs = stmt.executeQuery();
@@ -40,7 +40,7 @@ public class ProductVariantDAO {
     public ProductVariant getVariantById(int variantId) throws Exception {
         String sql = "SELECT * FROM product_variants WHERE variant_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, variantId);
             ResultSet rs = stmt.executeQuery();
@@ -64,7 +64,7 @@ public class ProductVariantDAO {
     public void addVariant(ProductVariant variant) throws Exception {
         String sql = "INSERT INTO product_variants (product_id, color, size, power, price, quantity) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, variant.getProductId());
             stmt.setString(2, variant.getColor());
@@ -80,7 +80,7 @@ public class ProductVariantDAO {
     public void updateVariant(ProductVariant variant) throws Exception {
         String sql = "UPDATE product_variants SET color = ?, size = ?, power = ?, price = ?, quantity = ? WHERE variant_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, variant.getColor());
             stmt.setString(2, variant.getSize());
@@ -95,14 +95,14 @@ public class ProductVariantDAO {
     /**
      * Reduce variant quantity by the specified amount.
      * 
-     * @param variantId The variant ID
+     * @param variantId        The variant ID
      * @param quantityToReduce The quantity to reduce
      * @return true if successful, false otherwise
      */
     public boolean reduceVariantQuantity(int variantId, int quantityToReduce) {
         String sql = "UPDATE product_variants SET quantity = GREATEST(0, quantity - ?) WHERE variant_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, quantityToReduce);
             stmt.setInt(2, variantId);
             int rowsAffected = stmt.executeUpdate();
@@ -118,11 +118,38 @@ public class ProductVariantDAO {
         }
     }
 
+    /**
+     * Increase variant quantity by the specified amount (for refund stock
+     * restoration).
+     *
+     * @param variantId     The variant ID
+     * @param quantityToAdd The quantity to add back
+     * @return true if successful, false otherwise
+     */
+    public boolean increaseVariantQuantity(int variantId, int quantityToAdd) {
+        String sql = "UPDATE product_variants SET quantity = quantity + ? WHERE variant_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, quantityToAdd);
+            stmt.setInt(2, variantId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Restored stock for variant ID " + variantId + " by " + quantityToAdd);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            System.err.println("Error increasing variant quantity: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // Delete a variant
     public void deleteVariant(int variantId) throws Exception {
         String sql = "DELETE FROM product_variants WHERE variant_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, variantId);
             stmt.executeUpdate();
@@ -133,7 +160,7 @@ public class ProductVariantDAO {
     public void deleteVariantsByProductId(int productId) throws Exception {
         String sql = "DELETE FROM product_variants WHERE product_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, productId);
             stmt.executeUpdate();

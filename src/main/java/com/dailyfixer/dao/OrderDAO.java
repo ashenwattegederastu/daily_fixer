@@ -37,6 +37,8 @@ public class OrderDAO {
 
     private static final String UPDATE_STATUS_ONLY = "UPDATE orders SET status = ? WHERE order_id = ?";
 
+    private static final String UPDATE_ORDER_REFUND = "UPDATE orders SET status = ?, refund_reason = ?, refund_number = ?, refunded_at = NOW() WHERE order_id = ?";
+
     private static final String SELECT_ORDERS_BY_STATUS = "SELECT * FROM orders WHERE UPPER(TRIM(status)) = UPPER(TRIM(?)) ORDER BY created_at DESC";
 
     // Try to use store_username if column exists, otherwise filter by product_name
@@ -527,6 +529,19 @@ public class OrderDAO {
             // Column doesn't exist, set to null
             order.setBuyerId(null);
         }
+        // Get refund fields if columns exist
+        try {
+            order.setRefundReason(rs.getString("refund_reason"));
+        } catch (SQLException e) {
+            /* column doesn't exist */ }
+        try {
+            order.setRefundNumber(rs.getString("refund_number"));
+        } catch (SQLException e) {
+            /* column doesn't exist */ }
+        try {
+            order.setRefundedAt(rs.getTimestamp("refunded_at"));
+        } catch (SQLException e) {
+            /* column doesn't exist */ }
         return order;
     }
 
@@ -729,6 +744,106 @@ public class OrderDAO {
 
         } catch (Exception e) {
             System.err.println("Error reducing stock for order: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // ==================== Refund Methods ====================
+
+    /**
+     * Update order with refund details.
+     *
+     * @param orderId      The order ID
+     * @param status       New status (REFUNDED or CANCELLED)
+     * @param refundReason Reason for the refund
+     * @param refundNumber PayHere refund number (nullable)
+     * @return true if successful
+     */
+    public boolean updateOrderRefund(String orderId, String status, String refundReason, String refundNumber) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DBConnection.getConnection();
+            stmt = conn.prepareStatement(UPDATE_ORDER_REFUND);
+
+            stmt.setString(1, status);
+            stmt.setString(2, refundReason);
+            if (refundNumber != null) {
+                stmt.setString(3, refundNumber);
+            } else {
+                stmt.setNull(3, Types.VARCHAR);
+            }
+            stmt.setString(4, orderId);
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Order refund updated: " + orderId + " -> " + status + " | Rows: " + rowsAffected);
+            return rowsAffected > 0;
+
+        } catch (SQLException | ClassNotFoundException e) {
+            System.err.println("Error updating order refund: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeResources(stmt, conn);
+        }
+    }
+
+    /**
+     * Restore stock for all items in an order (reverse of reduceStockForOrder).
+     * Called when a refund is processed to add back product quantities.
+     *
+     * @param orderId The order ID
+     * @return true if stock restoration was successful
+     */
+    public boolean restoreStockForOrder(String orderId) {
+        try {
+            List<OrderItem> orderItems = getOrderItemsByOrderId(orderId);
+
+            if (orderItems == null || orderItems.isEmpty()) {
+                System.out.println("No order items found for stock restore: " + orderId);
+                return false;
+            }
+
+            com.dailyfixer.dao.ProductDAO productDAO = new com.dailyfixer.dao.ProductDAO();
+            com.dailyfixer.dao.ProductVariantDAO variantDAO = new com.dailyfixer.dao.ProductVariantDAO();
+
+            boolean allSuccessful = true;
+
+            for (OrderItem item : orderItems) {
+                try {
+                    if (item.getVariantId() != null) {
+                        // Restore variant stock (add back quantity)
+                        boolean success = variantDAO.increaseVariantQuantity(item.getVariantId(), item.getQuantity());
+                        if (!success) {
+                            System.err.println("Failed to restore stock for variant ID: " + item.getVariantId());
+                            allSuccessful = false;
+                        }
+                    } else {
+                        // Restore product stock (add back quantity)
+                        boolean success = productDAO.increaseProductQuantity(item.getProductId(), item.getQuantity());
+                        if (!success) {
+                            System.err.println("Failed to restore stock for product ID: " + item.getProductId());
+                            allSuccessful = false;
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error restoring stock for order item: " + e.getMessage());
+                    allSuccessful = false;
+                }
+            }
+
+            if (allSuccessful) {
+                System.out.println("Successfully restored stock for all items in order: " + orderId);
+            } else {
+                System.err.println("Some stock restorations failed for order: " + orderId);
+            }
+
+            return allSuccessful;
+
+        } catch (Exception e) {
+            System.err.println("Error restoring stock for order: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

@@ -88,9 +88,11 @@ public class UpdateOrderStatusServlet extends HttpServlet {
      */
     private boolean isValidStatus(String status) {
         return "PENDING".equals(status) ||
-               "PROCESSING".equals(status) ||
-               "OUT_FOR_DELIVERY".equals(status) ||
-               "DELIVERED".equals(status) ||
-               "PAID".equals(status); // Allow PAID for backward compatibility
+                "PROCESSING".equals(status) ||
+                "OUT_FOR_DELIVERY".equals(status) ||
+                "DELIVERED".equals(status) ||
+                "PAID".equals(status) ||
+                "CANCELLED".equals(status) ||
+                "REFUNDED".equals(status);
     }
 }
