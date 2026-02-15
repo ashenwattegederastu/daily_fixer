@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class StoreDAOTest {
 
-    private TestStoreDAO storeDAO;
-    private TestUserDAO userDAO;
+    private StoreDAOTestHelper storeDAO;
+    private UserDAOTestHelper userDAO;
     private int storeOwnerId;
 
     @BeforeEach
     void setUp() throws Exception {
-        storeDAO = new TestStoreDAO();
-        userDAO = new TestUserDAO();
+        storeDAO = new StoreDAOTestHelper();
+        userDAO = new UserDAOTestHelper();
         TestDBConnection.clearAllTables();
 
         // Create a store owner user for testing

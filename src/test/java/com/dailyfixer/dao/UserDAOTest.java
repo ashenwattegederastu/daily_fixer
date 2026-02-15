@@ -12,11 +12,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class UserDAOTest {
 
-    private TestUserDAO userDAO;
+    private UserDAOTestHelper userDAO;
 
     @BeforeEach
     void setUp() throws Exception {
-        userDAO = new TestUserDAO();
+        userDAO = new UserDAOTestHelper();
         TestDBConnection.clearAllTables();
     }
 

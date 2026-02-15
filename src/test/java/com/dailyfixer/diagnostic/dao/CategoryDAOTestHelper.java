@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of CategoryDAO for diagnostic categories using H2 in-memory database.
  */
-public class TestCategoryDAO {
+public class CategoryDAOTestHelper {
 
     public List<Category> getAllMainCategories() throws Exception {
         List<Category> categories = new ArrayList<>();

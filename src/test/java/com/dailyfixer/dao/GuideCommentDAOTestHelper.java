@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of GuideCommentDAO that uses H2 in-memory database.
  */
-public class TestGuideCommentDAO {
+public class GuideCommentDAOTestHelper {
 
     public int addComment(int guideId, int userId, String comment) {
         String sql = "INSERT INTO guide_comments (guide_id, user_id, comment) VALUES (?, ?, ?)";

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of TreeRatingDAO using H2 in-memory database.
  */
-public class TestTreeRatingDAO {
+public class TreeRatingDAOTestHelper {
 
     public boolean addOrUpdateRating(TreeRating rating) throws Exception {
         // H2 MERGE syntax for upsert

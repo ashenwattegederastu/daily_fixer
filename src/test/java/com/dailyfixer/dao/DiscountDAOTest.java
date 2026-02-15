@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class DiscountDAOTest {
 
-    private TestDiscountDAO discountDAO;
+    private DiscountDAOTestHelper discountDAO;
 
     @BeforeEach
     void setUp() throws Exception {
-        discountDAO = new TestDiscountDAO();
+        discountDAO = new DiscountDAOTestHelper();
         TestDBConnection.clearAllTables();
     }
 

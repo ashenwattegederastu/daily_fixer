@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Test version of DiscountDAO that uses H2 in-memory database.
  */
-public class TestDiscountDAO {
+public class DiscountDAOTestHelper {
 
     public int addDiscount(Discount discount) throws Exception {
         String sql = "INSERT INTO discounts (discount_name, discount_type, discount_value, start_date, end_date, store_username, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)";

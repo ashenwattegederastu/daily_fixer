@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of ReviewDAO that uses H2 in-memory database.
  */
-public class TestReviewDAO {
+public class ReviewDAOTestHelper {
 
     public void addReview(Review review) throws Exception {
         String sql = "INSERT INTO product_reviews (product_id, user_id, rating, comment, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";

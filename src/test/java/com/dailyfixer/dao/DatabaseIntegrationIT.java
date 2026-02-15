@@ -16,13 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class DatabaseIntegrationIT {
 
-    private TestUserDAO userDAO;
-    private TestServiceDAO serviceDAO;
+    private UserDAOTestHelper userDAO;
+    private ServiceDAOTestHelper serviceDAO;
 
     @BeforeEach
     void setUp() throws Exception {
-        userDAO = new TestUserDAO();
-        serviceDAO = new TestServiceDAO();
+        userDAO = new UserDAOTestHelper();
+        serviceDAO = new ServiceDAOTestHelper();
         TestDBConnection.clearAllTables();
     }
 

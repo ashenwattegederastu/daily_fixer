@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of ServiceDAO that uses H2 in-memory database.
  */
-public class TestServiceDAO {
+public class ServiceDAOTestHelper {
 
     public void addService(Service s) throws Exception {
         String sql = "INSERT INTO services (technician_id, service_name, description, category, pricing_type, fixed_rate, hourly_rate, inspection_charge, transport_charge, available_dates, service_image, image_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";

@@ -11,7 +11,7 @@ import java.sql.Statement;
 /**
  * Test version of StoreDAO that uses H2 in-memory database.
  */
-public class TestStoreDAO {
+public class StoreDAOTestHelper {
 
     public boolean addStore(Store store) {
         String sql = "INSERT INTO stores (user_id, store_name, store_address, store_city, store_type, latitude, longitude) " +

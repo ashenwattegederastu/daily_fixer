@@ -7,7 +7,7 @@ import java.sql.*;
 /**
  * Test version of GuideRatingDAO that uses H2 in-memory database.
  */
-public class TestGuideRatingDAO {
+public class GuideRatingDAOTestHelper {
 
     public boolean addOrUpdateRating(int guideId, int userId, String rating) {
         // H2 doesn't support ON DUPLICATE KEY UPDATE, so we'll use MERGE

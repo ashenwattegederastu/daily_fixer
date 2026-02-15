@@ -9,7 +9,7 @@ import java.sql.*;
  * Test version of UserDAO that uses H2 in-memory database.
  * This is a copy of the production UserDAO but uses TestDBConnection.
  */
-public class TestUserDAO {
+public class UserDAOTestHelper {
 
     public boolean isUsernameTaken(String username) throws Exception {
         String sql = "SELECT user_id FROM users WHERE username = ?";

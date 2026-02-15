@@ -16,14 +16,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class PasswordResetDAOTest {
 
-    private TestPasswordResetDAO passwordResetDAO;
-    private TestUserDAO userDAO;
+    private PasswordResetDAOTestHelper passwordResetDAO;
+    private UserDAOTestHelper userDAO;
     private int testUserId;
 
     @BeforeEach
     void setUp() throws Exception {
-        passwordResetDAO = new TestPasswordResetDAO();
-        userDAO = new TestUserDAO();
+        passwordResetDAO = new PasswordResetDAOTestHelper();
+        userDAO = new UserDAOTestHelper();
         TestDBConnection.clearAllTables();
 
         // Create test user

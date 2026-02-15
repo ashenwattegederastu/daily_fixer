@@ -11,15 +11,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class GuideRatingDAOTest {
 
-    private TestGuideRatingDAO ratingDAO;
-    private TestUserDAO userDAO;
+    private GuideRatingDAOTestHelper ratingDAO;
+    private UserDAOTestHelper userDAO;
     private int testUserId;
     private static final int TEST_GUIDE_ID = 1;
 
     @BeforeEach
     void setUp() throws Exception {
-        ratingDAO = new TestGuideRatingDAO();
-        userDAO = new TestUserDAO();
+        ratingDAO = new GuideRatingDAOTestHelper();
+        userDAO = new UserDAOTestHelper();
         TestDBConnection.clearAllTables();
 
         // Create test user

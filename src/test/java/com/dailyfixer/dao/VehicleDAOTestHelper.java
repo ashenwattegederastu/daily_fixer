@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of VehicleDAO that uses H2 in-memory database.
  */
-public class TestVehicleDAO {
+public class VehicleDAOTestHelper {
 
     public List<Vehicle> getVehiclesByDriver(int driverId) {
         List<Vehicle> list = new ArrayList<>();

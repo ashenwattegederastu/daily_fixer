@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Test version of GuideCategoryDAO that uses H2 in-memory database.
  */
-public class TestGuideCategoryDAO {
+public class GuideCategoryDAOTestHelper {
 
     public List<GuideCategory> getAllCategories() {
         List<GuideCategory> categories = new ArrayList<>();

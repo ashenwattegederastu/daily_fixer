@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CategoryDAOTest {
 
-    private TestCategoryDAO categoryDAO;
+    private CategoryDAOTestHelper categoryDAO;
 
     @BeforeEach
     void setUp() throws Exception {
-        categoryDAO = new TestCategoryDAO();
+        categoryDAO = new CategoryDAOTestHelper();
         TestDBConnection.clearAllTables();
     }
 

@@ -14,14 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ServiceDAOTest {
 
-    private TestServiceDAO serviceDAO;
-    private TestUserDAO userDAO;
+    private ServiceDAOTestHelper serviceDAO;
+    private UserDAOTestHelper userDAO;
     private int technicianId;
 
     @BeforeEach
     void setUp() throws Exception {
-        serviceDAO = new TestServiceDAO();
-        userDAO = new TestUserDAO();
+        serviceDAO = new ServiceDAOTestHelper();
+        userDAO = new UserDAOTestHelper();
         TestDBConnection.clearAllTables();
 
         // Create a technician user for testing

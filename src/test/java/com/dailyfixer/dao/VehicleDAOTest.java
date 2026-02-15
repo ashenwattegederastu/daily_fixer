@@ -13,12 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class VehicleDAOTest {
 
-    private TestVehicleDAO vehicleDAO;
+    private VehicleDAOTestHelper vehicleDAO;
     private static final int TEST_DRIVER_ID = 1;
 
     @BeforeEach
     void setUp() throws Exception {
-        vehicleDAO = new TestVehicleDAO();
+        vehicleDAO = new VehicleDAOTestHelper();
         TestDBConnection.clearAllTables();
     }
 

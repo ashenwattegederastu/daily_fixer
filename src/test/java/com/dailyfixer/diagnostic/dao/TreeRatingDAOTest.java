@@ -2,7 +2,7 @@ package com.dailyfixer.diagnostic.dao;
 
 import com.dailyfixer.diagnostic.model.TreeRating;
 import com.dailyfixer.model.User;
-import com.dailyfixer.dao.TestUserDAO;
+import com.dailyfixer.dao.UserDAOTestHelper;
 import com.dailyfixer.util.TestDBConnection;
 import org.junit.jupiter.api.*;
 
@@ -15,15 +15,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TreeRatingDAOTest {
 
-    private TestTreeRatingDAO ratingDAO;
-    private TestUserDAO userDAO;
+    private TreeRatingDAOTestHelper ratingDAO;
+    private UserDAOTestHelper userDAO;
     private int testUserId;
     private static final int TEST_TREE_ID = 1;
 
     @BeforeEach
     void setUp() throws Exception {
-        ratingDAO = new TestTreeRatingDAO();
-        userDAO = new TestUserDAO();
+        ratingDAO = new TreeRatingDAOTestHelper();
+        userDAO = new UserDAOTestHelper();
         TestDBConnection.clearAllTables();
 
         User user = new User();

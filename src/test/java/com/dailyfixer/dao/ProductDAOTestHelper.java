@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Test version of ProductDAO that uses H2 in-memory database.
  */
-public class TestProductDAO {
+public class ProductDAOTestHelper {
 
     public void addProduct(Product p) throws Exception {
         String sql = "INSERT INTO products (name, type, quantity, quantity_unit, price, image, store_username, description, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";

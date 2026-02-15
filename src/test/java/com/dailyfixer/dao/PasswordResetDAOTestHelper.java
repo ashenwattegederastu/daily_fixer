@@ -8,7 +8,7 @@ import java.sql.*;
 /**
  * Test version of PasswordResetDAO that uses H2 in-memory database.
  */
-public class TestPasswordResetDAO {
+public class PasswordResetDAOTestHelper {
 
     public void saveToken(int userId, String token, Timestamp expiry) throws Exception {
         String sql = "INSERT INTO password_reset_tokens (user_id, token, expiry) VALUES (?, ?, ?)";
