@@ -1,0 +1,71 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+
+    - name: Run unit tests
+      run: mvn -q clean test
+
+    - name: Run integration tests and generate coverage report
+      run: mvn -q verify
+
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports
+        path: |
+          target/surefire-reports/
+          target/failsafe-reports/
+        retention-days: 30
+
+    - name: Upload JaCoCo coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: target/site/jacoco/
+        retention-days: 30
+
+    - name: Display test summary
+      if: always()
+      run: |
+        echo "=== Test Execution Summary ==="
+        if [ -f target/surefire-reports/*.txt ]; then
+          echo "Unit Tests:"
+          cat target/surefire-reports/*.txt 2>/dev/null || echo "No unit test results found"
+        fi
+        if [ -f target/failsafe-reports/*.txt ]; then
+          echo "Integration Tests:"
+          cat target/failsafe-reports/*.txt 2>/dev/null || echo "No integration test results found"
+        fi
