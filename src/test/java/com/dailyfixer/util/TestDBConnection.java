@@ -86,14 +86,59 @@ public class TestDBConnection {
             // Products table
             stmt.execute("CREATE TABLE IF NOT EXISTS products (" +
                     "product_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                    "store_id INT NOT NULL, " +
+                    "store_id INT, " +
                     "name VARCHAR(200) NOT NULL, " +
                     "type VARCHAR(100), " +
                     "quantity INT, " +
                     "quantity_unit VARCHAR(20), " +
                     "price DECIMAL(10,2), " +
                     "image BLOB, " +
+                    "store_username VARCHAR(50), " +
                     "description TEXT" +
+                    ")");
+
+            // Discounts table
+            stmt.execute("CREATE TABLE IF NOT EXISTS discounts (" +
+                    "discount_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "discount_name VARCHAR(200), " +
+                    "discount_type VARCHAR(50), " +
+                    "discount_value DECIMAL(10,2), " +
+                    "start_date TIMESTAMP, " +
+                    "end_date TIMESTAMP, " +
+                    "store_username VARCHAR(50), " +
+                    "is_active BOOLEAN DEFAULT true" +
+                    ")");
+
+            // Reviews table
+            stmt.execute("CREATE TABLE IF NOT EXISTS product_reviews (" +
+                    "review_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "product_id INT NOT NULL, " +
+                    "user_id INT NOT NULL, " +
+                    "rating INT NOT NULL, " +
+                    "comment TEXT, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Vehicles table
+            stmt.execute("CREATE TABLE IF NOT EXISTS vehicles (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "driver_id INT NOT NULL, " +
+                    "vehicle_type VARCHAR(50), " +
+                    "brand VARCHAR(100), " +
+                    "model VARCHAR(100), " +
+                    "plate_number VARCHAR(20), " +
+                    "picture BLOB, " +
+                    "fare_first_km DECIMAL(10,2), " +
+                    "fare_next_km DECIMAL(10,2)" +
+                    ")");
+
+            // Password reset tokens table
+            stmt.execute("CREATE TABLE IF NOT EXISTS password_reset_tokens (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "user_id INT NOT NULL, " +
+                    "token VARCHAR(255) NOT NULL UNIQUE, " +
+                    "expiry TIMESTAMP NOT NULL, " +
+                    "used BOOLEAN DEFAULT false" +
                     ")");
         }
     }
@@ -109,6 +154,10 @@ public class TestDBConnection {
             stmt.execute("TRUNCATE TABLE services");
             stmt.execute("TRUNCATE TABLE stores");
             stmt.execute("TRUNCATE TABLE products");
+            stmt.execute("TRUNCATE TABLE discounts");
+            stmt.execute("TRUNCATE TABLE product_reviews");
+            stmt.execute("TRUNCATE TABLE vehicles");
+            stmt.execute("TRUNCATE TABLE password_reset_tokens");
             stmt.execute("SET REFERENTIAL_INTEGRITY TRUE");
         }
     }
