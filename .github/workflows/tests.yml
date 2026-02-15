@@ -36,11 +36,8 @@ jobs:
     - name: Run unit tests
       run: mvn -q clean test
 
-    - name: Run integration tests
+    - name: Run integration tests and generate coverage report
       run: mvn -q verify
-
-    - name: Generate JaCoCo coverage report
-      run: mvn -q jacoco:report
 
     - name: Upload test reports
       if: always()
