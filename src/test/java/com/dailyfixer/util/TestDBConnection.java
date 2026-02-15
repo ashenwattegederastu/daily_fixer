@@ -248,7 +248,7 @@ public class TestDBConnection {
                     "tree_id INT NOT NULL, " +
                     "user_id INT NOT NULL, " +
                     "rating INT NOT NULL, " +
-                    "comment TEXT, " +
+                    "feedback TEXT, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "UNIQUE(tree_id, user_id)" +
                     ")");
