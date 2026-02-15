@@ -140,6 +140,118 @@ public class TestDBConnection {
                     "expiry TIMESTAMP NOT NULL, " +
                     "used BOOLEAN DEFAULT false" +
                     ")");
+
+            // Guide categories table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_categories (" +
+                    "category_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(200) NOT NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Guide sub-categories table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_sub_categories (" +
+                    "sub_category_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "category_id INT NOT NULL, " +
+                    "name VARCHAR(200) NOT NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Guides table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guides (" +
+                    "guide_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "title VARCHAR(255) NOT NULL, " +
+                    "main_image_path VARCHAR(500), " +
+                    "main_category VARCHAR(100), " +
+                    "sub_category VARCHAR(100), " +
+                    "youtube_url VARCHAR(500), " +
+                    "created_by INT NOT NULL, " +
+                    "created_role VARCHAR(50), " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Guide requirements table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_requirements (" +
+                    "requirement_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "guide_id INT NOT NULL, " +
+                    "requirement TEXT NOT NULL" +
+                    ")");
+
+            // Guide steps table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_steps (" +
+                    "step_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "guide_id INT NOT NULL, " +
+                    "step_order INT NOT NULL, " +
+                    "step_title VARCHAR(255), " +
+                    "step_body TEXT" +
+                    ")");
+
+            // Guide step images table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_step_images (" +
+                    "image_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "step_id INT NOT NULL, " +
+                    "image_path VARCHAR(500)" +
+                    ")");
+
+            // Guide comments table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_comments (" +
+                    "comment_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "guide_id INT NOT NULL, " +
+                    "user_id INT NOT NULL, " +
+                    "comment TEXT, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Guide ratings table
+            stmt.execute("CREATE TABLE IF NOT EXISTS guide_ratings (" +
+                    "rating_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "guide_id INT NOT NULL, " +
+                    "user_id INT NOT NULL, " +
+                    "rating VARCHAR(10) NOT NULL, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "UNIQUE(guide_id, user_id)" +
+                    ")");
+
+            // Diagnostic categories table (hierarchical)
+            stmt.execute("CREATE TABLE IF NOT EXISTS diagnostic_categories (" +
+                    "category_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(200) NOT NULL, " +
+                    "parent_id INT, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Diagnostic trees table
+            stmt.execute("CREATE TABLE IF NOT EXISTS diagnostic_trees (" +
+                    "tree_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "title VARCHAR(255) NOT NULL, " +
+                    "description TEXT, " +
+                    "category_id INT NOT NULL, " +
+                    "creator_id INT NOT NULL, " +
+                    "status VARCHAR(50) DEFAULT 'draft', " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Diagnostic nodes table
+            stmt.execute("CREATE TABLE IF NOT EXISTS diagnostic_nodes (" +
+                    "node_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "tree_id INT NOT NULL, " +
+                    "question TEXT NOT NULL, " +
+                    "is_solution BOOLEAN DEFAULT false, " +
+                    "solution_text TEXT, " +
+                    "parent_node_id INT, " +
+                    "parent_answer VARCHAR(255)" +
+                    ")");
+
+            // Diagnostic tree ratings table
+            stmt.execute("CREATE TABLE IF NOT EXISTS diagnostic_ratings (" +
+                    "rating_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "tree_id INT NOT NULL, " +
+                    "user_id INT NOT NULL, " +
+                    "rating INT NOT NULL, " +
+                    "comment TEXT, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "UNIQUE(tree_id, user_id)" +
+                    ")");
         }
     }
 
@@ -158,6 +270,18 @@ public class TestDBConnection {
             stmt.execute("TRUNCATE TABLE product_reviews");
             stmt.execute("TRUNCATE TABLE vehicles");
             stmt.execute("TRUNCATE TABLE password_reset_tokens");
+            stmt.execute("TRUNCATE TABLE guide_categories");
+            stmt.execute("TRUNCATE TABLE guide_sub_categories");
+            stmt.execute("TRUNCATE TABLE guides");
+            stmt.execute("TRUNCATE TABLE guide_requirements");
+            stmt.execute("TRUNCATE TABLE guide_steps");
+            stmt.execute("TRUNCATE TABLE guide_step_images");
+            stmt.execute("TRUNCATE TABLE guide_comments");
+            stmt.execute("TRUNCATE TABLE guide_ratings");
+            stmt.execute("TRUNCATE TABLE diagnostic_categories");
+            stmt.execute("TRUNCATE TABLE diagnostic_trees");
+            stmt.execute("TRUNCATE TABLE diagnostic_nodes");
+            stmt.execute("TRUNCATE TABLE diagnostic_ratings");
             stmt.execute("SET REFERENTIAL_INTEGRITY TRUE");
         }
     }
