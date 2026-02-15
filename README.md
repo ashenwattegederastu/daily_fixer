@@ -62,6 +62,14 @@ This project includes comprehensive unit and integration tests using JUnit 5 and
 
 ### Running Tests
 
+#### Quick Reference
+
+| Command | What it does | Time | Generates Report |
+|---------|-------------|------|------------------|
+| `mvn test` | Run unit tests only | ~7s | No (creates jacoco.exec) |
+| `mvn verify` | Run all tests (unit + integration) | ~9s | Yes (auto-generated) |
+| `mvn jacoco:report` | Generate coverage report from existing data | ~2s | Yes (from jacoco.exec) |
+
 #### Run Unit Tests Only
 ```bash
 mvn test
@@ -80,8 +88,27 @@ mvn clean verify
 ```
 
 #### Generate Code Coverage Report
+There are two ways to generate coverage reports:
+
+**Option 1: Generate report while running tests**
 ```bash
-mvn clean test jacoco:report
+mvn clean verify
+```
+This runs all tests and automatically generates the JaCoCo report.
+
+**Option 2: Generate report from previous test run (without re-running tests)**
+```bash
+mvn jacoco:report
+```
+This generates the HTML report from the existing `target/jacoco.exec` file created by a previous test run. This is much faster as it doesn't re-execute tests.
+
+**Typical workflow:**
+```bash
+# First time: Run tests (creates jacoco.exec)
+mvn test
+
+# Later: Regenerate report without re-running tests
+mvn jacoco:report
 ```
 
 ### Test Reports
@@ -96,6 +123,28 @@ After running tests, reports are generated in the following locations:
 
 - **JaCoCo Coverage Report**: `target/site/jacoco/`
   - Open `target/site/jacoco/index.html` in a browser to view coverage
+
+#### Fast Report Regeneration
+
+**Key Feature:** You can regenerate the JaCoCo HTML coverage report without re-running tests!
+
+Once you've run tests at least once (which creates `target/jacoco.exec`), you can regenerate the HTML report instantly:
+
+```bash
+# Run tests once (takes ~7 seconds)
+mvn test
+
+# Regenerate report anytime (takes ~2 seconds)
+mvn jacoco:report
+```
+
+**Use cases:**
+- Quickly view coverage after modifying code
+- Share updated reports with team without waiting for full test suite
+- Generate reports in different formats without test overhead
+- Useful during development when you want to check coverage frequently
+
+**Note:** The report reflects the last test execution. To update coverage data, re-run `mvn test` or `mvn verify`.
 
 ### Test Structure
 
