@@ -48,18 +48,19 @@ public class TestStoreDAO {
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, storeId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                Store store = new Store();
-                store.setStoreId(rs.getInt("store_id"));
-                store.setUserId(rs.getInt("user_id"));
-                store.setStoreName(rs.getString("store_name"));
-                store.setStoreAddress(rs.getString("store_address"));
-                store.setStoreCity(rs.getString("store_city"));
-                store.setStoreType(rs.getString("store_type"));
-                store.setLatitude(rs.getDouble("latitude"));
-                store.setLongitude(rs.getDouble("longitude"));
-                return store;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Store store = new Store();
+                    store.setStoreId(rs.getInt("store_id"));
+                    store.setUserId(rs.getInt("user_id"));
+                    store.setStoreName(rs.getString("store_name"));
+                    store.setStoreAddress(rs.getString("store_address"));
+                    store.setStoreCity(rs.getString("store_city"));
+                    store.setStoreType(rs.getString("store_type"));
+                    store.setLatitude(rs.getDouble("latitude"));
+                    store.setLongitude(rs.getDouble("longitude"));
+                    return store;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

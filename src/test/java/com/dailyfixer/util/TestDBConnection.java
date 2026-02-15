@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Test-specific database connection utility that uses H2 in-memory database.
@@ -15,7 +16,7 @@ public class TestDBConnection {
     private static final String USER = "sa";
     private static final String PASS = "";
 
-    private static boolean schemaInitialized = false;
+    private static final AtomicBoolean schemaInitialized = new AtomicBoolean(false);
 
     /**
      * Get a connection to the H2 test database.
@@ -25,10 +26,9 @@ public class TestDBConnection {
         Class.forName("org.h2.Driver");
         Connection conn = DriverManager.getConnection(URL, USER, PASS);
         
-        // Initialize schema on first connection
-        if (!schemaInitialized) {
+        // Initialize schema on first connection (thread-safe)
+        if (schemaInitialized.compareAndSet(false, true)) {
             initializeSchema(conn);
-            schemaInitialized = true;
         }
         
         return conn;
@@ -117,6 +117,6 @@ public class TestDBConnection {
      * Reset the schema initialization flag for testing purposes.
      */
     public static void resetSchemaFlag() {
-        schemaInitialized = false;
+        schemaInitialized.set(false);
     }
 }

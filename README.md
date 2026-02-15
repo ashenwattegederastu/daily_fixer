@@ -170,7 +170,7 @@ Production configuration is in `src/main/resources/config.properties`:
 
 GitHub Actions workflow automatically runs on every push and pull request:
 - Checks out code
-- Sets up Java 24
+- Sets up Java 17 (Temurin distribution)
 - Runs unit tests (`mvn test`)
 - Runs integration tests (`mvn verify`)
 - Generates and uploads test reports

@@ -67,22 +67,23 @@ public class TestServiceDAO {
         try (Connection con = TestDBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, technicianId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Service s = new Service();
-                s.setServiceId(rs.getInt("service_id"));
-                s.setTechnicianId(rs.getInt("technician_id"));
-                s.setServiceName(rs.getString("service_name"));
-                s.setDescription(rs.getString("description"));
-                s.setCategory(rs.getString("category"));
-                s.setPricingType(rs.getString("pricing_type"));
-                s.setFixedRate(rs.getDouble("fixed_rate"));
-                s.setHourlyRate(rs.getDouble("hourly_rate"));
-                s.setInspectionCharge(rs.getDouble("inspection_charge"));
-                s.setTransportCharge(rs.getDouble("transport_charge"));
-                s.setAvailableDates(rs.getString("available_dates"));
-                s.setImageType(rs.getString("image_type"));
-                list.add(s);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Service s = new Service();
+                    s.setServiceId(rs.getInt("service_id"));
+                    s.setTechnicianId(rs.getInt("technician_id"));
+                    s.setServiceName(rs.getString("service_name"));
+                    s.setDescription(rs.getString("description"));
+                    s.setCategory(rs.getString("category"));
+                    s.setPricingType(rs.getString("pricing_type"));
+                    s.setFixedRate(rs.getDouble("fixed_rate"));
+                    s.setHourlyRate(rs.getDouble("hourly_rate"));
+                    s.setInspectionCharge(rs.getDouble("inspection_charge"));
+                    s.setTransportCharge(rs.getDouble("transport_charge"));
+                    s.setAvailableDates(rs.getString("available_dates"));
+                    s.setImageType(rs.getString("image_type"));
+                    list.add(s);
+                }
             }
         }
         return list;
