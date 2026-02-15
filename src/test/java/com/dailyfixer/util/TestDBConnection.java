@@ -252,6 +252,40 @@ public class TestDBConnection {
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "UNIQUE(tree_id, user_id)" +
                     ")");
+
+            // Orders table
+            stmt.execute("CREATE TABLE IF NOT EXISTS orders (" +
+                    "order_id VARCHAR(100) PRIMARY KEY, " +
+                    "customer_name VARCHAR(200), " +
+                    "email VARCHAR(100), " +
+                    "phone VARCHAR(20), " +
+                    "address TEXT, " +
+                    "city VARCHAR(100), " +
+                    "total_amount DECIMAL(10,2), " +
+                    "currency VARCHAR(10) DEFAULT 'LKR', " +
+                    "status VARCHAR(50) DEFAULT 'PENDING', " +
+                    "payhere_payment_id VARCHAR(100), " +
+                    "store_username VARCHAR(50), " +
+                    "product_name VARCHAR(255), " +
+                    "buyer_id INT, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
+
+            // Order items table
+            stmt.execute("CREATE TABLE IF NOT EXISTS order_items (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "order_id VARCHAR(100) NOT NULL, " +
+                    "store_id INT NOT NULL, " +
+                    "product_id INT NOT NULL, " +
+                    "variant_id INT, " +
+                    "product_name VARCHAR(255) NOT NULL, " +
+                    "quantity INT NOT NULL, " +
+                    "unit_price DECIMAL(10,2) NOT NULL, " +
+                    "total_price DECIMAL(10,2) NOT NULL, " +
+                    "status VARCHAR(50) DEFAULT 'PENDING', " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ")");
         }
     }
 
@@ -282,6 +316,8 @@ public class TestDBConnection {
             stmt.execute("TRUNCATE TABLE diagnostic_trees");
             stmt.execute("TRUNCATE TABLE diagnostic_nodes");
             stmt.execute("TRUNCATE TABLE diagnostic_ratings");
+            stmt.execute("TRUNCATE TABLE order_items");
+            stmt.execute("TRUNCATE TABLE orders");
             stmt.execute("SET REFERENTIAL_INTEGRITY TRUE");
         }
     }
